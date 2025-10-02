@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="menu.Menu"
+            prefWidth="800" prefHeight="600">
+
+    <!-- Game title at the top center -->
+    <top>
+        <StackPane alignment="CENTER">
+            <Label text="ARKANOID"
+                   BorderPane.alignment="CENTER"
+                   style="-fx-font-size: 36px; -fx-font-weight: bold;" />
+        </StackPane>
+    </top>
+
+    <!-- Start button at the center -->
+    <center>
+        <VBox alignment="CENTER" spacing="20">
+            <Button text="Start" fx:id="startButton"
+                    style="-fx-font-size: 20px; -fx-padding: 10 30;" />
+        </VBox>
+    </center>
+</BorderPane>
