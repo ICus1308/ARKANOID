@@ -1,8 +1,13 @@
-module com.example.demo {
+module arkanoid {
     requires javafx.controls;
     requires javafx.fxml;
 
-
-    opens com.example.demo to javafx.fxml;
-    exports com.example.demo;
+    opens menu to javafx.fxml;
+    exports menu;
+    opens main to javafx.fxml;
+    exports main;
+    opens gameplay to javafx.fxml;
+    exports gameplay;
+    opens config to javafx.fxml;
+    exports config;
 }
