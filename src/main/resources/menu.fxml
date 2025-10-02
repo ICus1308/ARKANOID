@@ -7,7 +7,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="gameplay.GameControler"
+            fx:controller="gameplay.GameController"
             prefWidth="${GameConfig.WIDTH}"
             prefHeight="${GameConfig.HEIGHT}">
 

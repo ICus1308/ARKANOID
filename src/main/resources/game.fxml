@@ -5,13 +5,21 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.layout.AnchorPane?>
 
 <?import config.GameConfig?>
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="gameplay.GameControler"
-            prefWidth="${GameConfig.WIDTH}"
-            prefHeight="${GameConfig.HEIGHT}">
+            fx:controller="gameplay.GameController"
+            prefWidth="550"
+            prefHeight="700">
+
+    <Canvas fx:id="gameCanvas"
+            width="550"
+            height="700"
+            AnchorPane.topAnchor="0"
+            AnchorPane.leftAnchor="0"/>
 
 </AnchorPane>
