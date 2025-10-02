@@ -10,4 +10,6 @@ module arkanoid {
     exports gameplay;
     opens config to javafx.fxml;
     exports config;
+    opens entities to javafx.fxml;
+    exports entities;
 }
