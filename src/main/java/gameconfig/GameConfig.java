@@ -1,4 +1,4 @@
-package gameplay;
+package gameconfig;
 
 public final class GameConfig {
     private GameConfig() {}

@@ -1,6 +1,7 @@
 package gameplay;
 
 import entities.Paddle;
+import gameconfig.GameConfig;
 import javafx.animation.AnimationTimer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

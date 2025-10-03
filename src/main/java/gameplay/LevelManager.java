@@ -1,6 +1,7 @@
 package gameplay;
 
 import entities.Brick;
+import gameconfig.GameConfig;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.io.BufferedReader;
