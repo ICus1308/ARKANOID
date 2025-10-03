@@ -8,7 +8,7 @@
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="gameplay.GameController"
-            prefWidth="${GameConfig.WIDTH}"
+            prefWidth="${gameplay.WIDTH}"
             prefHeight="${GameConfig.HEIGHT}">
 
     <!-- Game title at the top center -->
