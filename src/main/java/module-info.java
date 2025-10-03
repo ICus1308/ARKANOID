@@ -1,6 +1,7 @@
 module arkanoid {
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.graphics;
 
     opens menu to javafx.fxml;
     exports menu;
@@ -8,8 +9,8 @@ module arkanoid {
     exports main;
     opens gameplay to javafx.fxml;
     exports gameplay;
-    opens config to javafx.fxml;
-    exports config;
     opens entities to javafx.fxml;
     exports entities;
+    exports gameconfig;
+    opens gameconfig to javafx.fxml;
 }

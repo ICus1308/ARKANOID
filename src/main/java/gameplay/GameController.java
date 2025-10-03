@@ -1,7 +1,7 @@
 package gameplay;
 
-import config.GameConfig;
 import entities.Paddle;
+import gameconfig.GameConfig;
 import javafx.animation.AnimationTimer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,7 +12,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import level.LevelManager;
 import javafx.scene.canvas.Canvas;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -30,12 +29,8 @@ public class GameController implements Initializable {
 
     public void initialize(URL url, ResourceBundle rb) {
         paddle = new Paddle((GameConfig.WIDTH - GameConfig.PADDLE_W) / 2,
-                GameConfig.HEIGHT - GameConfig.PADDLE_H - 30,
+                GameConfig.PADDLE_Y,
                 GameConfig.PADDLE_W, GameConfig.PADDLE_H);
-
-        if (gameRoot != null) {
-            gameRoot.getChildren().add(paddle);
-        }
     }
 
     public void attachInput(Scene scene) {
@@ -63,6 +58,7 @@ public class GameController implements Initializable {
                 double dt = (now - lastNs) / 1_000_000_000.0;
                 lastNs = now;
                 update(dt);
+                draw();
             }
         };
         loop.start();
@@ -100,15 +96,18 @@ public class GameController implements Initializable {
         GraphicsContext gc = gameCanvas.getGraphicsContext2D();
         gc.clearRect(0, 0, GameConfig.WIDTH, GameConfig.HEIGHT);
         levelManager.draw(gc);
+        if (paddle != null) {
+            paddle.draw(gc);
+        }
     }
 
     private void update(double dt) {
         if (leftHeld) {
-            paddle.setTranslateX(Math.max(0, paddle.getTranslateX() - GameConfig.PADDLE_SPEED * dt));
+            paddle.setX(Math.max(0, paddle.getX() - GameConfig.PADDLE_SPEED * dt));
         }
         if (rightHeld) {
-            paddle.setTranslateX(Math.min(GameConfig.WIDTH - GameConfig.PADDLE_W,
-                    paddle.getTranslateX() + GameConfig.PADDLE_SPEED * dt));
+            paddle.setX(Math.min(GameConfig.WIDTH - GameConfig.PADDLE_W,
+                    paddle.getX() + GameConfig.PADDLE_SPEED * dt));
         }
     }
 
