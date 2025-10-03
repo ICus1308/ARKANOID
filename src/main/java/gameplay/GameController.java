@@ -9,9 +9,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-
+import level.LevelManager;
+import javafx.scene.canvas.Canvas;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -66,6 +68,40 @@ public class GameController implements Initializable {
         loop.start();
     }
 
+    @FXML
+    private Canvas gameCanvas;
+
+    private LevelManager levelManager;
+
+    @FXML
+    public void initialize() {
+        System.out.println("Initialize called. gameCanvas=" + gameCanvas);
+        // KHÔNG gọi initGame() ở đây nữa vì gameCanvas có thể null
+    }
+
+    private void initGame() {
+        System.out.println("initGame called. gameCanvas=" + gameCanvas);
+        if (gameCanvas == null) {
+            System.out.println("ERROR: gameCanvas is null in initGame!");
+            return;
+        }
+
+        levelManager = new LevelManager();
+        levelManager.loadLevel("/mapturtorial.txt");
+        draw();
+    }
+
+    private void draw() {
+        System.out.println("draw() called. gameCanvas=" + gameCanvas);
+        if (gameCanvas == null) {
+            System.out.println("gameCanvas is null!");
+            return;
+        }
+        GraphicsContext gc = gameCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, GameConfig.WIDTH, GameConfig.HEIGHT);
+        levelManager.draw(gc);
+    }
+
     private void update(double dt) {
         if (leftHeld) {
             paddle.setTranslateX(Math.max(0, paddle.getTranslateX() - GameConfig.PADDLE_SPEED * dt));
@@ -89,8 +125,8 @@ public class GameController implements Initializable {
 
             GameController controller = loader.getController();
             controller.attachInput(stage.getScene());
+            controller.initGame(); // Gọi initGame() tại đây
             controller.startGameLoop();
-
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -5,7 +5,7 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
+<?import javafx.scene.canvas.Canvas?>
 <?import config.GameConfig?>
 
 <AnchorPane xmlns="http://javafx.com/javafx"
@@ -16,5 +16,9 @@
     <children>
         <Pane fx:id="gameRoot" prefWidth="800.0" prefHeight="600.0" />
     </children>
-
+    <Canvas fx:id="gameCanvas"
+            width="800"
+            height="700"
+            AnchorPane.topAnchor="0"
+            AnchorPane.leftAnchor="0"/>
 </AnchorPane>
