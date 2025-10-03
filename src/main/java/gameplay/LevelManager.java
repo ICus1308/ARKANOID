@@ -1,7 +1,6 @@
-package level;
+package gameplay;
 
-import brick.Brick;
-import config.GameConfig;
+import entities.Brick;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.io.BufferedReader;

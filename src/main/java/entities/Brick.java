@@ -1,4 +1,4 @@
-package brick;
+package entities;
 
 import javafx.scene.paint.Color;
 
@@ -7,12 +7,7 @@ import javafx.geometry.Rectangle2D;
 
 
 
-public class Brick {
-    private double x;
-    private double y;
-    private double width;
-    private double height;
-    private boolean visible;
+public class Brick extends GameObject{
 
     public Brick(double x, double y, double width, double height) {
         this.x = x;

@@ -6,7 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import config.GameConfig;
+import gameplay.GameConfig;
 
 public class Menu extends Application {
     @Override
