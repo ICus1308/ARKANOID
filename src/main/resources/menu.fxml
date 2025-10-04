@@ -5,11 +5,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/25"
+<BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="gameplay.GameController"
-            prefWidth="${GameConfig.WIDTH}"
-            prefHeight="${GameConfig.HEIGHT}">
+            prefWidth="${GameConfig.Width}"
+            prefHeight="${GameConfig.Height}">
 
     <!-- Game title at the top center -->
     <top>
