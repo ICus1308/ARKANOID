@@ -1,6 +1,7 @@
 package gameplay;
 
 import entities.Paddle;
+import ball.*;
 import gameconfig.GameConfig;
 import javafx.animation.AnimationTimer;
 import javafx.event.ActionEvent;
@@ -23,6 +24,8 @@ public class GameController implements Initializable {
     private boolean rightHeld = false;
 
     private Paddle paddle;
+
+    private Ball ball = new Ball(GameConfig.WIDTH / 2, GameConfig.HEIGHT / 2, GameConfig.BALL_R);
 
     private long lastNs = 0;
     private AnimationTimer loop;
@@ -51,6 +54,7 @@ public class GameController implements Initializable {
     }
 
     public void startGameLoop() {
+        GraphicsContext gc = gameCanvas.getGraphicsContext2D();
         loop = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -58,7 +62,13 @@ public class GameController implements Initializable {
                 double dt = (now - lastNs) / 1_000_000_000.0;
                 lastNs = now;
                 update(dt);
-                draw();
+                ball.move(dt, GameConfig.WIDTH, GameConfig.HEIGHT);
+
+                gc.clearRect(0, 0, GameConfig.WIDTH, GameConfig.HEIGHT);
+                if (levelManager != null) {
+                    levelManager.draw(gc);
+                }
+                ball.draw(gc);
             }
         };
         loop.start();
