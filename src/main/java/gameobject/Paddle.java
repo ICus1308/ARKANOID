@@ -1,9 +1,11 @@
 package gameobject;
 
+import gameconfig.GameConfig;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import static arkanoid.arkanoid.gameconfig.GameConfig.*;
-import gameconfig.GameConfig;
+
+import static gameconfig.GameConfig.GAME_WIDTH;
+import static gameconfig.GameConfig.PowerupType;
 
 
 public class Paddle extends GameObject {

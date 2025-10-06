@@ -1,6 +1,6 @@
 package gameobject;
 
-import arkanoid.arkanoid.gameconfig.GameConfig.WallSideType;
+import gameconfig.GameConfig.WallSideType;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
@@ -52,7 +52,7 @@ public class Ball extends GameObject {
         node.setCenterY(this.y + radius);
     }
 
-    public void update(double tpf, arkanoid.arkanoid.gameobject.Paddle paddle, double gameWidth, double gameHeight) {
+    public void update(double tpf, Paddle paddle, double gameWidth, double gameHeight) {
         if (stuck) {
             setX(paddle.getX() + paddle.getWidth() / 2 - radius);
             setY(paddle.getY() - height);
