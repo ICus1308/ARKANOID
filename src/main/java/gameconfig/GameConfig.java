@@ -21,4 +21,3 @@ public final class GameConfig {
         LASER, MULTI, EXTEND, FREEZE
     }
 }
-
