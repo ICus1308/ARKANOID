@@ -1,12 +1,14 @@
 package gamemanager;
 
 import javafx.animation.AnimationTimer;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import gameconfig.GameConfig;
 import gameobject.*;
+import javafx.util.Duration;
 import userinterface.UserInterface;
 import static gameconfig.GameConfig.*;
 
@@ -17,7 +19,9 @@ public class ArkanoidApp extends Application {
     private UserInterface userInterface;
     private CollisionManager collisionManager;
     private Paddle paddle;
-    private Ball ball;
+    private java.util.List<Ball> balls = new java.util.ArrayList<>();
+    private boolean oneshotActive = false;
+    private PauseTransition oneshotTimer;
     private AnimationTimer gameLoop;
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
@@ -35,7 +39,8 @@ public class ArkanoidApp extends Application {
         userInterface.updateScore(0);
 
         paddle = new Paddle(GAME_WIDTH / 2 - 50, GAME_HEIGHT - 20, 100, 15, PADDLE_SPEED);
-        ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 5.0);
+        Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 5.0);
+        balls.add(ball);
         root.getChildren().addAll(paddle.getNode(), ball.getNode());
 
         Scene scene = new Scene(root);
@@ -84,8 +89,10 @@ public class ArkanoidApp extends Application {
     }
 
     private void startGame() {
-        ball.setStuck(false);
-        ball.launch();
+        for (Ball b : balls) {
+            b.setStuck(false);
+            b.launch();
+        }
         changeGameState(GameConfig.GameState.PLAYING);
     }
 
@@ -102,21 +109,31 @@ public class ArkanoidApp extends Application {
                 if (gameState == GameConfig.GameState.PLAYING) {
                     if (isMovingLeft) { paddle.moveLeft(TPF); }
                     if (isMovingRight) { paddle.moveRight(TPF); }
-                    ball.update(TPF, paddle, GAME_WIDTH, GAME_HEIGHT);
-                    GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(ball, GAME_WIDTH, GAME_HEIGHT);
-                    if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
+                    java.util.List<Ball> toRemove = new java.util.ArrayList<>();
+                    for (Ball b : new java.util.ArrayList<>(balls)) {
+                        b.update(TPF, paddle, GAME_WIDTH, GAME_HEIGHT);
+                        GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
+                        if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
+                            toRemove.add(b);
+                        }
+                        if (collisionManager.checkPaddleBallCollision(paddle, b)) {
+                            collisionManager.handlePaddleBallCollision(paddle, b);
+                        }
+                        java.util.List<Brick> bricks = levelManager.getBricks();
+                        Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
+                        if (hitBrick != null) {
+                            collisionManager.handleBrickBallCollision(b, hitBrick, userInterface);
+                            if (levelManager.getBricks().isEmpty()) { changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
+                        }
+                    }
+                    for (Ball dead : toRemove) {
+                        root.getChildren().remove(dead.getNode());
+                        balls.remove(dead);
+                    }
+                    if (!toRemove.isEmpty() && balls.isEmpty()) {
                         userInterface.decreaseLives();
                         resetBallAndPaddle();
                         if (userInterface.getLives() <= 0) { changeGameState(GameConfig.GameState.GAME_OVER); }
-                    }
-                    if (collisionManager.checkPaddleBallCollision(paddle, ball)) {
-                        collisionManager.handlePaddleBallCollision(paddle, ball);
-                    }
-                    java.util.List<Brick> bricks = levelManager.getBricks();
-                    Brick hitBrick = collisionManager.checkBrickBallCollision(ball, bricks);
-                    if (hitBrick != null) {
-                        collisionManager.handleBrickBallCollision(ball, hitBrick, userInterface);
-                        if (levelManager.getBricks().isEmpty()) { changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
                     }
                     java.util.List<Powerup> powerups = levelManager.getPowerups();
                     for (Powerup p : new java.util.ArrayList<>(powerups)) {
@@ -133,10 +150,16 @@ public class ArkanoidApp extends Application {
     }
 
     private void resetBallAndPaddle() {
-        ball.reset(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - ball.getRadius());
+        for (Ball b : balls) {
+            root.getChildren().remove(b.getNode());
+        }
+        balls.clear();
+        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 5.0);
+        balls.add(ball);
+        root.getChildren().add(ball.getNode());
         paddle.reset();
         gameState = GameConfig.GameState.START;
-        ball.setStuck(true);
+        for (Ball b : balls) { b.setStuck(true); }
     }
 
     private void changeGameState(GameConfig.GameState newState) {
@@ -153,6 +176,31 @@ public class ArkanoidApp extends Application {
             }
         }
         if (newState != GameConfig.GameState.PLAYING) { gameLoop.stop(); } else { gameLoop.start(); }
+    }
+
+    public void spawnExtraBall() {
+        if (balls.isEmpty()) return;
+        Ball ref = balls.getFirst();
+        Ball newBall = new Ball(ref.getX() + ref.getRadius(), ref.getY() + ref.getRadius(), ref.getRadius(), ref.speed);
+        newBall.setVx(-ref.getVx());
+        newBall.setVy(ref.getVy());
+        newBall.setStuck(false);
+        balls.add(newBall);
+        root.getChildren().add(newBall.getNode());
+    }
+
+    public void enableOneshot() {
+        oneshotActive = true;
+        collisionManager.setOneshotActive(true);
+        if (oneshotTimer != null) {
+            oneshotTimer.stop();
+        }
+        oneshotTimer = new PauseTransition(Duration.seconds(7.5));
+        oneshotTimer.setOnFinished(event -> {
+            oneshotActive = false;
+            collisionManager.setOneshotActive(false);
+        });
+        oneshotTimer.playFromStart();
     }
 }
 
