@@ -18,6 +18,6 @@ public final class GameConfig {
     }
 
     public enum PowerupType {
-        MULTIPLY, ONESHOT, EXPAND
+        LASER, MULTI, EXTEND, FREEZE
     }
 }

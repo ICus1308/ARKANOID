@@ -34,9 +34,5 @@ public abstract class Brick extends GameObject {
             }
         }
     }
-
-    public void destroy() {
-        this.hitCount = 0;
-    }
 }
 
