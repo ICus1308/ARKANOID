@@ -20,12 +20,10 @@ public class ArkanoidApp extends Application {
     private CollisionManager collisionManager;
     private Paddle paddle;
     private java.util.List<Ball> balls = new java.util.ArrayList<>();
-    private boolean oneshotActive = false;
     private PauseTransition oneshotTimer;
     private AnimationTimer gameLoop;
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
-    private boolean deadReset = false;
 
     @Override
     public void start(Stage primaryStage) {
@@ -158,11 +156,10 @@ public class ArkanoidApp extends Application {
         balls.clear();
         levelManager.clearAllPowerups(root);
         paddle.reset();
-        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 5.0);
+        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 10.0);
         balls.add(ball);
         root.getChildren().add(ball.getNode());
         gameState = GameConfig.GameState.START;
-        deadReset = true;
         for (Ball b : balls) { b.setStuck(true); }
     }
 
@@ -184,24 +181,25 @@ public class ArkanoidApp extends Application {
 
     public void spawnExtraBall() {
         if (balls.isEmpty()) return;
-        Ball ref = balls.getFirst();
-        Ball newBall = new Ball(ref.getX() + ref.getRadius(), ref.getY() + ref.getRadius(), ref.getRadius(), ref.speed);
-        newBall.setVx(-ref.getVx());
-        newBall.setVy(ref.getVy());
-        newBall.setStuck(false);
-        balls.add(newBall);
-        root.getChildren().add(newBall.getNode());
+        int size = balls.size();
+        for (int i = 0; i < size; i++){
+            Ball ref = balls.get(i);
+            Ball newBall = new Ball(ref.getX() + ref.getRadius(), ref.getY() + ref.getRadius(), ref.getRadius(), ref.speed);
+            newBall.setVx(-ref.getVx());
+            newBall.setVy(ref.getVy());
+            newBall.setStuck(false);
+            balls.add(newBall);
+            root.getChildren().add(newBall.getNode());
+        }
     }
 
     public void enableOneshot() {
-        oneshotActive = true;
         collisionManager.setOneshotActive(true);
         if (oneshotTimer != null) {
             oneshotTimer.stop();
         }
         oneshotTimer = new PauseTransition(Duration.seconds(7.5));
         oneshotTimer.setOnFinished(event -> {
-            oneshotActive = false;
             collisionManager.setOneshotActive(false);
         });
         oneshotTimer.playFromStart();
