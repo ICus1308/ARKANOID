@@ -49,7 +49,7 @@ public class LevelManager {
                 } else {
                     if (type < 4) newBrick = new StandardBrick(x, y, brickWidth, brickHeight);
                     else if (type < 7) newBrick = new MultiHitBrick(x, y, brickWidth, brickHeight);
-                    else newBrick = new StandardBrick(x, y, brickWidth, brickHeight);
+                    else newBrick = new ExtendedBrick(x, y, brickWidth, brickHeight);
                 }
 
                 bricks.add(newBrick);
@@ -61,7 +61,7 @@ public class LevelManager {
     public void removeBrick(Brick brick, Pane root) {
         root.getChildren().remove(brick.getNode());
         bricks.remove(brick);
-        if (new Random().nextDouble() < 1) {
+        if (new Random().nextDouble() < 0.15) {
             GameConfig.PowerupType type = GameConfig.PowerupType.values()[new Random().nextInt(GameConfig.PowerupType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
             powerups.add(p);
