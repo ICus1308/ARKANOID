@@ -7,7 +7,6 @@ public class StandardBrick extends Brick {
 
     @Override
     public int hit() {
-        hitCount--;
-        return 10;
+        return (--hitCount == 0 ? 10 : 0);
     }
 }

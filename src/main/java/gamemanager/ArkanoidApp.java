@@ -154,10 +154,10 @@ public class ArkanoidApp extends Application {
             root.getChildren().remove(b.getNode());
         }
         balls.clear();
+        paddle.reset();
         Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 5.0);
         balls.add(ball);
         root.getChildren().add(ball.getNode());
-        paddle.reset();
         gameState = GameConfig.GameState.START;
         for (Ball b : balls) { b.setStuck(true); }
     }
