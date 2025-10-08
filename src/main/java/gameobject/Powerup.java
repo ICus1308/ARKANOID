@@ -17,10 +17,9 @@ public class Powerup extends GameObject {
         this.node.setArcHeight(5);
 
         Color color = switch (type) {
-            case EXTEND -> Color.GOLD;
-            case FREEZE -> Color.AQUA;
-            case LASER -> Color.RED;
-            default -> Color.PURPLE;
+            case EXPAND -> Color.GOLD;
+            case MULTIPLY -> Color.PURPLE;
+            case ONESHOT -> Color.CRIMSON;
         };
         this.node.setFill(color);
         this.node.setStroke(Color.WHITE);
@@ -36,7 +35,19 @@ public class Powerup extends GameObject {
     }
 
     public boolean activate(Object game, Paddle paddle) {
-        paddle.applyPowerup(powerupType);
+        switch (powerupType) {
+            case EXPAND -> paddle.applyPowerup(GameConfig.PowerupType.EXPAND);
+            case MULTIPLY -> {
+                if (game instanceof gamemanager.ArkanoidApp app) {
+                    app.spawnExtraBall();
+                }
+            }
+            case ONESHOT -> {
+                if (game instanceof gamemanager.ArkanoidApp app) {
+                    app.enableOneshot();
+                }
+            }
+        }
         return true;
     }
 }

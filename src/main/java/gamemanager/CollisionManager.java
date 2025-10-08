@@ -13,10 +13,15 @@ import java.util.List;
 public class CollisionManager {
     private final LevelManager levelManager;
     private final Pane root;
+    private boolean oneshotActive = false;
 
     public CollisionManager(LevelManager levelManager, Pane root) {
         this.levelManager = levelManager;
         this.root = root;
+    }
+
+    public void setOneshotActive(boolean active) {
+        this.oneshotActive = active;
     }
 
     public void handlePaddleBallCollision(Paddle paddle, Ball ball) {
@@ -43,7 +48,13 @@ public class CollisionManager {
             } else {
                 ball.bounce(GameConfig.WallSideType.NORTH);
             }
-            int score = brick.hit();
+            int score;
+            if (oneshotActive) {
+                score = brick.getHitCount() > 0 ? 10 : 0;
+                brick.destroy();
+            } else {
+                score = brick.hit();
+            }
             ui.increaseScore(score);
             brick.updateDraw();
             if (brick.getHitCount() <= 0) {

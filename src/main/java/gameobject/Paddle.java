@@ -11,13 +11,13 @@ import static gameconfig.GameConfig.PowerupType;
 public class Paddle extends GameObject {
     private final Rectangle node;
     private double speed;
-    private boolean extended = false;
-    private double currentWidth;
+    private boolean expanded = false;
+    private double baseWidth;
 
     public Paddle(double x, double y, double width, double height, double speed) {
         super(x, y, width, height);
         this.speed = speed;
-        this.currentWidth = width;
+        this.baseWidth = width;
         this.node = new Rectangle(width, height, Color.LIGHTSEAGREEN);
         this.node.setArcWidth(10);
         this.node.setArcHeight(10);
@@ -44,21 +44,22 @@ public class Paddle extends GameObject {
 
     public void reset() {
         setX(GAME_WIDTH / 2 - width / 2);
-        if (extended) {
-            this.width = 100;
-            this.node.setWidth(100);
-            extended = false;
+        if (expanded) {
+            this.width = baseWidth;
+            this.node.setWidth(baseWidth);
+            expanded = false;
         }
     }
 
     public void applyPowerup(PowerupType type) {
-        if (type == GameConfig.PowerupType.EXTEND) {
-            if (!extended) {
-                currentWidth = this.width * 1.5;
-                node.setWidth(currentWidth);
-                this.width = currentWidth;
-                extended = true;
+        if (type == GameConfig.PowerupType.EXPAND) {
+            if (!expanded) {
+                double newWidth = this.width * 1.25;
+                node.setWidth(newWidth);
+                this.width = newWidth;
+                expanded = true;
             }
         }
     }
 }
+
