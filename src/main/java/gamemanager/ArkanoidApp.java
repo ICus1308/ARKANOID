@@ -158,7 +158,7 @@ public class ArkanoidApp extends Application {
         balls.clear();
         levelManager.clearAllPowerups(root);
         paddle.reset();
-        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 5.0);
+        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 10.0);
         balls.add(ball);
         root.getChildren().add(ball.getNode());
         gameState = GameConfig.GameState.START;
@@ -184,13 +184,16 @@ public class ArkanoidApp extends Application {
 
     public void spawnExtraBall() {
         if (balls.isEmpty()) return;
-        Ball ref = balls.getFirst();
-        Ball newBall = new Ball(ref.getX() + ref.getRadius(), ref.getY() + ref.getRadius(), ref.getRadius(), ref.speed);
-        newBall.setVx(-ref.getVx());
-        newBall.setVy(ref.getVy());
-        newBall.setStuck(false);
-        balls.add(newBall);
-        root.getChildren().add(newBall.getNode());
+        int size = balls.size();
+        for(int i = 0; i < size; i++) {
+            Ball ref = balls.get(i);
+            Ball newBall = new Ball(ref.getX() + ref.getRadius(), ref.getY() + ref.getRadius(), ref.getRadius(), ref.speed);
+            newBall.setVx(-ref.getVx());
+            newBall.setVy(ref.getVy());
+            newBall.setStuck(false);
+            balls.add(newBall);
+            root.getChildren().add(newBall.getNode());
+        }
     }
 
     public void enableOneshot() {

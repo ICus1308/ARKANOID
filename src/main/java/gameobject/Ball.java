@@ -37,7 +37,7 @@ public class Ball extends GameObject {
     public void setStuck(boolean stuck) { this.stuck = stuck; }
 
     public void launch() {
-        vx = (new Random().nextBoolean() ? 1 : -1) * speed * 0.7;
+        vx = (new Random().nextBoolean() ? 1 : -1) * speed * 1;
         vy = -speed;
         stuck = false;
     }
