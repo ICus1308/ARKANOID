@@ -1,12 +1,16 @@
 package gamemanager;
 
+import gameconfig.GameConfig;
+import gameobject.Brick;
+import gameobject.MultiHitBrick;
+import gameobject.Powerup;
+import gameobject.StandardBrick;
 import javafx.scene.layout.Pane;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-import gameobject.*;
-import gameconfig.GameConfig;
+
 import static gameconfig.GameConfig.*;
 
 public class LevelManager {
@@ -68,5 +72,10 @@ public class LevelManager {
     public void removePowerup(Powerup p, Pane root) {
         root.getChildren().remove(p.getNode());
         powerups.remove(p);
+    }
+
+    public void clearAllPowerups(Pane root) {
+        root.getChildren().removeAll(powerups.stream().map(Powerup::getNode).toList());
+        powerups.clear();
     }
 }

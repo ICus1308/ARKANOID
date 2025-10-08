@@ -25,6 +25,7 @@ public class ArkanoidApp extends Application {
     private AnimationTimer gameLoop;
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
+    private boolean deadReset = false;
 
     @Override
     public void start(Stage primaryStage) {
@@ -141,6 +142,7 @@ public class ArkanoidApp extends Application {
                         if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
                             p.activate(ArkanoidApp.this, paddle);
                             levelManager.removePowerup(p, root);
+
                         }
                     }
                 }
@@ -154,11 +156,13 @@ public class ArkanoidApp extends Application {
             root.getChildren().remove(b.getNode());
         }
         balls.clear();
+        levelManager.clearAllPowerups(root);
         paddle.reset();
         Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 5.0);
         balls.add(ball);
         root.getChildren().add(ball.getNode());
         gameState = GameConfig.GameState.START;
+        deadReset = true;
         for (Ball b : balls) { b.setStuck(true); }
     }
 
