@@ -7,6 +7,7 @@ import gameobject.Paddle;
 import gameobject.Powerup;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
+import userinterface.PlayScreen;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class CollisionManager {
         ball.setVy(ball.getVy() * factor);
     }
 
-    public void handleBrickBallCollision(Ball ball, Brick brick, userinterface.UserInterface ui) {
+    public void handleBrickBallCollision(Ball ball, Brick brick, PlayScreen ui) {
         Point2D ballCenter = new Point2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
         double closestX = Math.max(brick.getX(), Math.min(ballCenter.getX(), brick.getRightX()));
         double closestY = Math.max(brick.getY(), Math.min(ballCenter.getY(), brick.getBottomY()));

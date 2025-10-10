@@ -1,5 +1,6 @@
 package gameobject;
 
+import gamemanager.GamePlay;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import gameconfig.GameConfig;
@@ -38,12 +39,12 @@ public class Powerup extends GameObject {
         switch (powerupType) {
             case EXPAND -> paddle.applyPowerup(GameConfig.PowerupType.EXPAND);
             case MULTIPLY -> {
-                if (game instanceof gamemanager.ArkanoidApp app) {
+                if (game instanceof GamePlay app) {
                     app.spawnExtraBall();
                 }
             }
             case ONESHOT -> {
-                if (game instanceof gamemanager.ArkanoidApp app) {
+                if (game instanceof GamePlay app) {
                     app.enableOneshot();
                 }
             }

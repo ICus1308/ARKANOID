@@ -9,15 +9,15 @@ import javafx.stage.Stage;
 import gameconfig.GameConfig;
 import gameobject.*;
 import javafx.util.Duration;
-import userinterface.UserInterface;
+import userinterface.PlayScreen;
 import userinterface.Menu;
 import static gameconfig.GameConfig.*;
 
-public class ArkanoidApp extends Application {
+public class GamePlay extends Application {
     private Pane root;
     private GameConfig.GameState gameState = GameConfig.GameState.MENU;
     private LevelManager levelManager;
-    private UserInterface userInterface;
+    private PlayScreen playScreen;
     private CollisionManager collisionManager;
     private Paddle paddle;
     private java.util.List<Ball> balls = new java.util.ArrayList<>();
@@ -42,16 +42,16 @@ public class ArkanoidApp extends Application {
 
         // Thêm menu
         menu = new Menu(() -> {
-            root.getChildren().remove(menu);
+            root.getChildren().remove(menu.getStackPane());
             root.getChildren().addAll(paddle.getNode(), ball.getNode());
-            userInterface = new UserInterface(root);
-            userInterface.updateLives(3);
-            userInterface.updateScore(0);
+            playScreen = new PlayScreen(root);
+            playScreen.updateLives(3);
+            playScreen.updateScore(0);
             levelManager.loadLevel(1, root);
             changeGameState(GameState.START);
         });
         if (gameState == GameConfig.GameState.MENU) {
-            root.getChildren().add(menu);
+            root.getChildren().add(menu.getStackPane());
         }
 
         Scene scene = new Scene(root);
@@ -104,8 +104,8 @@ public class ArkanoidApp extends Application {
         }
         changeGameState(GameConfig.GameState.PLAYING);
         // Ẩn menu nếu còn trên root
-        if (root.getChildren().contains(menu)) {
-            root.getChildren().remove(menu);
+        if (root.getChildren().contains(menu.getStackPane())) {
+            root.getChildren().remove(menu.getStackPane());
         }
     }
 
@@ -135,7 +135,7 @@ public class ArkanoidApp extends Application {
                         java.util.List<Brick> bricks = levelManager.getBricks();
                         Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
                         if (hitBrick != null) {
-                            collisionManager.handleBrickBallCollision(b, hitBrick, userInterface);
+                            collisionManager.handleBrickBallCollision(b, hitBrick, playScreen);
                             if (levelManager.getBricks().isEmpty()) { changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
                         }
                     }
@@ -144,15 +144,15 @@ public class ArkanoidApp extends Application {
                         balls.remove(dead);
                     }
                     if (!toRemove.isEmpty() && balls.isEmpty()) {
-                        userInterface.decreaseLives();
+                        playScreen.decreaseLives();
                         resetBallAndPaddle();
-                        if (userInterface.getLives() <= 0) { changeGameState(GameConfig.GameState.GAME_OVER); }
+                        if (playScreen.getLives() <= 0) { changeGameState(GameConfig.GameState.GAME_OVER); }
                     }
                     java.util.List<Powerup> powerups = levelManager.getPowerups();
                     for (Powerup p : new java.util.ArrayList<>(powerups)) {
                         p.move();
                         if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
-                            p.activate(ArkanoidApp.this, paddle);
+                            p.activate(GamePlay.this, paddle);
                             levelManager.removePowerup(p, root);
 
                         }
@@ -179,13 +179,13 @@ public class ArkanoidApp extends Application {
 
     private void changeGameState(GameConfig.GameState newState) {
         this.gameState = newState;
-        userInterface.showGameMessage(newState);
+        playScreen.showGameMessage(newState);
         if (newState == GameConfig.GameState.LEVEL_CLEARED) {
             levelManager.currentLevel++;
             if (levelManager.currentLevel <= levelManager.maxLevel) {
                 resetBallAndPaddle();
                 levelManager.loadLevel(levelManager.currentLevel, root);
-                userInterface.showLevel(levelManager.currentLevel);
+                playScreen.showLevel(levelManager.currentLevel);
             } else {
                 changeGameState(GameConfig.GameState.GAME_OVER);
             }
