@@ -59,5 +59,8 @@ public class PlayScreen extends UIManager {
                 break;
         }
     }
-}
 
+    public void cleanup() {
+        root.getChildren().removeAll(scoreText, livesText, gameMessage);
+    }
+}

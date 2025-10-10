@@ -1,16 +1,23 @@
 package gamemanager;
 
+import gameconfig.GameConfig;
+import gameobject.Ball;
+import gameobject.Brick;
+import gameobject.Paddle;
+import gameobject.Powerup;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import gameconfig.GameConfig;
-import gameobject.*;
 import javafx.util.Duration;
-import userinterface.PlayScreen;
 import userinterface.Menu;
+import userinterface.PlayScreen;
+
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 import static gameconfig.GameConfig.*;
 
 public class GamePlay extends Application {
@@ -36,7 +43,7 @@ public class GamePlay extends Application {
         levelManager = new LevelManager();
         collisionManager = new CollisionManager(levelManager, root);
 
-        paddle = new Paddle(GAME_WIDTH / 2 - 50, GAME_HEIGHT - 20, 100, 15, PADDLE_SPEED);
+        paddle = new Paddle(GAME_WIDTH / 2 - 50, GAME_HEIGHT - 20, 1000, 15, PADDLE_SPEED);
         Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 5.0);
         balls.add(ball);
 
@@ -68,6 +75,11 @@ public class GamePlay extends Application {
                 case SPACE:
                     if (gameState == GameState.START || gameState == GameState.LEVEL_CLEARED) {
                         startGame();
+                    }
+                    break;
+                case ESCAPE:
+                    if (gameState == GameState.PLAYING || gameState == GameState.START) {
+                        returnToMenu();
                     }
                     break;
                 default:
@@ -175,9 +187,39 @@ public class GamePlay extends Application {
         for (Ball b : balls) { b.setStuck(true); }
     }
 
+    private void returnToMenu() {
+        changeGameState(GameState.MENU);
+
+        root.getChildren().remove(paddle.getNode());
+        for (Ball b : balls) {
+            root.getChildren().remove(b.getNode());
+        }
+        balls.clear();
+
+        for (Brick brick : new java.util.ArrayList<>(levelManager.getBricks())) {
+            levelManager.removeBrick(brick, root);
+        }
+
+        levelManager.clearAllPowerups(root);
+
+        if (playScreen != null) {
+            playScreen.cleanup();
+            playScreen = null;
+        }
+
+        if (menu != null) {
+            if (!root.getChildren().contains(menu.getStackPane())) {
+                root.getChildren().add(menu.getStackPane());
+            }
+        }
+    }
+
     private void changeGameState(GameConfig.GameState newState) {
         this.gameState = newState;
-        playScreen.showGameMessage(newState);
+        if (playScreen != null) {
+            playScreen.showGameMessage(newState);
+        }
+
         if (newState == GameConfig.GameState.LEVEL_CLEARED) {
             levelManager.currentLevel++;
             if (levelManager.currentLevel <= levelManager.maxLevel) {
@@ -197,8 +239,11 @@ public class GamePlay extends Application {
         for (int i = 0; i < size; i++){
             Ball ref = balls.get(i);
             Ball newBall = new Ball(ref.getX() + ref.getRadius(), ref.getY() + ref.getRadius(), ref.getRadius(), ref.speed);
-            newBall.setVx(-ref.getVx());
-            newBall.setVy(ref.getVy());
+            newBall.setVx(ref.getVx()*(new Random().nextDouble(2.01) - 1));
+            newBall.setVy(ref.getVy()*(new Random().nextInt(3) - 1));
+            if (newBall.getVy() < 0.1) {
+                newBall.setVy((newBall.getVy()) + ThreadLocalRandom.current().nextDouble(-1, 2));
+            }
             newBall.setStuck(false);
             balls.add(newBall);
             root.getChildren().add(newBall.getNode());
