@@ -11,6 +11,7 @@ public class PlayScreen extends UIManager {
 
     public PlayScreen(Pane root) {
         super(root);
+        initializeUI();
     }
     
     @Override

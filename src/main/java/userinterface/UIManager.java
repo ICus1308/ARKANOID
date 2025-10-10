@@ -12,7 +12,6 @@ public abstract class UIManager {
     
     public UIManager(Pane root) {
         this.root = root;
-        initializeUI();
     }
 
     public int getScore() {
