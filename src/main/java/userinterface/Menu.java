@@ -4,22 +4,24 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 
-import static gameconfig.GameConfig.GAME_HEIGHT;
-import static gameconfig.GameConfig.GAME_WIDTH;
+import static gameconfig.GameConfig.*;
+
 
 public class Menu extends UIManager {
     private final StackPane stackPane;
 
     public Menu(Runnable onStart) {
-        super(null); // We'll create our own root
+        super(null);
         this.stackPane = new StackPane();
         
         Text title = createStyledText("ARKANOID", 0, 0, TITLE_FONT, TEXT_COLOR);
 
-        GameButton startButton = new GameButton("Start", GameButton.ButtonStyle.PRIMARY);
-        startButton.setOnAction(e -> onStart.run());
+        GameButton startButton = new GameButton("Start");
+        startButton.setOnAction(e -> {
+            onStart.run();
+        });
 
-        GameButton getHighScoreButton = new GameButton("Get High Score", GameButton.ButtonStyle.PRIMARY);
+        GameButton getHighScoreButton = new GameButton("Get High Score");
         getHighScoreButton.setOnAction(e -> onStart.run());
 
         stackPane.setStyle("-fx-background-color: rgba(44,62,80,0.9);");

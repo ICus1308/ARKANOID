@@ -5,7 +5,6 @@ import javafx.scene.text.Text;
 import static gameconfig.GameConfig.*;
 
 public class PlayScreen extends UIManager {
-    private int score = 0;
     private int lives = 3;
     private  Text scoreText;
     private  Text livesText;
@@ -23,14 +22,14 @@ public class PlayScreen extends UIManager {
         root.getChildren().addAll(scoreText, livesText, gameMessage);
     }
 
-    public int getLives() { return lives; }
-
     public void updateScore(int newScore) {
         this.score = newScore;
         scoreText.setText("Score: " + score);
     }
 
     public void increaseScore(int delta) { updateScore(this.score + delta); }
+
+    public int getLives() { return lives; }
 
     public void updateLives(int newLives) {
         this.lives = newLives;
