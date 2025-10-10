@@ -31,13 +31,12 @@ public class GameButton extends Button {
 
     public GameButton(String text) {
         super(text);
-        applyStyle(ButtonStyle.PRIMARY); // Apply the initial style
+        applyStyle(ButtonStyle.PRIMARY);
         setupButton();
     }
     private void applyStyle(ButtonStyle style) {
         switch (style) {
             case PRIMARY:
-                // Set the initial style
                 setStyle(BASE_STYLE);
                 break;
         }

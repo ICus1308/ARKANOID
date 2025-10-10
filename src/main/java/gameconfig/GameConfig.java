@@ -10,8 +10,12 @@ public final class GameConfig {
     public static final double PADDLE_SPEED = 8.0;
 
     public enum GameState {
-        MENU, HIGHSCORE,
-        START, PLAYING, PAUSED, GAME_OVER, LEVEL_CLEARED,
+        MENU,
+        START,
+        PLAYING,
+        PAUSED,
+        GAME_OVER,
+        LEVEL_CLEARED,
         TUTORIAL,
         SHOP
     }

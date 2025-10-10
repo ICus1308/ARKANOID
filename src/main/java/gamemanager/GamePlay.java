@@ -78,7 +78,7 @@ public class GamePlay extends Application {
                     }
                     break;
                 case ESCAPE:
-                    if (gameState == GameState.PLAYING || gameState == GameState.START) {
+                    if (gameState == GameState.PLAYING || gameState == GameState.START || gameState == GameState.GAME_OVER) {
                         returnToMenu();
                     }
                     break;
@@ -165,7 +165,8 @@ public class GamePlay extends Application {
                         Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
                         if (hitBrick != null) {
                             collisionManager.handleBrickBallCollision(b, hitBrick, playScreen);
-                            if (levelManager.getBricks().isEmpty()) { changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
+                            if (levelManager.getBricks().isEmpty()) {
+                                changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
                         }
                     }
                     for (Ball dead : toRemove) {
