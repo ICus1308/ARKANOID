@@ -104,22 +104,20 @@ public class GamePlay extends Application {
         }
         changeGameState(GameConfig.GameState.PLAYING);
         // Ẩn menu nếu còn trên root
-        if (root.getChildren().contains(menu.getStackPane())) {
-            root.getChildren().remove(menu.getStackPane());
-        }
+        root.getChildren().remove(menu.getStackPane());
     }
 
     private void initGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastUpdate = 0;
-            private final double FPS = 60.0;
-            private final double TPF = 1.0 / FPS;
 
             @Override
             public void handle(long now) {
+                double FPS = 60.0;
                 if (now - lastUpdate < 1_000_000_000 / FPS) { return; }
                 lastUpdate = now;
                 if (gameState == GameConfig.GameState.PLAYING) {
+                    double TPF = 1.0 / FPS;
                     if (isMovingLeft) { paddle.moveLeft(TPF); }
                     if (isMovingRight) { paddle.moveRight(TPF); }
                     java.util.List<Ball> toRemove = new java.util.ArrayList<>();
@@ -213,9 +211,7 @@ public class GamePlay extends Application {
             oneshotTimer.stop();
         }
         oneshotTimer = new PauseTransition(Duration.seconds(7.5));
-        oneshotTimer.setOnFinished(event -> {
-            collisionManager.setOneshotActive(false);
-        });
+        oneshotTimer.setOnFinished(event -> collisionManager.setOneshotActive(false));
         oneshotTimer.playFromStart();
     }
 }
