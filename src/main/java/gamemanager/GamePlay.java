@@ -197,27 +197,36 @@ public class GamePlay extends Application {
     }
 
     private void handleCollisions() {
+        // nếu không ở trạng thái PLAYING thì không xử lý
+        if (gameState != GameConfig.GameState.PLAYING) return;
+
         java.util.List<Ball> toRemove = new java.util.ArrayList<>();
         for (Ball b : new java.util.ArrayList<>(balls)) {
             GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
             if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
                 toRemove.add(b);
+                continue;
             }
+
             if (collisionManager.checkPaddleBallCollision(paddle, b)) {
                 collisionManager.handlePaddleBallCollision(paddle, b);
             }
+
             java.util.List<Brick> bricks = levelManager.getBricks();
             Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
             if (hitBrick != null) {
                 collisionManager.handleBrickBallCollision(b, hitBrick, playScreen);
                 if (levelManager.isLevelComplete()) {
                     changeGameState(GameConfig.GameState.LEVEL_CLEARED);
+                    return;
                 }
             }
         }
 
         for (Ball dead : toRemove) {
-            root.getChildren().remove(dead.getNode());
+            if (dead.getNode() != null && dead.getNode().getParent() != null) {
+                root.getChildren().remove(dead.getNode());
+            }
             balls.remove(dead);
         }
 
@@ -232,6 +241,9 @@ public class GamePlay extends Application {
         for (Powerup p : new java.util.ArrayList<>(levelManager.getPowerups())) {
             if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
                 p.activate(GamePlay.this, paddle);
+                if (p.getNode() != null && p.getNode().getParent() != null) {
+                    root.getChildren().remove(p.getNode());
+                }
                 levelManager.removePowerup(p, root);
             }
         }
@@ -307,7 +319,7 @@ public class GamePlay extends Application {
     }
 
     public void spawnExtraBall() {
-        // Limit the number of balls to 50 because of lag ;-;
+        // Limit the number of balls to 300 because of lag ;-;
         if (balls.isEmpty() || balls.size() > 300) return;
         int size = balls.size();
         for (int i = 0; i < size; i++){
