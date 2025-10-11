@@ -37,7 +37,7 @@ public class GamePlay extends Application {
         collisionManager = new CollisionManager(levelManager, root);
 
         paddle = new Paddle(GAME_WIDTH / 2 - 50, GAME_HEIGHT - 20, 100, 15, PADDLE_SPEED);
-        Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 5.0);
+        Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 10, 15.0);
         balls.add(ball);
 
         // Thêm menu
@@ -133,7 +133,7 @@ public class GamePlay extends Application {
                         java.util.List<Brick> bricks = levelManager.getBricks();
                         Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
                         if (hitBrick != null) {
-                            collisionManager.handleBrickBallCollision(b, hitBrick, userInterface);
+                            collisionManager.handleBrickBallCollision(b, hitBrick, playScreen);
                             if (levelManager.isLevelComplete()) { changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
                         }
                     }
