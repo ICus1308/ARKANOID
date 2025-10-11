@@ -11,6 +11,7 @@ public class PlayScreen extends UIManager {
 
     public PlayScreen(Pane root) {
         super(root);
+        initializeUI();
     }
     
     @Override
@@ -59,5 +60,8 @@ public class PlayScreen extends UIManager {
                 break;
         }
     }
-}
 
+    public void cleanup() {
+        root.getChildren().removeAll(scoreText, livesText, gameMessage);
+    }
+}
