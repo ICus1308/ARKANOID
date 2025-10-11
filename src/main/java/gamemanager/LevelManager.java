@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import static gameconfig.GameConfig.*;
 
@@ -37,7 +36,7 @@ public class LevelManager {
                 return;
             }
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            java.util.List<String> lines = reader.lines().collect(Collectors.toList());
+            java.util.List<String> lines = reader.lines().toList();
 
             double brickWidth = (GAME_WIDTH - BRICK_COLS * 2) / BRICK_COLS;
             double brickHeight = 20;

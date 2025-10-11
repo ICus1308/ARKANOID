@@ -25,7 +25,7 @@ public class GamePlay extends Application {
     private PlayScreen playScreen;
     private CollisionManager collisionManager;
     private Paddle paddle;
-    private java.util.List<Ball> balls = new java.util.ArrayList<>();
+    private final java.util.List<Ball> balls = new java.util.ArrayList<>();
     private PauseTransition oneshotTimer;
     private AnimationTimer gameLoop;
     private boolean isMovingLeft = false;
@@ -150,7 +150,6 @@ public class GamePlay extends Application {
 
     private void initGameLoop() {
         gameLoop = new AnimationTimer() {
-            private final double timeStep = 1.0 / 240.0; // 240 updates per second
             private long lastUpdate = 0;
 
             @Override
@@ -160,6 +159,8 @@ public class GamePlay extends Application {
                 lastUpdate = now;
 
                 if (gameState == GameConfig.GameState.PLAYING) {
+                    // 240 updates per second
+                    double timeStep = 1.0 / 240.0;
                     processInput(timeStep);
                     updateGame(timeStep);
                     handleCollisions();
