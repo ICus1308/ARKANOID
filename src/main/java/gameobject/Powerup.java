@@ -31,7 +31,7 @@ public class Powerup extends GameObject {
     public javafx.scene.Node getNode() { return node; }
 
     public void move() {
-        double fallSpeed = 3.0;
+        double fallSpeed = 1.0;
         setY(y + fallSpeed);
     }
 

@@ -36,6 +36,10 @@ public class Ball extends GameObject {
     public void setVy(double vy) { this.vy = vy; }
     public void setStuck(boolean stuck) { this.stuck = stuck; }
 
+    public Circle getShape() {
+        return node;
+    }
+
     public void launch() {
         vx = (new Random().nextBoolean() ? 1 : -1) * speed * 0.7;
         vy = -speed;

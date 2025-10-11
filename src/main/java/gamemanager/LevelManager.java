@@ -106,4 +106,9 @@ public class LevelManager {
         root.getChildren().removeAll(powerups.stream().map(Powerup::getNode).toList());
         powerups.clear();
     }
+
+    public void clearAllBricks(Pane root) {
+        root.getChildren().removeAll(bricks.stream().map(Brick::getNode).toList());
+        bricks.clear();
+    }
 }

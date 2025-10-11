@@ -79,6 +79,12 @@ public class GamePlay extends Application {
                         returnToMenu();
                     }
                     break;
+                case T:
+                    levelManager.clearAllBricks(root);
+                    if (levelManager.isLevelComplete()) {
+                        changeGameState(GameState.LEVEL_CLEARED);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -92,6 +98,13 @@ public class GamePlay extends Application {
                 case D:
                 case RIGHT:
                     isMovingRight = false;
+                    break;
+                case R:
+                    Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 10.0);
+                    balls.add(ball);
+                    root.getChildren().add(ball.getNode());
+                    ball.setStuck(false);
+                    ball.launch();
                     break;
                 default:
                     break;
@@ -107,8 +120,8 @@ public class GamePlay extends Application {
     }
 
     private void initializeGameElements() {
-        paddle = new Paddle(GAME_WIDTH / 2 - 50, GAME_HEIGHT - 20, 100, 15, PADDLE_SPEED);
-        Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 5.0);
+        paddle = new Paddle(GAME_WIDTH / 2 - 50, GAME_HEIGHT - 20, 800, 15, PADDLE_SPEED);
+        Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 10.0);
         balls.add(ball);
         root.getChildren().addAll(paddle.getNode(), ball.getNode());
     }
@@ -137,56 +150,90 @@ public class GamePlay extends Application {
 
     private void initGameLoop() {
         gameLoop = new AnimationTimer() {
+            private final double timeStep = 1.0 / 240.0; // 240 updates per second
             private long lastUpdate = 0;
 
             @Override
             public void handle(long now) {
-                double FPS = 60.0;
-                if (now - lastUpdate < 1_000_000_000 / FPS) { return; }
+                // Cap the update rate to 60 FPS for rendering
+                if (now - lastUpdate < 1_000_000_000 / 60.0) { return; }
                 lastUpdate = now;
-                if (gameState == GameConfig.GameState.PLAYING) {
-                    double TPF = 1.0 / FPS;
-                    if (isMovingLeft) { paddle.moveLeft(TPF); }
-                    if (isMovingRight) { paddle.moveRight(TPF); }
-                    java.util.List<Ball> toRemove = new java.util.ArrayList<>();
-                    for (Ball b : new java.util.ArrayList<>(balls)) {
-                        b.update(TPF, paddle, GAME_WIDTH, GAME_HEIGHT);
-                        GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
-                        if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
-                            toRemove.add(b);
-                        }
-                        if (collisionManager.checkPaddleBallCollision(paddle, b)) {
-                            collisionManager.handlePaddleBallCollision(paddle, b);
-                        }
-                        java.util.List<Brick> bricks = levelManager.getBricks();
-                        Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
-                        if (hitBrick != null) {
-                            collisionManager.handleBrickBallCollision(b, hitBrick, playScreen);
-                            if (levelManager.isLevelComplete()) { changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
-                        }
-                    }
-                    for (Ball dead : toRemove) {
-                        root.getChildren().remove(dead.getNode());
-                        balls.remove(dead);
-                    }
-                    if (!toRemove.isEmpty() && balls.isEmpty()) {
-                        playScreen.decreaseLives();
-                        resetBallAndPaddle();
-                        if (playScreen.getLives() <= 0) { changeGameState(GameConfig.GameState.GAME_OVER); }
-                    }
-                    java.util.List<Powerup> powerups = levelManager.getPowerups();
-                    for (Powerup p : new java.util.ArrayList<>(powerups)) {
-                        p.move();
-                        if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
-                            p.activate(GamePlay.this, paddle);
-                            levelManager.removePowerup(p, root);
 
-                        }
-                    }
+                if (gameState == GameConfig.GameState.PLAYING) {
+                    processInput(timeStep);
+                    updateGame(timeStep);
+                    handleCollisions();
+
+                    processInput(timeStep);
+                    updateGame(timeStep);
+                    handleCollisions();
+
+                    processInput(timeStep);
+                    updateGame(timeStep);
+                    handleCollisions();
+
+                    processInput(timeStep);
+                    updateGame(timeStep);
+                    handleCollisions();
                 }
             }
         };
         gameLoop.start();
+    }
+
+    private void processInput(double tpf) {
+        if (isMovingLeft) { paddle.moveLeft(tpf); }
+        if (isMovingRight) { paddle.moveRight(tpf); }
+    }
+
+    private void updateGame(double tpf) {
+        for (Ball b : new java.util.ArrayList<>(balls)) {
+            b.update(tpf, paddle, GAME_WIDTH, GAME_HEIGHT);
+        }
+        for (Powerup p : new java.util.ArrayList<>(levelManager.getPowerups())) {
+            p.move();
+        }
+    }
+
+    private void handleCollisions() {
+        java.util.List<Ball> toRemove = new java.util.ArrayList<>();
+        for (Ball b : new java.util.ArrayList<>(balls)) {
+            GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
+            if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
+                toRemove.add(b);
+            }
+            if (collisionManager.checkPaddleBallCollision(paddle, b)) {
+                collisionManager.handlePaddleBallCollision(paddle, b);
+            }
+            java.util.List<Brick> bricks = levelManager.getBricks();
+            Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
+            if (hitBrick != null) {
+                collisionManager.handleBrickBallCollision(b, hitBrick, playScreen);
+                if (levelManager.isLevelComplete()) {
+                    changeGameState(GameConfig.GameState.LEVEL_CLEARED);
+                }
+            }
+        }
+
+        for (Ball dead : toRemove) {
+            root.getChildren().remove(dead.getNode());
+            balls.remove(dead);
+        }
+
+        if (!toRemove.isEmpty() && balls.isEmpty()) {
+            playScreen.decreaseLives();
+            resetBallAndPaddle();
+            if (playScreen.getLives() <= 0) {
+                changeGameState(GameConfig.GameState.GAME_OVER);
+            }
+        }
+
+        for (Powerup p : new java.util.ArrayList<>(levelManager.getPowerups())) {
+            if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
+                p.activate(GamePlay.this, paddle);
+                levelManager.removePowerup(p, root);
+            }
+        }
     }
 
     private void resetBallAndPaddle() {
@@ -259,7 +306,8 @@ public class GamePlay extends Application {
     }
 
     public void spawnExtraBall() {
-        if (balls.isEmpty()) return;
+        // Limit the number of balls to 50 because of lag ;-;
+        if (balls.isEmpty() || balls.size() > 300) return;
         int size = balls.size();
         for (int i = 0; i < size; i++){
             Ball ref = balls.get(i);
