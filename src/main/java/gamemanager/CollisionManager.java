@@ -50,14 +50,18 @@ public class CollisionManager {
             }
             int score;
             if (oneshotActive) {
-                score = brick.getHitCount() > 0 ? 10 : 0;
-                brick.destroy();
+                if (brick.getHitCount() > 0) {
+                    score = 10;
+                    brick.destroy();
+                } else {
+                    score = 0;
+                }
             } else {
                 score = brick.hit();
             }
             ui.increaseScore(score);
             brick.updateDraw();
-            if (brick.getHitCount() <= 0) {
+            if (brick.getHitCount() == 0) {
                 levelManager.removeBrick(brick, root);
             }
         }

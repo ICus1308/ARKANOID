@@ -72,6 +72,37 @@ public class ArkanoidApp extends Application {
                 case RIGHT:
                     isMovingRight = false;
                     break;
+                case DIGIT1: // Phím '1'
+                case DIGIT2: // Phím '2'
+                case DIGIT3: // Phím '3'
+                case DIGIT4: // Phím '4'
+                case DIGIT5: // Phím '5'
+                case DIGIT6: // Phím '6'
+                case DIGIT7: // Phím '7'
+                case DIGIT8: // Phím '8'
+                case DIGIT9: // Phím '9'
+                    // Lấy số level từ ký tự phím, trừ đi '0' để được giá trị số
+                    int targetLevel = Integer.parseInt(e.getCode().getName());
+
+                    // Kiểm tra xem level có nằm trong phạm vi cho phép (từ 1 đến maxLevel) không
+                    if (targetLevel >= 1 && targetLevel <= levelManager.maxLevel) {
+
+                        // 1. Dọn dẹp trạng thái hiện tại (bóng, vợt, powerup)
+                        resetBallAndPaddle();
+
+                        // 2. Tải level mới
+                        levelManager.loadLevel(targetLevel, root);
+
+                        // 3. Cập nhật giao diện
+                        userInterface.showLevel(targetLevel);
+                        userInterface.showGameMessage(GameConfig.GameState.START);
+
+                        // 4. Đảm bảo game loop được khởi động lại
+                        if (gameState != GameConfig.GameState.PLAYING) {
+                            gameLoop.start();
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
@@ -122,7 +153,7 @@ public class ArkanoidApp extends Application {
                         Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
                         if (hitBrick != null) {
                             collisionManager.handleBrickBallCollision(b, hitBrick, userInterface);
-                            if (levelManager.getBricks().isEmpty()) { changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
+                            if (levelManager.isLevelComplete()) { changeGameState(GameConfig.GameState.LEVEL_CLEARED); }
                         }
                     }
                     for (Ball dead : toRemove) {

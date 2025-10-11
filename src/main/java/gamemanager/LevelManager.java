@@ -1,10 +1,7 @@
 package gamemanager;
 
 import gameconfig.GameConfig;
-import gameobject.Brick;
-import gameobject.MultiHitBrick;
-import gameobject.Powerup;
-import gameobject.StandardBrick;
+import gameobject.*;
 import javafx.scene.layout.Pane;
 
 import java.io.BufferedReader;
@@ -21,7 +18,7 @@ public class LevelManager {
     private final List<Brick> bricks = new ArrayList<>();
     private final List<Powerup> powerups = new ArrayList<>();
     public int currentLevel = 1;
-    public final int maxLevel = 3;
+    public final int maxLevel = 9;
 
     public List<Brick> getBricks() { return bricks; }
     public List<Powerup> getPowerups() { return powerups; }
@@ -61,6 +58,12 @@ public class LevelManager {
                         case '2':
                             newBrick = new MultiHitBrick(x, y, brickWidth, brickHeight);
                             break;
+                        case 'U':
+                            newBrick = new IndestructibleBrick(x, y, brickWidth, brickHeight);
+                            break;
+                        case '5':
+                            newBrick = new MultiHitBrick(x, y, brickWidth, brickHeight,5);
+                            break;
                         case '0':
                         default:
                             break;
@@ -89,6 +92,9 @@ public class LevelManager {
             powerups.add(p);
             root.getChildren().add(p.getNode());
         }
+    }
+    public boolean isLevelComplete() {
+        return bricks.isEmpty() || bricks.stream().allMatch(brick -> brick.getHitCount() < 0);
     }
 
     public void removePowerup(Powerup p, Pane root) {

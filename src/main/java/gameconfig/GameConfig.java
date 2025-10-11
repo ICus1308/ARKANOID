@@ -5,7 +5,7 @@ public final class GameConfig {
 
     public static final double GAME_WIDTH = 800;
     public static final double GAME_HEIGHT = 600;
-    public static final int BRICK_ROWS = 5;
+    public static final int BRICK_ROWS = 10;
     public static final int BRICK_COLS = 10;
     public static final double PADDLE_SPEED = 8.0;
 
