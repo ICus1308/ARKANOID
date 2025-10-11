@@ -1,0 +1,15 @@
+.game-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-border-color: #2980b9;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Inter";
+}
+
+.game-button:hover {
+    -fx-background-color: derive(#3498db, 20%);
+}

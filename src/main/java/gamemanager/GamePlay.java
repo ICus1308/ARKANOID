@@ -9,14 +9,15 @@ import javafx.stage.Stage;
 import gameconfig.GameConfig;
 import gameobject.*;
 import javafx.util.Duration;
-import userinterface.UserInterface;
+import userinterface.PlayScreen;
+import userinterface.Menu;
 import static gameconfig.GameConfig.*;
 
-public class ArkanoidApp extends Application {
+public class GamePlay extends Application {
     private Pane root;
-    private GameConfig.GameState gameState = GameConfig.GameState.START;
+    private GameConfig.GameState gameState = GameConfig.GameState.MENU;
     private LevelManager levelManager;
-    private UserInterface userInterface;
+    private PlayScreen playScreen;
     private CollisionManager collisionManager;
     private Paddle paddle;
     private java.util.List<Ball> balls = new java.util.ArrayList<>();
@@ -24,6 +25,7 @@ public class ArkanoidApp extends Application {
     private AnimationTimer gameLoop;
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
+    private Menu menu;
 
     @Override
     public void start(Stage primaryStage) {
@@ -33,14 +35,24 @@ public class ArkanoidApp extends Application {
 
         levelManager = new LevelManager();
         collisionManager = new CollisionManager(levelManager, root);
-        userInterface = new UserInterface(root);
-        userInterface.updateLives(3);
-        userInterface.updateScore(0);
 
         paddle = new Paddle(GAME_WIDTH / 2 - 50, GAME_HEIGHT - 20, 100, 15, PADDLE_SPEED);
         Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 5.0);
         balls.add(ball);
-        root.getChildren().addAll(paddle.getNode(), ball.getNode());
+
+        // Thêm menu
+        menu = new Menu(() -> {
+            root.getChildren().remove(menu.getStackPane());
+            root.getChildren().addAll(paddle.getNode(), ball.getNode());
+            playScreen = new PlayScreen(root);
+            playScreen.updateLives(3);
+            playScreen.updateScore(0);
+            levelManager.loadLevel(1, root);
+            changeGameState(GameState.START);
+        });
+        if (gameState == GameConfig.GameState.MENU) {
+            root.getChildren().add(menu.getStackPane());
+        }
 
         Scene scene = new Scene(root);
         scene.setOnKeyPressed(e -> {
@@ -72,45 +84,12 @@ public class ArkanoidApp extends Application {
                 case RIGHT:
                     isMovingRight = false;
                     break;
-                case DIGIT1: // Phím '1'
-                case DIGIT2: // Phím '2'
-                case DIGIT3: // Phím '3'
-                case DIGIT4: // Phím '4'
-                case DIGIT5: // Phím '5'
-                case DIGIT6: // Phím '6'
-                case DIGIT7: // Phím '7'
-                case DIGIT8: // Phím '8'
-                case DIGIT9: // Phím '9'
-                    // Lấy số level từ ký tự phím, trừ đi '0' để được giá trị số
-                    int targetLevel = Integer.parseInt(e.getCode().getName());
-
-                    // Kiểm tra xem level có nằm trong phạm vi cho phép (từ 1 đến maxLevel) không
-                    if (targetLevel >= 1 && targetLevel <= levelManager.maxLevel) {
-
-                        // 1. Dọn dẹp trạng thái hiện tại (bóng, vợt, powerup)
-                        resetBallAndPaddle();
-
-                        // 2. Tải level mới
-                        levelManager.loadLevel(targetLevel, root);
-
-                        // 3. Cập nhật giao diện
-                        userInterface.showLevel(targetLevel);
-                        userInterface.showGameMessage(GameConfig.GameState.START);
-
-                        // 4. Đảm bảo game loop được khởi động lại
-                        if (gameState != GameConfig.GameState.PLAYING) {
-                            gameLoop.start();
-                        }
-                    }
-                    break;
                 default:
                     break;
             }
         });
 
-        levelManager.loadLevel(1, root);
-
-        primaryStage.setTitle("Arkanoid UML Game");
+        primaryStage.setTitle("Arkanoid");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -124,19 +103,21 @@ public class ArkanoidApp extends Application {
             b.launch();
         }
         changeGameState(GameConfig.GameState.PLAYING);
+        // Ẩn menu nếu còn trên root
+        root.getChildren().remove(menu.getStackPane());
     }
 
     private void initGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastUpdate = 0;
-            private final double FPS = 60.0;
-            private final double TPF = 1.0 / FPS;
 
             @Override
             public void handle(long now) {
+                double FPS = 60.0;
                 if (now - lastUpdate < 1_000_000_000 / FPS) { return; }
                 lastUpdate = now;
                 if (gameState == GameConfig.GameState.PLAYING) {
+                    double TPF = 1.0 / FPS;
                     if (isMovingLeft) { paddle.moveLeft(TPF); }
                     if (isMovingRight) { paddle.moveRight(TPF); }
                     java.util.List<Ball> toRemove = new java.util.ArrayList<>();
@@ -161,15 +142,15 @@ public class ArkanoidApp extends Application {
                         balls.remove(dead);
                     }
                     if (!toRemove.isEmpty() && balls.isEmpty()) {
-                        userInterface.decreaseLives();
+                        playScreen.decreaseLives();
                         resetBallAndPaddle();
-                        if (userInterface.getLives() <= 0) { changeGameState(GameConfig.GameState.GAME_OVER); }
+                        if (playScreen.getLives() <= 0) { changeGameState(GameConfig.GameState.GAME_OVER); }
                     }
                     java.util.List<Powerup> powerups = levelManager.getPowerups();
                     for (Powerup p : new java.util.ArrayList<>(powerups)) {
                         p.move();
                         if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
-                            p.activate(ArkanoidApp.this, paddle);
+                            p.activate(GamePlay.this, paddle);
                             levelManager.removePowerup(p, root);
 
                         }
@@ -190,19 +171,19 @@ public class ArkanoidApp extends Application {
         Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 10.0);
         balls.add(ball);
         root.getChildren().add(ball.getNode());
-        gameState = GameConfig.GameState.START;
+        gameState = GameState.START;
         for (Ball b : balls) { b.setStuck(true); }
     }
 
     private void changeGameState(GameConfig.GameState newState) {
         this.gameState = newState;
-        userInterface.showGameMessage(newState);
+        playScreen.showGameMessage(newState);
         if (newState == GameConfig.GameState.LEVEL_CLEARED) {
             levelManager.currentLevel++;
             if (levelManager.currentLevel <= levelManager.maxLevel) {
                 resetBallAndPaddle();
                 levelManager.loadLevel(levelManager.currentLevel, root);
-                userInterface.showLevel(levelManager.currentLevel);
+                playScreen.showLevel(levelManager.currentLevel);
             } else {
                 changeGameState(GameConfig.GameState.GAME_OVER);
             }
@@ -230,10 +211,7 @@ public class ArkanoidApp extends Application {
             oneshotTimer.stop();
         }
         oneshotTimer = new PauseTransition(Duration.seconds(7.5));
-        oneshotTimer.setOnFinished(event -> {
-            collisionManager.setOneshotActive(false);
-        });
+        oneshotTimer.setOnFinished(event -> collisionManager.setOneshotActive(false));
         oneshotTimer.playFromStart();
     }
 }
-

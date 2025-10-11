@@ -1,5 +1,6 @@
 package gameobject;
 
+import gamemanager.GamePlay;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import gameconfig.GameConfig;
@@ -7,7 +8,6 @@ import gameconfig.GameConfig;
 public class Powerup extends GameObject {
     private final GameConfig.PowerupType powerupType;
     private final Rectangle node;
-    private final double fallSpeed = 3.0;
 
     public Powerup(double x, double y, GameConfig.PowerupType type) {
         super(x, y, 20, 15);
@@ -31,23 +31,23 @@ public class Powerup extends GameObject {
     public javafx.scene.Node getNode() { return node; }
 
     public void move() {
+        double fallSpeed = 3.0;
         setY(y + fallSpeed);
     }
 
-    public boolean activate(Object game, Paddle paddle) {
+    public void activate(Object game, Paddle paddle) {
         switch (powerupType) {
             case EXPAND -> paddle.applyPowerup(GameConfig.PowerupType.EXPAND);
             case MULTIPLY -> {
-                if (game instanceof gamemanager.ArkanoidApp app) {
+                if (game instanceof GamePlay app) {
                     app.spawnExtraBall();
                 }
             }
             case ONESHOT -> {
-                if (game instanceof gamemanager.ArkanoidApp app) {
+                if (game instanceof GamePlay app) {
                     app.enableOneshot();
                 }
             }
         }
-        return true;
     }
 }
