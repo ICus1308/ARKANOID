@@ -48,7 +48,7 @@ public class GamePlay extends Application {
         collisionManager = new CollisionManager(levelManager, root);
 
         scoreManager = new ScoreManager();
-        highScoreScreen = new HighScoreScreen(root, () -> this.showMenu(), scoreManager);
+        highScoreScreen = new HighScoreScreen(root, this::showMenu, scoreManager);
 
         // Thêm menu
         menu = new Menu(() -> {
