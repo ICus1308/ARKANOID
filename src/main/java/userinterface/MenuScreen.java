@@ -8,10 +8,10 @@ import javafx.scene.text.Text;
 import static gameconfig.GameConfig.*;
 
 
-public class Menu extends UIManager {
+public class MenuScreen extends UIManager {
     private final StackPane stackPane;
 
-    public Menu(Runnable onStart, Runnable onHighScore) {
+    public MenuScreen(Runnable onStart, Runnable onHighScore) {
         super(null);
         this.stackPane = new StackPane();
         initializeUI(onStart, onHighScore);

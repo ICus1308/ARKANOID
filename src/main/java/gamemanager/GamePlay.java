@@ -13,10 +13,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import userinterface.HighScoreScreen;
-import userinterface.Menu;
-import userinterface.PlayScreen;
-import userinterface.ScoreManager;
+import userinterface.*;
 
 import java.util.Optional;
 
@@ -34,9 +31,10 @@ public class GamePlay extends Application {
     private AnimationTimer gameLoop;
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
-    private Menu menu;
+    private MenuScreen menuScreen;
     private HighScoreScreen highScoreScreen;
     private ScoreManager scoreManager;
+    private GameModeScreen gameModeScreen;
 
     @Override
     public void start(Stage primaryStage) {
@@ -46,22 +44,14 @@ public class GamePlay extends Application {
 
         levelManager = new LevelManager();
         collisionManager = new CollisionManager(levelManager, root);
-
         scoreManager = new ScoreManager();
-        highScoreScreen = new HighScoreScreen(root, this::showMenu, scoreManager);
 
-        // Thêm menu
-        menu = new Menu(() -> {
-            root.getChildren().remove(menu.getStackPane());
-            initializeGameElements();
-            playScreen = new PlayScreen(root);
-            playScreen.updateLives(3);
-            playScreen.updateScore(0);
-            levelManager.loadLevel(1, root);
-            changeGameState(GameState.START);
-        }, this::showHighScoreScreen);
+        highScoreScreen = new HighScoreScreen(root, this::showMenu, scoreManager);
+        gameModeScreen = new GameModeScreen(root, this::startSinglePlayerGame, this::showMenu);
+        menuScreen = new MenuScreen(this::showGameModeScreen, this::showHighScoreScreen);
+
         if (gameState == GameConfig.GameState.MENU) {
-            root.getChildren().add(menu.getStackPane());
+            root.getChildren().add(menuScreen.getStackPane());
         }
 
         Scene scene = new Scene(root);
@@ -132,15 +122,32 @@ public class GamePlay extends Application {
         root.getChildren().addAll(paddle.getNode(), ball.getNode());
     }
 
+    private void startSinglePlayerGame() {
+        gameModeScreen.hide();
+        initializeGameElements();
+        playScreen = new PlayScreen(root);
+        playScreen.updateLives(3);
+        playScreen.updateScore(0);
+        levelManager.loadLevel(1, root);
+        changeGameState(GameState.START);
+    }
+
     private void showMenu() {
         highScoreScreen.hide();
-        if (!root.getChildren().contains(menu.getStackPane())) {
-            root.getChildren().add(menu.getStackPane());
+        gameModeScreen.hide();
+        if (!root.getChildren().contains(menuScreen.getStackPane())) {
+            root.getChildren().add(menuScreen.getStackPane());
         }
+        menuScreen.getStackPane().setVisible(true);
+    }
+
+    private void showGameModeScreen() {
+        menuScreen.getStackPane().setVisible(false);
+        gameModeScreen.show();
     }
 
     private void showHighScoreScreen() {
-        root.getChildren().remove(menu.getStackPane());
+        menuScreen.getStackPane().setVisible(false);
         highScoreScreen.show();
     }
 
@@ -151,7 +158,7 @@ public class GamePlay extends Application {
         }
         changeGameState(GameConfig.GameState.PLAYING);
         // Ẩn menu nếu còn trên root
-        root.getChildren().remove(menu.getStackPane());
+        root.getChildren().remove(menuScreen.getStackPane());
     }
 
     private void initGameLoop() {
@@ -298,9 +305,9 @@ public class GamePlay extends Application {
             playScreen = null;
         }
 
-        if (menu != null) {
-            if (!root.getChildren().contains(menu.getStackPane())) {
-                root.getChildren().add(menu.getStackPane());
+        if (menuScreen != null) {
+            if (!root.getChildren().contains(menuScreen.getStackPane())) {
+                root.getChildren().add(menuScreen.getStackPane());
             }
         }
     }

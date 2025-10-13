@@ -21,12 +21,10 @@ public class Ball extends GameObject {
         reset(x, y);
     }
 
-    @Override
+
     public javafx.scene.Node getNode() { return node; }
 
-    @Override
     public void setX(double x) { this.x = x; }
-    @Override
     public void setY(double y) { this.y = y; }
 
     public double getRadius() { return radius; }
