@@ -9,12 +9,16 @@ import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import userinterface.HighScoreScreen;
 import userinterface.Menu;
 import userinterface.PlayScreen;
+import userinterface.ScoreManager;
+
+import java.util.Optional;
 
 import static gameconfig.GameConfig.*;
 
@@ -32,6 +36,7 @@ public class GamePlay extends Application {
     private boolean isMovingRight = false;
     private Menu menu;
     private HighScoreScreen highScoreScreen;
+    private ScoreManager scoreManager;
 
     @Override
     public void start(Stage primaryStage) {
@@ -42,7 +47,8 @@ public class GamePlay extends Application {
         levelManager = new LevelManager();
         collisionManager = new CollisionManager(levelManager, root);
 
-        highScoreScreen = new HighScoreScreen(root, this::showMenu);
+        scoreManager = new ScoreManager();
+        highScoreScreen = new HighScoreScreen(root, () -> this.showMenu(), scoreManager);
 
         // Thêm menu
         menu = new Menu(() -> {
@@ -314,6 +320,8 @@ public class GamePlay extends Application {
             } else {
                 changeGameState(GameConfig.GameState.GAME_OVER);
             }
+        } else if (newState == GameConfig.GameState.GAME_OVER) {
+            promptAndSaveScore();
         }
         if (newState != GameConfig.GameState.PLAYING) { gameLoop.stop(); } else { gameLoop.start(); }
     }
@@ -341,5 +349,18 @@ public class GamePlay extends Application {
         oneshotTimer = new PauseTransition(Duration.seconds(7.5));
         oneshotTimer.setOnFinished(event -> collisionManager.setOneshotActive(false));
         oneshotTimer.playFromStart();
+    }
+
+    private void promptAndSaveScore() {
+        TextInputDialog dialog = new TextInputDialog("Player");
+        dialog.setTitle("Game Over");
+        dialog.setHeaderText("You set a new score!");
+        dialog.setContentText("Please enter your name:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> {
+            int finalScore = playScreen.getScore();
+            scoreManager.addScore(name, finalScore);
+        });
     }
 }

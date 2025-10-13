@@ -6,6 +6,7 @@ import static gameconfig.GameConfig.*;
 
 public class PlayScreen extends UIManager {
     private int lives = 3;
+    private int score = 0;
     private  Text scoreText;
     private  Text livesText;
 
@@ -29,6 +30,10 @@ public class PlayScreen extends UIManager {
     }
 
     public void increaseScore(int delta) { updateScore(this.score + delta); }
+
+    public int getScore() {
+        return score;
+    }
 
     public int getLives() { return lives; }
 

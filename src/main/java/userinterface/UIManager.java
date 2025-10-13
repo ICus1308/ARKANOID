@@ -8,20 +8,10 @@ import javafx.scene.text.Text;
 public abstract class UIManager {
     protected Pane root;
     protected Text gameMessage;
-    protected int score = 0;
     
     public UIManager(Pane root) {
         this.root = root;
     }
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
-
     protected abstract void initializeUI();
 
     protected Text createStyledText(String text, double x, double y, Font font, Color color) {

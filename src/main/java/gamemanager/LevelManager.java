@@ -86,7 +86,8 @@ public class LevelManager {
         root.getChildren().remove(brick.getNode());
         bricks.remove(brick);
         if (new Random().nextDouble() < 1) {
-            GameConfig.PowerupType type = GameConfig.PowerupType.values()[new Random().nextInt(GameConfig.PowerupType.values().length)];
+            GameConfig.PowerupType type = GameConfig.PowerupType.values()
+                    [new Random().nextInt(GameConfig.PowerupType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
             powerups.add(p);
             root.getChildren().add(p.getNode());
