@@ -1,5 +1,9 @@
 package userinterface;
 
+import gamemanager.GameButton;
+import gamemanager.Score;
+import gamemanager.ScoreManager;
+import gamemanager.UIManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;

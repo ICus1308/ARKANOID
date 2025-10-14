@@ -1,5 +1,6 @@
 package userinterface;
 
+import gamemanager.UIManager;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import static gameconfig.GameConfig.*;

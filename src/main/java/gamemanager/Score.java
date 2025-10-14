@@ -1,4 +1,4 @@
-package userinterface;
+package gamemanager;
 
 import java.io.Serializable;
 

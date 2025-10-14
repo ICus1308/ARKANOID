@@ -1,5 +1,7 @@
 package userinterface;
 
+import gamemanager.GameButton;
+import gamemanager.UIManager;
 import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;

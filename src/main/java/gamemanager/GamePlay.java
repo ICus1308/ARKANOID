@@ -205,7 +205,7 @@ public class GamePlay extends Application {
             b.update(tpf, paddle, GAME_WIDTH, GAME_HEIGHT);
         }
         for (Powerup p : new java.util.ArrayList<>(levelManager.getPowerups())) {
-            p.move();
+            p.update();
         }
     }
 
@@ -308,6 +308,7 @@ public class GamePlay extends Application {
         if (menuScreen != null) {
             if (!root.getChildren().contains(menuScreen.getStackPane())) {
                 root.getChildren().add(menuScreen.getStackPane());
+                menuScreen.getStackPane().setVisible(true);
             }
         }
     }
