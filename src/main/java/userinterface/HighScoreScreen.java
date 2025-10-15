@@ -27,7 +27,6 @@ public class HighScoreScreen extends UIManager {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void initializeUI() {
         layout = new VBox(20);
         layout.setAlignment(Pos.CENTER);
@@ -40,7 +39,7 @@ public class HighScoreScreen extends UIManager {
 
         layout.getChildren().addAll(title, scoreTable, backButton);
     }
-
+    @SuppressWarnings("unchecked")
     private TableView<Score> createScoreTable() {
         TableView<Score> scoreTable = new TableView<>();
         scoreTable.setPrefWidth(450 * UI_SCALE_X);

@@ -44,7 +44,7 @@ public class GameButton extends Button {
                         "-fx-font-size: " + (24 * UI_SCALE) + "px; " +
                         "-fx-font-weight: bold; " +
                         "-fx-cursor: hand;");
-                setupHoverEffect("#3498db", "#5dade2", "white");
+                setupHoverEffect("#5dade2", "white");
                 break;
             case CATEGORY_UNSELECTED:
                 getStyleClass().add("game-button-category-unselected");
@@ -57,7 +57,7 @@ public class GameButton extends Button {
                         "-fx-font-size: " + (16 * UI_SCALE) + "px; " +
                         "-fx-font-weight: bold; " +
                         "-fx-cursor: hand;");
-                setupHoverEffect("#2c3e50", "#34495e", "#ecf0f1");
+                setupHoverEffect("#34495e", "#ecf0f1");
                 break;
             case CATEGORY_SELECTED:
                 getStyleClass().add("game-button-category-selected");
@@ -70,7 +70,7 @@ public class GameButton extends Button {
                         "-fx-font-size: " + (16 * UI_SCALE) + "px; " +
                         "-fx-font-weight: bold; " +
                         "-fx-cursor: hand;");
-                setupHoverEffect("transparent", "rgba(0, 217, 255, 0.1)", "#00d9ff");
+                setupHoverEffect("rgba(0, 217, 255, 0.1)", "#00d9ff");
                 break;
             case APPLY:
                 getStyleClass().add("game-button-apply");
@@ -83,12 +83,12 @@ public class GameButton extends Button {
                         "-fx-font-size: " + (14 * UI_SCALE) + "px; " +
                         "-fx-font-weight: bold; " +
                         "-fx-cursor: hand;");
-                setupHoverEffect("#27ae60", "#2ecc71", "white");
+                setupHoverEffect("#2ecc71", "white");
                 break;
         }
     }
 
-    private void setupHoverEffect(String normalBg, String hoverBg, String textColor) {
+    private void setupHoverEffect(String hoverBg, String textColor) {
         final String normalStyle = getStyle();
 
         setOnMouseEntered(e -> {
