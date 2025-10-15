@@ -216,9 +216,35 @@ public class SettingScreen extends UIManager {
 
         comboBox.setPrefWidth(400 * UI_SCALE_X);
         comboBox.setPrefHeight(35);
+
         comboBox.setStyle("-fx-background-color: #2c3e50; " +
-                         "-fx-text-fill: white; " +
                          "-fx-font-size: " + (16 * UI_SCALE) + "px;");
+
+        comboBox.setButtonCell(new javafx.scene.control.ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #2c3e50;");
+                }
+            }
+        });
+
+        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #34495e;");
+                }
+            }
+        });
 
         return label;
     }
