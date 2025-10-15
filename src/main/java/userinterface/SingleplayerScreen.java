@@ -5,13 +5,13 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import static gameconfig.GameConfig.*;
 
-public class PlayScreen extends UIManager {
+public class SingleplayerScreen extends UIManager {
     private int lives = 3;
     private int score = 0;
-    private  Text scoreText;
-    private  Text livesText;
+    private Text scoreText;
+    private Text livesText;
 
-    public PlayScreen(Pane root) {
+    public SingleplayerScreen(Pane root) {
         super(root);
         initializeUI();
     }
@@ -30,20 +30,26 @@ public class PlayScreen extends UIManager {
         scoreText.setText("Score: " + score);
     }
 
-    public void increaseScore(int delta) { updateScore(this.score + delta); }
+    public void increaseScore(int delta) {
+        updateScore(this.score + delta);
+    }
 
     public int getScore() {
         return score;
     }
 
-    public int getLives() { return lives; }
+    public int getLives() {
+        return lives;
+    }
 
     public void updateLives(int newLives) {
         this.lives = newLives;
         livesText.setText("Lives: " + lives);
     }
 
-    public void decreaseLives() { updateLives(this.lives - 1); }
+    public void decreaseLives() {
+        updateLives(this.lives - 1);
+    }
 
     public void showLevel(int level) {
         gameMessage.setText("LEVEL " + level);
@@ -68,6 +74,8 @@ public class PlayScreen extends UIManager {
     }
 
     public void cleanup() {
-        root.getChildren().removeAll(scoreText, livesText, gameMessage);
+        if (root != null) {
+            root.getChildren().removeAll(scoreText, livesText, gameMessage);
+        }
     }
 }

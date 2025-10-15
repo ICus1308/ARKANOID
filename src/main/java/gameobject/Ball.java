@@ -1,6 +1,7 @@
 package gameobject;
 
 import gameconfig.GameConfig.WallSideType;
+import gamemanager.GameObject;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 

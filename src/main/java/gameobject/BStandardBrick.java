@@ -1,7 +1,7 @@
 package gameobject;
 
-public class StandardBrick extends Brick {
-    public StandardBrick(double x, double y, double width, double height) {
+public class BStandardBrick extends Brick {
+    public BStandardBrick(double x, double y, double width, double height) {
         super(x, y, width, height, 1, "#e74c3c");
     }
 

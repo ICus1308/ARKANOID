@@ -1,6 +1,5 @@
 package gamemanager;
 
-import gameconfig.GameConfig;
 import gameobject.*;
 import javafx.scene.layout.Pane;
 
@@ -52,16 +51,16 @@ public class LevelManager {
 
                     switch (typeChar) {
                         case '1':
-                            newBrick = new StandardBrick(x, y, brickWidth, brickHeight);
+                            newBrick = new BStandardBrick(x, y, brickWidth, brickHeight);
                             break;
                         case '2':
-                            newBrick = new MultiHitBrick(x, y, brickWidth, brickHeight);
+                            newBrick = new BMultiHitBrick(x, y, brickWidth, brickHeight);
                             break;
                         case 'U':
-                            newBrick = new IndestructibleBrick(x, y, brickWidth, brickHeight);
+                            newBrick = new BIndestructibleBrick(x, y, brickWidth, brickHeight);
                             break;
                         case '5':
-                            newBrick = new MultiHitBrick(x, y, brickWidth, brickHeight,5);
+                            newBrick = new BMultiHitBrick(x, y, brickWidth, brickHeight,5);
                             break;
                         case '0':
                         default:
@@ -86,8 +85,8 @@ public class LevelManager {
         root.getChildren().remove(brick.getNode());
         bricks.remove(brick);
         if (new Random().nextDouble() < 1) {
-            GameConfig.PowerupType type = GameConfig.PowerupType.values()
-                    [new Random().nextInt(GameConfig.PowerupType.values().length)];
+            PowerUpType type = PowerUpType.values()
+                    [new Random().nextInt(PowerUpType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
             powerups.add(p);
             root.getChildren().add(p.getNode());

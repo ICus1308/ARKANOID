@@ -1,15 +1,16 @@
 package gameobject;
 
+import gamemanager.GameObject;
 import gamemanager.GamePlay;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import gameconfig.GameConfig;
 
 public class Powerup extends GameObject {
-    private final GameConfig.PowerupType powerupType;
+    private final GameConfig.PowerUpType powerupType;
     private final Rectangle node;
 
-    public Powerup(double x, double y, GameConfig.PowerupType type) {
+    public Powerup(double x, double y, GameConfig.PowerUpType type) {
         super(x, y, 20, 15);
         this.powerupType = type;
         this.node = new Rectangle(width, height);
@@ -37,7 +38,7 @@ public class Powerup extends GameObject {
 
     public void activate(Object game, Paddle paddle) {
         switch (powerupType) {
-            case EXPAND -> paddle.applyPowerup(GameConfig.PowerupType.EXPAND);
+            case EXPAND -> paddle.applyPowerup(GameConfig.PowerUpType.EXPAND);
             case MULTIPLY -> {
                 if (game instanceof GamePlay app) {
                     app.spawnExtraBall();

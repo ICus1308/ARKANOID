@@ -3,11 +3,25 @@ package gameconfig;
 public final class GameConfig {
     private GameConfig() {}
 
-    public static final double GAME_WIDTH = 800;
+    public static double GAME_WIDTH = 800;
     public static final double GAME_HEIGHT = 600;
     public static final int BRICK_ROWS = 10;
     public static final int BRICK_COLS = 10;
     public static final double PADDLE_SPEED = 8.0;
+
+    // UI scaling factors based on resolution
+    public static double UI_SCALE_X = 1.0;  // Width scale
+    public static double UI_SCALE_Y = 1.0;  // Height scale (always 1.0 since height is fixed)
+
+    // For elements that should scale uniformly, use the smaller scale
+    public static double UI_SCALE = 1.0;
+
+    // Calculate UI scale based on current width (800 is base width, height is fixed at 600)
+    public static void updateUIScale() {
+        UI_SCALE_X = GAME_WIDTH / 800.0;
+        UI_SCALE_Y = 1.0;  // Height is always 600, so no Y scaling
+        UI_SCALE = UI_SCALE_X;  // Use X scale for uniform elements
+    }
 
     public enum GameState {
         MENU,
@@ -21,10 +35,17 @@ public final class GameConfig {
     }
 
     public enum WallSideType {
-        NORTH, SOUTH, EAST, WEST, HIT_OUT_OF_BOUNDS, BOTTOM_HIT
+        NORTH,
+        SOUTH,
+        EAST,
+        WEST,
+        HIT_OUT_OF_BOUNDS,
+        BOTTOM_HIT
     }
 
-    public enum PowerupType {
-        MULTIPLY, ONESHOT, EXPAND
+    public enum PowerUpType {
+        MULTIPLY,
+        ONESHOT,
+        EXPAND
     }
 }

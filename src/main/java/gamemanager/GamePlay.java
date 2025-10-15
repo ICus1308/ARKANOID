@@ -23,7 +23,7 @@ public class GamePlay extends Application {
     private Pane root;
     private GameConfig.GameState gameState = GameConfig.GameState.MENU;
     private LevelManager levelManager;
-    private PlayScreen playScreen;
+    private SingleplayerScreen singleplayerScreen;
     private CollisionManager collisionManager;
     private Paddle paddle;
     private final java.util.List<Ball> balls = new java.util.ArrayList<>();
@@ -35,6 +35,7 @@ public class GamePlay extends Application {
     private HighScoreScreen highScoreScreen;
     private ScoreManager scoreManager;
     private GameModeScreen gameModeScreen;
+    private SettingScreen settingScreen;
 
     @Override
     public void start(Stage primaryStage) {
@@ -48,7 +49,8 @@ public class GamePlay extends Application {
 
         highScoreScreen = new HighScoreScreen(root, this::showMenu, scoreManager);
         gameModeScreen = new GameModeScreen(root, this::startSinglePlayerGame, this::showMenu);
-        menuScreen = new MenuScreen(this::showGameModeScreen, this::showHighScoreScreen);
+        menuScreen = new MenuScreen(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen);
+        settingScreen = new SettingScreen(root, this::showMenu, this::refreshAllScreens);
 
         if (gameState == GameConfig.GameState.MENU) {
             root.getChildren().add(menuScreen.getStackPane());
@@ -115,24 +117,76 @@ public class GamePlay extends Application {
         initGameLoop();
     }
 
+    private void refreshAllScreens() {
+        highScoreScreen.hide();
+        gameModeScreen.hide();
+
+        highScoreScreen.refresh();
+        gameModeScreen.refresh();
+
+        menuScreen.refresh(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen);
+
+        root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+
+        settingScreen.refresh();
+        settingScreen.show();
+
+        System.out.println("All screens refreshed with new UI scale: " + UI_SCALE);
+    }
+
     private void initializeGameElements() {
-        paddle = new Paddle(GAME_WIDTH / 2 - 50, GAME_HEIGHT - 20, 800, 15, PADDLE_SPEED);
-        Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 10.0);
+        double paddleWidth = 100;
+        double paddleX = (GAME_WIDTH - paddleWidth) / 2;
+        double paddleY = GAME_HEIGHT - 20;
+
+        paddle = new Paddle(paddleX, paddleY, paddleWidth, 15, PADDLE_SPEED);
+
+        double ballRadius = 8;
+        double ballX = GAME_WIDTH / 2;
+        double ballY = paddleY - ballRadius * 2 - 5;
+
+        Ball ball = new Ball(ballX, ballY, ballRadius, 10.0);
         balls.add(ball);
         root.getChildren().addAll(paddle.getNode(), ball.getNode());
+
+        System.out.println("Game elements initialized:");
+        System.out.println("  GAME_WIDTH: " + GAME_WIDTH + ", GAME_HEIGHT: " + GAME_HEIGHT);
+        System.out.println("  Paddle X: " + paddleX + ", Width: " + paddleWidth);
+        System.out.println("  Ball X: " + ballX + ", Y: " + ballY);
     }
 
     private void startSinglePlayerGame() {
         gameModeScreen.hide();
+
+        if (paddle != null && paddle.getNode().getParent() != null) {
+            root.getChildren().remove(paddle.getNode());
+        }
+        for (Ball b : new java.util.ArrayList<>(balls)) {
+            if (b.getNode().getParent() != null) {
+                root.getChildren().remove(b.getNode());
+            }
+        }
+        balls.clear();
+
+        for (Brick brick : new java.util.ArrayList<>(levelManager.getBricks())) {
+            levelManager.removeBrick(brick, root);
+        }
+        levelManager.clearAllPowerups(root);
+
+        if (singleplayerScreen != null) {
+            singleplayerScreen.cleanup();
+        }
+
         initializeGameElements();
-        playScreen = new PlayScreen(root);
-        playScreen.updateLives(3);
-        playScreen.updateScore(0);
+        singleplayerScreen = new SingleplayerScreen(root);
+        singleplayerScreen.updateLives(3);
+        singleplayerScreen.updateScore(0);
         levelManager.loadLevel(1, root);
         changeGameState(GameState.START);
     }
 
     private void showMenu() {
+        settingScreen.hide();
         highScoreScreen.hide();
         gameModeScreen.hide();
         if (!root.getChildren().contains(menuScreen.getStackPane())) {
@@ -146,6 +200,11 @@ public class GamePlay extends Application {
         gameModeScreen.show();
     }
 
+    private void showSettingScreen() {
+        menuScreen.getStackPane().setVisible(false);
+        settingScreen.show();
+    }
+
     private void showHighScoreScreen() {
         menuScreen.getStackPane().setVisible(false);
         highScoreScreen.show();
@@ -157,7 +216,6 @@ public class GamePlay extends Application {
             b.launch();
         }
         changeGameState(GameConfig.GameState.PLAYING);
-        // Ẩn menu nếu còn trên root
         root.getChildren().remove(menuScreen.getStackPane());
     }
 
@@ -167,12 +225,10 @@ public class GamePlay extends Application {
 
             @Override
             public void handle(long now) {
-                // Cap the update rate to 60 FPS for rendering
                 if (now - lastUpdate < 1_000_000_000 / 60.0) { return; }
                 lastUpdate = now;
 
                 if (gameState == GameConfig.GameState.PLAYING) {
-                    // 240 updates per second
                     double timeStep = 1.0 / 240.0;
                     processInput(timeStep);
                     updateGame(timeStep);
@@ -210,7 +266,6 @@ public class GamePlay extends Application {
     }
 
     private void handleCollisions() {
-        // nếu không ở trạng thái PLAYING thì không xử lý
         if (gameState != GameConfig.GameState.PLAYING) return;
 
         java.util.List<Ball> toRemove = new java.util.ArrayList<>();
@@ -228,7 +283,7 @@ public class GamePlay extends Application {
             java.util.List<Brick> bricks = levelManager.getBricks();
             Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
             if (hitBrick != null) {
-                collisionManager.handleBrickBallCollision(b, hitBrick, playScreen);
+                collisionManager.handleBrickBallCollision(b, hitBrick, singleplayerScreen);
                 if (levelManager.isLevelComplete()) {
                     changeGameState(GameConfig.GameState.LEVEL_CLEARED);
                     return;
@@ -244,9 +299,9 @@ public class GamePlay extends Application {
         }
 
         if (!toRemove.isEmpty() && balls.isEmpty()) {
-            playScreen.decreaseLives();
+            singleplayerScreen.decreaseLives();
             resetBallAndPaddle();
-            if (playScreen.getLives() <= 0) {
+            if (singleplayerScreen.getLives() <= 0) {
                 changeGameState(GameConfig.GameState.GAME_OVER);
             }
         }
@@ -279,10 +334,16 @@ public class GamePlay extends Application {
     private void returnToMenu() {
         changeGameState(GameState.MENU);
         resetGame();
+        // Ensure menu is properly shown with current resolution
+        if (!root.getChildren().contains(menuScreen.getStackPane())) {
+            root.getChildren().add(menuScreen.getStackPane());
+        }
+        menuScreen.getStackPane().setVisible(true);
+        menuScreen.getStackPane().toFront();
     }
 
     private void resetGame() {
-        if (paddle.getNode().getParent() != null) {
+        if (paddle != null && paddle.getNode().getParent() != null) {
             root.getChildren().remove(paddle.getNode());
         }
 
@@ -293,30 +354,22 @@ public class GamePlay extends Application {
         }
         balls.clear();
 
-
         for (Brick brick : new java.util.ArrayList<>(levelManager.getBricks())) {
             levelManager.removeBrick(brick, root);
         }
 
         levelManager.clearAllPowerups(root);
 
-        if (playScreen != null) {
-            playScreen.cleanup();
-            playScreen = null;
-        }
-
-        if (menuScreen != null) {
-            if (!root.getChildren().contains(menuScreen.getStackPane())) {
-                root.getChildren().add(menuScreen.getStackPane());
-                menuScreen.getStackPane().setVisible(true);
-            }
+        if (singleplayerScreen != null) {
+            singleplayerScreen.cleanup();
+            singleplayerScreen = null;
         }
     }
 
     private void changeGameState(GameConfig.GameState newState) {
         this.gameState = newState;
-        if (playScreen != null) {
-            playScreen.showGameMessage(newState);
+        if (singleplayerScreen != null) {
+            singleplayerScreen.showGameMessage(newState);
         }
 
         if (newState == GameConfig.GameState.LEVEL_CLEARED) {
@@ -324,7 +377,7 @@ public class GamePlay extends Application {
             if (levelManager.currentLevel <= levelManager.maxLevel) {
                 resetBallAndPaddle();
                 levelManager.loadLevel(levelManager.currentLevel, root);
-                playScreen.showLevel(levelManager.currentLevel);
+                singleplayerScreen.showLevel(levelManager.currentLevel);
             } else {
                 changeGameState(GameConfig.GameState.GAME_OVER);
             }
@@ -335,7 +388,6 @@ public class GamePlay extends Application {
     }
 
     public void spawnExtraBall() {
-        // Limit the number of balls to 300 because of lag ;-;
         if (balls.isEmpty() || balls.size() > 300) return;
         int size = balls.size();
         for (int i = 0; i < size; i++){
@@ -367,7 +419,7 @@ public class GamePlay extends Application {
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(name -> {
-            int finalScore = playScreen.getScore();
+            int finalScore = singleplayerScreen.getScore();
             scoreManager.addScore(name, finalScore);
         });
     }

@@ -6,7 +6,7 @@ import gameobject.Brick;
 import gameobject.Paddle;
 import gameobject.Powerup;
 import javafx.scene.layout.Pane;
-import userinterface.PlayScreen;
+import userinterface.SingleplayerScreen;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class CollisionManager {
         ball.setVy(ball.getVy() * factor);
     }
 
-    public void handleBrickBallCollision(Ball ball, Brick brick, PlayScreen ui) {
+    public void handleBrickBallCollision(Ball ball, Brick brick, SingleplayerScreen ui) {
         javafx.geometry.Bounds ballBounds = ball.getShape().getBoundsInParent();
         javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
 

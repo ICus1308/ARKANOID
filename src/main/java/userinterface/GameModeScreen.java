@@ -8,10 +8,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 
-import static gameconfig.GameConfig.GAME_HEIGHT;
-import static gameconfig.GameConfig.GAME_WIDTH;
+import static gameconfig.GameConfig.*;
 
 public class GameModeScreen extends UIManager {
 
@@ -31,14 +29,22 @@ public class GameModeScreen extends UIManager {
         layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
         layout.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
 
-        Rectangle bgRect = new Rectangle(400, 500);
+        Rectangle bgRect = createBackgroundRectangle();
+        VBox buttonBox = createButtonBox();
+
+        layout.getChildren().addAll(bgRect, buttonBox);
+    }
+
+    private Rectangle createBackgroundRectangle() {
+        Rectangle bgRect = new Rectangle(400 * UI_SCALE_X, 500);
         bgRect.setArcWidth(20);
         bgRect.setArcHeight(20);
         bgRect.setFill(Color.web("#2c3e50"));
         bgRect.setStroke(Color.GOLD);
+        return bgRect;
+    }
 
-        Text title = createStyledText("Select Mode", 0, 0, TITLE_FONT, TEXT_COLOR);
-
+    private VBox createButtonBox() {
         GameButton singlePlayerButton = new GameButton("Singleplayer");
         singlePlayerButton.setOnAction(e -> onSinglePlayer.run());
 
@@ -54,11 +60,11 @@ public class GameModeScreen extends UIManager {
         GameButton backButton = new GameButton("Back");
         backButton.setOnAction(e -> onBack.run());
 
-        VBox buttonBox = new VBox(20, title, singlePlayerButton, oneVOneButton, oneVBotButton, endlessButton, backButton);
+        VBox buttonBox = new VBox(20, singlePlayerButton, oneVOneButton, oneVBotButton, endlessButton, backButton);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setMaxWidth(400);
+        buttonBox.setMaxWidth(400 * UI_SCALE_X);
 
-        layout.getChildren().addAll(bgRect, buttonBox);
+        return buttonBox;
     }
 
     public void show() {
@@ -75,5 +81,11 @@ public class GameModeScreen extends UIManager {
             root.getChildren().remove(layout);
         }
     }
-}
 
+    public void refresh() {
+        if (layout != null) {
+            hide();
+        }
+        layout = null;
+    }
+}

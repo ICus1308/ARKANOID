@@ -1,5 +1,6 @@
 package gameobject;
 
+import gamemanager.GameObject;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -26,7 +27,7 @@ public abstract class Brick extends GameObject {
     public abstract int hit();
 
     public void updateDraw() {
-        if (this instanceof MultiHitBrick multi) {
+        if (this instanceof BMultiHitBrick multi) {
             if (multi.getHitCount() == 2) {
                 node.setFill(Color.web("#e67e22"));
             } else if (multi.getHitCount() == 1) {
