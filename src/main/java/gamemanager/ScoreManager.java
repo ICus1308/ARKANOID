@@ -1,7 +1,8 @@
-package userinterface;
+package gamemanager;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;

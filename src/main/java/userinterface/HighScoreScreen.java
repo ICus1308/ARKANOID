@@ -1,5 +1,9 @@
 package userinterface;
 
+import gamemanager.GameButton;
+import gamemanager.Score;
+import gamemanager.ScoreManager;
+import gamemanager.UIManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -8,8 +12,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
-import static gameconfig.GameConfig.GAME_HEIGHT;
-import static gameconfig.GameConfig.GAME_WIDTH;
+import static gameconfig.GameConfig.*;
 
 public class HighScoreScreen extends UIManager {
 
@@ -24,7 +27,6 @@ public class HighScoreScreen extends UIManager {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void initializeUI() {
         layout = new VBox(20);
         layout.setAlignment(Pos.CENTER);
@@ -32,11 +34,17 @@ public class HighScoreScreen extends UIManager {
         layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
         Text title = createStyledText("High Scores", 0, 0, TITLE_FONT, TEXT_COLOR);
+        TableView<Score> scoreTable = createScoreTable();
+        GameButton backButton = createBackButton();
 
+        layout.getChildren().addAll(title, scoreTable, backButton);
+    }
+    @SuppressWarnings("unchecked")
+    private TableView<Score> createScoreTable() {
         TableView<Score> scoreTable = new TableView<>();
-        scoreTable.setPrefWidth(450);
-        scoreTable.setPrefHeight(500);
-        scoreTable.setStyle("-fx-font-size: 18px; -fx-background-color: #34495e; -fx-alternative-row-fill-visible: true;");
+        scoreTable.setPrefWidth(450 * UI_SCALE_X);
+        scoreTable.setPrefHeight(400);
+        scoreTable.setStyle("-fx-font-size: " + (18 * UI_SCALE) + "px; -fx-background-color: #34495e; -fx-alternative-row-fill-visible: true;");
         scoreTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         TableColumn<Score, String> nameColumn = new TableColumn<>("Player");
@@ -47,13 +55,15 @@ public class HighScoreScreen extends UIManager {
         scoreColumn.setStyle("-fx-alignment: CENTER;");
 
         scoreTable.getColumns().addAll(nameColumn, scoreColumn);
-
         scoreTable.setItems(scoreManager.getScores());
 
+        return scoreTable;
+    }
+
+    private GameButton createBackButton() {
         GameButton backButton = new GameButton("Back");
         backButton.setOnAction(e -> onBack.run());
-
-        layout.getChildren().addAll(title, scoreTable, backButton);
+        return backButton;
     }
 
     public void show() {
@@ -69,5 +79,12 @@ public class HighScoreScreen extends UIManager {
         if (layout != null) {
             root.getChildren().remove(layout);
         }
+    }
+
+    public void refresh() {
+        if (layout != null) {
+            hide();
+        }
+        layout = null;
     }
 }

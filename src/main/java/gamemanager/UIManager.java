@@ -1,4 +1,4 @@
-package userinterface;
+package gamemanager;
 
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -12,6 +12,7 @@ public abstract class UIManager {
     public UIManager(Pane root) {
         this.root = root;
     }
+
     protected abstract void initializeUI();
 
     protected Text createStyledText(String text, double x, double y, Font font, Color color) {
@@ -20,7 +21,6 @@ public abstract class UIManager {
         textElement.setFill(color);
         return textElement;
     }
-    
 
     public void showGameMessage(String message, Color color) {
         if (gameMessage != null) {
@@ -34,6 +34,15 @@ public abstract class UIManager {
         if (gameMessage != null) {
             gameMessage.setVisible(false);
         }
+    }
+
+    public void show() {
+    }
+
+    public void hide() {
+    }
+
+    public void refresh() {
     }
 
     protected static final Font TITLE_FONT = Font.font("Inter", 48);

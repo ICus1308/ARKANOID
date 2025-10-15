@@ -1,11 +1,11 @@
 package gameobject;
 
-import gameconfig.GameConfig;
+import gamemanager.GameObject;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import static gameconfig.GameConfig.GAME_WIDTH;
-import static gameconfig.GameConfig.PowerupType;
+import static gameconfig.GameConfig.PowerUpType;
 
 
 public class Paddle extends GameObject {
@@ -51,8 +51,8 @@ public class Paddle extends GameObject {
         }
     }
 
-    public void applyPowerup(PowerupType type) {
-        if (type == GameConfig.PowerupType.EXPAND) {
+    public void applyPowerup(PowerUpType type) {
+        if (type == PowerUpType.EXPAND) {
             if (!expanded) {
                 double newWidth = this.width * 1.25;
                 node.setWidth(newWidth);

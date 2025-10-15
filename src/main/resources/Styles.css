@@ -1,15 +1,82 @@
-.game-button {
+/* Override default JavaFX button styling */
+.button {
+    -fx-background-insets: 0;
+    -fx-padding: 0.5em 1em;
+}
+
+/* Base game button styles */
+.button.game-button {
     -fx-background-color: #3498db;
     -fx-text-fill: white;
     -fx-border-color: #2980b9;
     -fx-border-width: 2px;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
-    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-font-family: "Inter";
+    -fx-cursor: hand;
 }
 
-.game-button:hover {
+.button.game-button:hover {
     -fx-background-color: derive(#3498db, 20%);
+    -fx-border-color: #2980b9;
+}
+
+.button.game-button:pressed {
+    -fx-background-color: derive(#3498db, -10%);
+}
+
+/* Category button styles (for settings screen) */
+.button.game-button-category-unselected {
+    -fx-background-color: #2c3e50;
+    -fx-text-fill: #95a5a6;
+    -fx-border-color: #34495e;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.button.game-button-category-unselected:hover {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ecf0f1;
+    -fx-border-color: #4a5f7f;
+}
+
+.button.game-button-category-selected {
+    -fx-background-color: transparent;
+    -fx-text-fill: #00d9ff;
+    -fx-border-color: #00d9ff;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.button.game-button-category-selected:hover {
+    -fx-background-color: rgba(0, 217, 255, 0.1);
+    -fx-text-fill: #00d9ff;
+    -fx-border-color: #00d9ff;
+}
+
+/* Apply button styles (for settings screen) */
+.button.game-button-apply {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-border-color: #229954;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.button.game-button-apply:hover {
+    -fx-background-color: #2ecc71;
+    -fx-border-color: #27ae60;
+}
+
+.button.game-button-apply:pressed {
+    -fx-background-color: #229954;
 }

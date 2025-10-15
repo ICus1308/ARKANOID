@@ -1,4 +1,4 @@
-package gameobject;
+package gamemanager;
 
 public abstract class GameObject {
     protected double x, y, width, height;
