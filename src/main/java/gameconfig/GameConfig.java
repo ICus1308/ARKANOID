@@ -7,7 +7,11 @@ public final class GameConfig {
     public static final double GAME_HEIGHT = 600;
     public static final int BRICK_ROWS = 10;
     public static final int BRICK_COLS = 10;
-    public static final double PADDLE_SPEED = 8.0;
+    public static final double PADDLE_SPEED = 12.0;
+    public static final double PADDLE_WIDTH = 100.0;
+    public static final double PADDLE_HEIGHT = 15.0;
+    public static final double BALL_RADIUS = 8.0;
+    public static final double BALL_SPEED = 10.0;
 
     // UI scaling factors based on resolution
     public static double UI_SCALE_X = 1.0;  // Width scale

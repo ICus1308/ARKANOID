@@ -98,7 +98,7 @@ public class GamePlay extends Application {
                     isMovingRight = false;
                     break;
                 case R:
-                    Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, 8, 10.0);
+                    Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, BALL_RADIUS, BALL_SPEED);
                     balls.add(ball);
                     root.getChildren().add(ball.getNode());
                     ball.setStuck(false);
@@ -135,23 +135,21 @@ public class GamePlay extends Application {
     }
 
     private void initializeGameElements() {
-        double paddleWidth = 100;
-        double paddleX = (GAME_WIDTH - paddleWidth) / 2;
+        double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
         double paddleY = GAME_HEIGHT - 20;
 
-        paddle = new Paddle(paddleX, paddleY, paddleWidth, 15, PADDLE_SPEED);
+        paddle = new Paddle(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
 
-        double ballRadius = 8;
         double ballX = GAME_WIDTH / 2;
-        double ballY = paddleY - ballRadius * 2 - 5;
+        double ballY = GAME_HEIGHT - 35;
 
-        Ball ball = new Ball(ballX, ballY, ballRadius, 10.0);
+        Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
         balls.add(ball);
         root.getChildren().addAll(paddle.getNode(), ball.getNode());
 
         System.out.println("Game elements initialized:");
         System.out.println("  GAME_WIDTH: " + GAME_WIDTH + ", GAME_HEIGHT: " + GAME_HEIGHT);
-        System.out.println("  Paddle X: " + paddleX + ", Width: " + paddleWidth);
+        System.out.println("  Paddle X: " + paddleX + ", Width: " + PADDLE_WIDTH);
         System.out.println("  Ball X: " + ballX + ", Y: " + ballY);
     }
 
@@ -324,7 +322,7 @@ public class GamePlay extends Application {
         balls.clear();
         levelManager.clearAllPowerups(root);
         paddle.reset();
-        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, 8, 10.0);
+        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, BALL_RADIUS, BALL_SPEED);
         balls.add(ball);
         root.getChildren().add(ball.getNode());
         gameState = GameState.START;
