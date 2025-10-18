@@ -29,36 +29,18 @@ public class GameModeScreen extends UIManager {
         layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
         layout.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
 
-        Rectangle bgRect = createBackgroundRectangle();
+        Rectangle bgRect = createBackgroundRectangle(400 * UI_SCALE_X, Color.web("#2c3e50"));
         VBox buttonBox = createButtonBox();
 
         layout.getChildren().addAll(bgRect, buttonBox);
     }
 
-    private Rectangle createBackgroundRectangle() {
-        Rectangle bgRect = new Rectangle(400 * UI_SCALE_X, 500);
-        bgRect.setArcWidth(20);
-        bgRect.setArcHeight(20);
-        bgRect.setFill(Color.web("#2c3e50"));
-        bgRect.setStroke(Color.GOLD);
-        return bgRect;
-    }
-
     private VBox createButtonBox() {
-        GameButton singlePlayerButton = new GameButton("Singleplayer");
-        singlePlayerButton.setOnAction(e -> onSinglePlayer.run());
-
-        GameButton oneVOneButton = new GameButton("1v1");
-        oneVOneButton.setOnAction(e -> {});
-
-        GameButton oneVBotButton = new GameButton("1vBot");
-        oneVBotButton.setOnAction(e -> {});
-
-        GameButton endlessButton = new GameButton("Endless Mode");
-        endlessButton.setOnAction(e -> {});
-
-        GameButton backButton = new GameButton("Back");
-        backButton.setOnAction(e -> onBack.run());
+        GameButton singlePlayerButton = createButton("Singleplayer", onSinglePlayer);
+        GameButton oneVOneButton = createButton("1v1", () -> {});
+        GameButton oneVBotButton = createButton("1vBot", () -> {});
+        GameButton endlessButton = createButton("Endless Mode", () -> {});
+        GameButton backButton = createButton("Back", onBack);
 
         VBox buttonBox = new VBox(20, singlePlayerButton, oneVOneButton, oneVBotButton, endlessButton, backButton);
         buttonBox.setAlignment(Pos.CENTER);
@@ -67,6 +49,7 @@ public class GameModeScreen extends UIManager {
         return buttonBox;
     }
 
+    @Override
     public void show() {
         if (layout == null) {
             initializeUI();
@@ -76,12 +59,14 @@ public class GameModeScreen extends UIManager {
         }
     }
 
+    @Override
     public void hide() {
         if (layout != null) {
             root.getChildren().remove(layout);
         }
     }
 
+    @Override
     public void refresh() {
         if (layout != null) {
             hide();
