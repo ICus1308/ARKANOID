@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static gameconfig.GameConfig.*;
 
+
 public class GamePlay extends Application {
     private Pane root;
     private GameConfig.GameState gameState = GameConfig.GameState.MENU;
@@ -36,6 +37,7 @@ public class GamePlay extends Application {
     private ScoreManager scoreManager;
     private GameModeScreen gameModeScreen;
     private SettingScreen settingScreen;
+    private GameOverScreen gameOverScreen;
 
     @Override
     public void start(Stage primaryStage) {
@@ -51,6 +53,17 @@ public class GamePlay extends Application {
         gameModeScreen = new GameModeScreen(root, this::startSinglePlayerGame, this::showMenu);
         menuScreen = new MenuScreen(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen);
         settingScreen = new SettingScreen(root, this::showMenu, this::refreshAllScreens);
+
+        gameOverScreen = new GameOverScreen();
+        gameOverScreen.setOnRetry(this::retryLevel);
+        gameOverScreen.setOnNewGame(this::startNewGame);
+        gameOverScreen.setOnMainMenu(this::returnToMenu);
+
+        root.getChildren().add(gameOverScreen.getStackPane());
+        gameOverScreen.getStackPane().setStyle("-fx-background-color: transparent;");
+        gameOverScreen.hide();
+
+
 
         if (gameState == GameConfig.GameState.MENU) {
             root.getChildren().add(menuScreen.getStackPane());
@@ -155,7 +168,7 @@ public class GamePlay extends Application {
 
     private void startSinglePlayerGame() {
         gameModeScreen.hide();
-
+        gameOverScreen.hide();
         if (paddle != null && paddle.getNode().getParent() != null) {
             root.getChildren().remove(paddle.getNode());
         }
@@ -215,6 +228,37 @@ public class GamePlay extends Application {
         }
         changeGameState(GameConfig.GameState.PLAYING);
         root.getChildren().remove(menuScreen.getStackPane());
+    }
+
+    private void retryLevel() {
+        // Chơi lại level hiện tại với 3 mạng và score reset
+        changeGameState(GameState.MENU);
+        resetGame();
+
+        initializeGameElements();
+        singleplayerScreen = new SingleplayerScreen(root);
+        singleplayerScreen.updateLives(3);
+        singleplayerScreen.updateScore(0);
+        levelManager.loadLevel(levelManager.currentLevel, root);
+        changeGameState(GameState.START);
+
+        gameOverScreen.hide();
+    }
+
+    private void startNewGame() {
+        // Reset về level 1 và bắt đầu game mới
+        changeGameState(GameState.MENU);
+        resetGame();
+        levelManager.currentLevel = 1;
+
+        initializeGameElements();
+        singleplayerScreen = new SingleplayerScreen(root);
+        singleplayerScreen.updateLives(3);
+        singleplayerScreen.updateScore(0);
+        levelManager.loadLevel(1, root);
+        changeGameState(GameState.START);
+
+        gameOverScreen.hide();
     }
 
     private void initGameLoop() {
@@ -338,6 +382,7 @@ public class GamePlay extends Application {
         }
         menuScreen.getStackPane().setVisible(true);
         menuScreen.getStackPane().toFront();
+        gameOverScreen.hide();
     }
 
     private void resetGame() {
@@ -379,9 +424,31 @@ public class GamePlay extends Application {
             } else {
                 changeGameState(GameConfig.GameState.GAME_OVER);
             }
-        } else if (newState == GameConfig.GameState.GAME_OVER) {
-            promptAndSaveScore();
         }
+        else if (newState == GameConfig.GameState.GAME_OVER) {
+
+                // Ẩn thông báo từ SingleplayerScreen
+                if (singleplayerScreen != null) {
+                    singleplayerScreen.hideGameMessage();
+                }
+
+                // Cập nhật điểm số cho GameOverScreen
+                if (singleplayerScreen != null) {
+                    int finalScore = singleplayerScreen.getScore();
+                    gameOverScreen.setFinalScore(finalScore);
+                    System.out.println("Final Score: " + finalScore);
+                }
+
+                // Nhờ nhật UI cho GameOverScreen
+                gameOverScreen.refresh();
+
+                // Hiển thị GameOverScreen
+                gameOverScreen.show();
+                System.out.println("GameOverScreen showed");
+
+                // Lưu điểm số
+                promptAndSaveScore();
+            }
         if (newState != GameConfig.GameState.PLAYING) { gameLoop.stop(); } else { gameLoop.start(); }
     }
 

@@ -3,6 +3,7 @@ package userinterface;
 import gamemanager.UIManager;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
+
 import static gameconfig.GameConfig.*;
 
 public class SingleplayerScreen extends UIManager {
@@ -15,7 +16,7 @@ public class SingleplayerScreen extends UIManager {
         super(root);
         initializeUI();
     }
-    
+
     @Override
     protected void initializeUI() {
         scoreText = createStyledText("Score: 0", 10, 25, UI_FONT, TEXT_COLOR);
@@ -76,6 +77,11 @@ public class SingleplayerScreen extends UIManager {
     public void cleanup() {
         if (root != null) {
             root.getChildren().removeAll(scoreText, livesText, gameMessage);
+        }
+    }
+    public void hideGameMessage() {
+        if (gameMessage != null) {
+            gameMessage.setVisible(false);
         }
     }
 }
