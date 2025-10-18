@@ -1,7 +1,10 @@
 package gamemanager;
 
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
+import javafx.scene.control.ContentDisplay;
 
 import static gameconfig.GameConfig.UI_SCALE;
 import static gameconfig.GameConfig.UI_SCALE_X;
@@ -30,7 +33,7 @@ public class GameButton extends Button {
 
     private void applyStyle(ButtonStyle style) {
         getStyleClass().removeAll("game-button", "game-button-category-unselected",
-                                   "game-button-category-selected", "game-button-apply");
+                "game-button-category-selected", "game-button-apply");
 
         switch (style) {
             case PRIMARY:
@@ -93,10 +96,10 @@ public class GameButton extends Button {
 
         setOnMouseEntered(e -> {
             String hoverStyle = normalStyle.replaceAll("-fx-background-color: [^;]+;",
-                                                       "-fx-background-color: " + hoverBg + ";");
+                    "-fx-background-color: " + hoverBg + ";");
             if (!textColor.equals("white") && textColor.contains("#")) {
                 hoverStyle = hoverStyle.replaceAll("-fx-text-fill: [^;]+;",
-                                                   "-fx-text-fill: " + textColor + ";");
+                        "-fx-text-fill: " + textColor + ";");
             }
             setStyle(hoverStyle);
         });
@@ -132,5 +135,44 @@ public class GameButton extends Button {
 
     public ButtonStyle getCurrentStyle() {
         return currentStyle;
+    }
+
+    /**
+     * Thêm hình ảnh vào button
+     * @param imagePath Đường dẫn đến hình ảnh (ví dụ: "/images/buttons/replay.png")
+     * @param width Chiều rộng hình ảnh (pixel)
+     * @param height Chiều cao hình ảnh (pixel)
+     */
+    public void setImage(String imagePath, double width, double height) {
+        try {
+            Image image = new Image(getClass().getResourceAsStream(imagePath));
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(width);
+            imageView.setFitHeight(height);
+            imageView.setPreserveRatio(true);
+
+            this.setGraphic(imageView);
+            this.setContentDisplay(ContentDisplay.LEFT);
+            this.setStyle(getStyle() + "-fx-graphic-text-gap: 10px;");
+
+            System.out.println("Hình ảnh được thêm: " + imagePath);
+        } catch (NullPointerException e) {
+            System.err.println("Không tìm thấy hình ảnh: " + imagePath);
+        }
+    }
+
+    /**
+     * Thêm hình ảnh vào button (kích thước mặc định 24x24)
+     * @param imagePath Đường dẫn đến hình ảnh
+     */
+    public void setImage(String imagePath) {
+        setImage(imagePath, 24, 24);
+    }
+
+    /**
+     * Xóa hình ảnh khỏi button
+     */
+    public void clearImage() {
+        this.setGraphic(null);
     }
 }
