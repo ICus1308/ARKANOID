@@ -449,6 +449,8 @@ public class GamePlay extends Application {
         if (newState == GameConfig.GameState.LEVEL_CLEARED) {
             levelManager.currentLevel++;
             if (levelManager.currentLevel <= levelManager.maxLevel) {
+                gameOverScreen.hide();
+
                 resetBallAndPaddle();
                 levelManager.loadLevel(levelManager.currentLevel, root);
                 singleplayerScreen.showLevel(levelManager.currentLevel);
