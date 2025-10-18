@@ -14,10 +14,15 @@ public class CollisionManager {
     private final LevelManager levelManager;
     private final Pane root;
     private boolean oneshotActive = false;
+    private CoinManager coinManager; // optional
 
     public CollisionManager(LevelManager levelManager, Pane root) {
         this.levelManager = levelManager;
         this.root = root;
+    }
+
+    public void setCoinManager(CoinManager coinManager) {
+        this.coinManager = coinManager;
     }
 
     public void setOneshotActive(boolean active) {
@@ -94,6 +99,10 @@ public class CollisionManager {
         ui.increaseScore(score);
         brick.updateDraw();
         if (brick.getHitCount() == 0) {
+            // award coins when a brick is destroyed
+            if (coinManager != null) {
+                coinManager.addCoins(5);
+            }
             levelManager.removeBrick(brick, root);
         }
     }

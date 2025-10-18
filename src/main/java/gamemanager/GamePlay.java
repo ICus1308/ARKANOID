@@ -39,6 +39,10 @@ public class GamePlay extends Application {
     private SettingScreen settingScreen;
     private GameOverScreen gameOverScreen;
 
+    // New fields
+    private CoinManager coinManager;
+    private ShopScreen shopScreen;
+
     @Override
     public void start(Stage primaryStage) {
         root = new Pane();
@@ -49,10 +53,22 @@ public class GamePlay extends Application {
         collisionManager = new CollisionManager(levelManager, root);
         scoreManager = new ScoreManager();
 
+        // coin manager and shop
+        coinManager = new CoinManager();
+        // wire coin manager to collision manager so bricks award coins
+        collisionManager.setCoinManager(coinManager);
+
         highScoreScreen = new HighScoreScreen(root, this::showMenu, scoreManager);
         gameModeScreen = new GameModeScreen(root, this::startSinglePlayerGame, this::showMenu);
-        menuScreen = new MenuScreen(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen);
+        menuScreen = new MenuScreen(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen, this::showShop, () -> coinManager.getCoins());
         settingScreen = new SettingScreen(root, this::showMenu, this::refreshAllScreens);
+
+        // Shop: apply skin to current paddle and return to menu on back
+        shopScreen = new ShopScreen(root, coinManager, skinId -> {
+            if (paddle != null) {
+                paddle.applySkin(skinId);
+            }
+        }, this::showMenu);
 
         gameOverScreen = new GameOverScreen();
         gameOverScreen.setOnRetry(this::retryLevel);
@@ -137,7 +153,7 @@ public class GamePlay extends Application {
         highScoreScreen.refresh();
         gameModeScreen.refresh();
 
-        menuScreen.refresh(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen);
+        menuScreen.refresh(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen, this::showShop, () -> coinManager.getCoins());
 
         root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
@@ -152,6 +168,10 @@ public class GamePlay extends Application {
         double paddleY = GAME_HEIGHT - 20;
 
         paddle = new Paddle(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        // apply selected skin from coin manager
+        if (coinManager != null) {
+            paddle.applySkin(coinManager.getSelectedSkin());
+        }
 
         double ballX = GAME_WIDTH / 2;
         double ballY = GAME_HEIGHT - 35;
@@ -199,6 +219,7 @@ public class GamePlay extends Application {
     private void showMenu() {
         settingScreen.hide();
         highScoreScreen.hide();
+        shopScreen.hide();
         gameModeScreen.hide();
         if (!root.getChildren().contains(menuScreen.getStackPane())) {
             root.getChildren().add(menuScreen.getStackPane());
@@ -219,6 +240,16 @@ public class GamePlay extends Application {
     private void showHighScoreScreen() {
         menuScreen.getStackPane().setVisible(false);
         highScoreScreen.show();
+    }
+
+    // New: show shop screen
+    private void showShop() {
+        menuScreen.getStackPane().setVisible(false);
+        shopScreen.refresh();
+        shopScreen.show();
+        if (!root.getChildren().contains(shopScreen.getPane())) {
+            root.getChildren().add(shopScreen.getPane());
+        }
     }
 
     private void startGame() {
