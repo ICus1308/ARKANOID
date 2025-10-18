@@ -35,10 +35,11 @@ public class HighScoreScreen extends UIManager {
 
         Text title = createStyledText("High Scores", 0, 0, TITLE_FONT, TEXT_COLOR);
         TableView<Score> scoreTable = createScoreTable();
-        GameButton backButton = createBackButton();
+        GameButton backButton = createButton("Back", onBack);
 
         layout.getChildren().addAll(title, scoreTable, backButton);
     }
+
     @SuppressWarnings("unchecked")
     private TableView<Score> createScoreTable() {
         TableView<Score> scoreTable = new TableView<>();
@@ -60,12 +61,7 @@ public class HighScoreScreen extends UIManager {
         return scoreTable;
     }
 
-    private GameButton createBackButton() {
-        GameButton backButton = new GameButton("Back");
-        backButton.setOnAction(e -> onBack.run());
-        return backButton;
-    }
-
+    @Override
     public void show() {
         if (layout == null) {
             initializeUI();
@@ -75,12 +71,14 @@ public class HighScoreScreen extends UIManager {
         }
     }
 
+    @Override
     public void hide() {
         if (layout != null) {
             root.getChildren().remove(layout);
         }
     }
 
+    @Override
     public void refresh() {
         if (layout != null) {
             hide();

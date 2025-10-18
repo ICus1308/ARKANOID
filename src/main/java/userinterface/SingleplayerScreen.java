@@ -53,8 +53,7 @@ public class SingleplayerScreen extends UIManager {
     }
 
     public void showLevel(int level) {
-        gameMessage.setText("LEVEL " + level);
-        gameMessage.setVisible(true);
+        showGameMessage("LEVEL " + level, GOLD_COLOR);
     }
 
     public void showGameMessage(GameState state) {
@@ -77,11 +76,6 @@ public class SingleplayerScreen extends UIManager {
     public void cleanup() {
         if (root != null) {
             root.getChildren().removeAll(scoreText, livesText, gameMessage);
-        }
-    }
-    public void hideGameMessage() {
-        if (gameMessage != null) {
-            gameMessage.setVisible(false);
         }
     }
 }

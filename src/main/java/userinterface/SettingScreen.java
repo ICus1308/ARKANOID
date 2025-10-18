@@ -7,8 +7,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import static gameconfig.GameConfig.*;
@@ -18,7 +16,6 @@ public class SettingScreen extends UIManager {
     private final Runnable onBack;
     private final Runnable onResolutionChange;
     private VBox contentArea;
-
 
     private GameButton videoButton;
     private GameButton audioButton;
@@ -62,17 +59,16 @@ public class SettingScreen extends UIManager {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        GameButton backButton = new GameButton("BACK");
-        backButton.setOnAction(e -> onBack.run());
+        GameButton backButton = createButton("BACK", onBack);
 
         sidebar.getChildren().addAll(videoButton, audioButton, debugButton, spacer, backButton);
         return sidebar;
     }
 
     private void createCategoryButtons() {
-        videoButton = new GameButton("VIDEO", GameButton.ButtonStyle.CATEGORY_UNSELECTED);
-        audioButton = new GameButton("AUDIO", GameButton.ButtonStyle.CATEGORY_UNSELECTED);
-        debugButton = new GameButton("DEBUG", GameButton.ButtonStyle.CATEGORY_UNSELECTED);
+        videoButton = createButton("VIDEO", GameButton.ButtonStyle.CATEGORY_UNSELECTED, null);
+        audioButton = createButton("AUDIO", GameButton.ButtonStyle.CATEGORY_UNSELECTED, null);
+        debugButton = createButton("DEBUG", GameButton.ButtonStyle.CATEGORY_UNSELECTED, null);
 
         videoButton.switchStyle(GameButton.ButtonStyle.CATEGORY_SELECTED);
 
@@ -82,8 +78,6 @@ public class SettingScreen extends UIManager {
     }
 
     private void selectCategory(String category, GameButton selectedButton) {
-
-
         videoButton.switchStyle(GameButton.ButtonStyle.CATEGORY_UNSELECTED);
         audioButton.switchStyle(GameButton.ButtonStyle.CATEGORY_UNSELECTED);
         debugButton.switchStyle(GameButton.ButtonStyle.CATEGORY_UNSELECTED);
@@ -118,7 +112,7 @@ public class SettingScreen extends UIManager {
     private void showVideoSettings() {
         Label titleLabel = createTitleLabel("VIDEO SETTINGS");
         VBox settingsPanel = createVideoSettingsPanel();
-        GameButton applyButton = createApplyButton();
+        GameButton applyButton = createButton("✓ APPLY CHANGES", GameButton.ButtonStyle.APPLY, this::applyVideoSettings);
 
         HBox applyButtonBox = new HBox(applyButton);
         applyButtonBox.setAlignment(Pos.BOTTOM_RIGHT);
@@ -155,19 +149,11 @@ public class SettingScreen extends UIManager {
         return settingsPanel;
     }
 
-    private GameButton createApplyButton() {
-        GameButton applyButton = new GameButton("✓ APPLY CHANGES", GameButton.ButtonStyle.APPLY);
-        applyButton.setOnAction(e -> applyVideoSettings());
-        return applyButton;
-    }
-
     private void showAudioSettings() {
         Label titleLabel = createTitleLabel("AUDIO SETTINGS");
         VBox settingsPanel = createSettingsPanel();
 
-        Label placeholderLabel = new Label("Audio settings coming soon...");
-        placeholderLabel.setFont(Font.font("Arial", 18 * UI_SCALE));
-        placeholderLabel.setStyle("-fx-text-fill: #95a5a6;");
+        Label placeholderLabel = createLabel("Audio settings coming soon...", TEXT_COLOR.darker());
 
         settingsPanel.getChildren().add(placeholderLabel);
         contentArea.getChildren().addAll(titleLabel, settingsPanel);
@@ -177,19 +163,10 @@ public class SettingScreen extends UIManager {
         Label titleLabel = createTitleLabel("DEBUG SETTINGS");
         VBox settingsPanel = createSettingsPanel();
 
-        Label placeholderLabel = new Label("Debug settings coming soon...");
-        placeholderLabel.setFont(Font.font("Arial", 18 * UI_SCALE));
-        placeholderLabel.setStyle("-fx-text-fill: #95a5a6;");
+        Label placeholderLabel = createLabel("Debug settings coming soon...", TEXT_COLOR.darker());
 
         settingsPanel.getChildren().add(placeholderLabel);
         contentArea.getChildren().addAll(titleLabel, settingsPanel);
-    }
-
-    private Label createTitleLabel(String text) {
-        Label titleLabel = new Label(text);
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 32 * UI_SCALE));
-        titleLabel.setStyle("-fx-text-fill: white;");
-        return titleLabel;
     }
 
     private VBox createSettingsPanel() {
@@ -210,9 +187,7 @@ public class SettingScreen extends UIManager {
     }
 
     private Label createSettingRow(String labelText, ComboBox<String> comboBox) {
-        Label label = new Label(labelText);
-        label.setFont(Font.font("Arial", FontWeight.NORMAL, 18 * UI_SCALE));
-        label.setStyle("-fx-text-fill: white;");
+        Label label = createLabel(labelText, TEXT_COLOR);
 
         comboBox.setPrefWidth(400 * UI_SCALE_X);
         comboBox.setPrefHeight(35);
@@ -220,7 +195,7 @@ public class SettingScreen extends UIManager {
         comboBox.setStyle("-fx-background-color: #2c3e50; " +
                          "-fx-font-size: " + (16 * UI_SCALE) + "px;");
 
-        comboBox.setButtonCell(new javafx.scene.control.ListCell<String>() {
+        comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -233,7 +208,7 @@ public class SettingScreen extends UIManager {
             }
         });
 
-        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<String>() {
+        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);

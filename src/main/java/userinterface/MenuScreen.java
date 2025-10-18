@@ -9,7 +9,6 @@ import javafx.scene.text.Text;
 
 import static gameconfig.GameConfig.*;
 
-
 public class MenuScreen extends UIManager {
     private final StackPane stackPane;
     private Runnable onStart;
@@ -32,9 +31,9 @@ public class MenuScreen extends UIManager {
 
         Text title = createStyledText("ARKANOID", 0, 0, TITLE_FONT, TEXT_COLOR);
 
-        GameButton startButton = createMenuButton("Start", onStart);
-        GameButton highScoreButton = createMenuButton("High Score", onHighScore);
-        GameButton settingButton = createMenuButton("Settings", onSetting);
+        GameButton startButton = createButton("Start", onStart);
+        GameButton highScoreButton = createButton("High Score", onHighScore);
+        GameButton settingButton = createButton("Settings", onSetting);
 
         VBox buttonBox = new VBox(20);
         buttonBox.setAlignment(Pos.CENTER);
@@ -45,12 +44,6 @@ public class MenuScreen extends UIManager {
         StackPane.setAlignment(title, Pos.TOP_CENTER);
         StackPane.setAlignment(buttonBox, Pos.CENTER);
         stackPane.getChildren().addAll(title, buttonBox);
-    }
-
-    private GameButton createMenuButton(String text, Runnable action) {
-        GameButton button = new GameButton(text);
-        button.setOnAction(e -> action.run());
-        return button;
     }
 
     public StackPane getStackPane() {
