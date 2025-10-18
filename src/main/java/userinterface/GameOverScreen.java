@@ -132,15 +132,7 @@ public class GameOverScreen extends UIManager {
      * Cập nhật điểm số hiển thị
      * @param score Điểm số cuối cùng
      */
-    public void setFinalScore(int score) {
-        System.out.println("setFinalScore() called with: " + score);
-        if (scoreText != null) {
-            scoreText.setText("SCORE: " + score);
-            System.out.println("Score text updated to: SCORE: " + score);
-        } else {
-            System.out.println("scoreText is NULL!");
-        }
-    }
+
 
     /**
      * Thiết lập callback cho nút REPLAY
@@ -190,7 +182,18 @@ public class GameOverScreen extends UIManager {
             stackPane.toFront();
         }
     }
+    private int finalScore = 0;
 
+    public void setFinalScore(int score) {
+        this.finalScore = score;
+        System.out.println("setFinalScore set to: " + score);
+
+        // Nếu scoreText đã tồn tại, update ngay
+        if (scoreText != null) {
+            scoreText.setText("SCORE: " + score);
+            System.out.println("scoreText updated immediately");
+        }
+    }
     /**
      * Ẩn màn hình Game Over
      */
