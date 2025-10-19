@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -22,51 +23,58 @@ import static gameconfig.GameConfig.GAME_WIDTH;
  * Simple shop UI to buy/select paddle skins.
  */
 public class ShopScreen extends UIManager {
-    private Pane pane;
+    private StackPane layout;
     private final CoinManager coinManager;
     private final Consumer<String> onApplySkin;
     private final Runnable onBack;
     private Text coinText;
-    private Text title;
-    private VBox content;
-    private VBox box;
 
-    private final Map<String, Integer> shopItems = Map.of(
-            "red", 100,
-            "blue", 200,
-            "gold", 500
-    );
+    private final Map<String, Integer> shopItems;
 
-    public ShopScreen(Pane pane, CoinManager coinManager, Consumer<String> onApplySkin, Runnable onBack) {
-        super(null);
+    public ShopScreen(Pane root, CoinManager coinManager, Consumer<String> onApplySkin, Runnable onBack) {
+        super(root);
         this.coinManager = coinManager;
         this.onApplySkin = onApplySkin;
         this.onBack = onBack;
-        this.pane = pane;
-        this.root = pane;
-        initializeUI();
+
+        // Initialize shop items with LinkedHashMap to maintain order
+        shopItems = new LinkedHashMap<>();
+        shopItems.put("red", 100);
+        shopItems.put("blue", 200);
+        shopItems.put("gold", 500);
     }
 
     @Override
     protected void initializeUI() {
-        pane.getChildren().clear();
+        layout = new StackPane();
+        layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+        layout.setStyle("-fx-background-color: rgba(44,62,80,0.95);");
 
-        title = createStyledText("SHOP", 0, 0, TITLE_FONT, TEXT_COLOR);
+        // Title section
+        Text title = createStyledText("SHOP", 0, 0, TITLE_FONT, TEXT_COLOR);
 
-        coinText = createStyledText("Coins: " + coinManager.getCoins(), GAME_WIDTH - 180, 30, UI_FONT, GOLD_COLOR);
+        // Coin display
+        coinText = createStyledText("Coins: " + coinManager.getCoins(), 0, 0, UI_FONT, GOLD_COLOR);
+        HBox coinBox = new HBox(coinText);
+        coinBox.setAlignment(Pos.CENTER_RIGHT);
+        coinBox.setPadding(new Insets(30, 30, 0, 0));
+        coinBox.setMouseTransparent(true); // Allow mouse events to pass through
 
-        content = new VBox(12);
-        content.setPadding(new Insets(20));
-        content.setAlignment(Pos.CENTER_LEFT);
+        // Shop items section
+        VBox itemsContainer = new VBox(15);
+        itemsContainer.setAlignment(Pos.CENTER_LEFT);
+        itemsContainer.setPadding(new Insets(20));
 
         for (Map.Entry<String, Integer> item : shopItems.entrySet()) {
             String skinId = item.getKey();
             int price = item.getValue();
-            HBox row = new HBox(8);
+
+            HBox row = new HBox(15);
             row.setAlignment(Pos.CENTER_LEFT);
 
             Label name = new Label(skinId.toUpperCase() + " (" + price + " coins)");
             name.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+            name.setMinWidth(200);
 
             GameButton buyButton = new GameButton("Buy");
             buyButton.setOnAction(e -> {
@@ -74,6 +82,7 @@ public class ShopScreen extends UIManager {
                 if (ok) {
                     coinText.setText("Coins: " + coinManager.getCoins());
                 }
+                System.out.println("Bought skin: " + skinId + " - " + (ok ? "Success" : "Failed"));
             });
 
             GameButton selectButton = new GameButton("Select");
@@ -82,44 +91,51 @@ public class ShopScreen extends UIManager {
                 if (ok) {
                     if (onApplySkin != null) onApplySkin.accept(skinId);
                 }
+                System.out.println("Selected skin: " + skinId + " - " + (ok ? "Success" : "Failed"));
             });
 
             row.getChildren().addAll(name, buyButton, selectButton);
-            content.getChildren().add(row);
+            itemsContainer.getChildren().add(row);
         }
 
-        GameButton back = new GameButton("Back");
-        back.setOnAction(e -> onBack.run());
+        // Back button
+        GameButton backButton = createButton("Back", onBack);
 
-        box = new VBox(20, title, content, back);
-        box.setAlignment(Pos.TOP_CENTER);
+        // Main VBox layout - everything vertically stacked
+        VBox mainLayout = new VBox(30);
+        mainLayout.setAlignment(Pos.TOP_CENTER);
+        mainLayout.setPadding(new Insets(50, 20, 20, 20));
+        mainLayout.getChildren().addAll(title, itemsContainer, backButton);
 
-//        pane.setStyle("-fx-background-color: rgba(44,62,80,0.95);");
-//        pane.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
-//        StackPane.setAlignment(title, Pos.TOP_CENTER);
-//        StackPane.setAlignment(content, Pos.CENTER);
-//        StackPane.setAlignment(coinText, Pos.TOP_RIGHT);
-//
-//        pane.getChildren().addAll(box, coinText);
+        // Add to layout - coinBox last so it's on top, but make it mouse transparent
+        layout.getChildren().addAll(mainLayout, coinBox);
+
+        // Set alignment for coinBox within StackPane
+        StackPane.setAlignment(coinBox, Pos.TOP_RIGHT);
     }
 
-    public void refresh() {
-        initializeUI();
-    }
-
-    public Pane getPane() { return pane; }
-
+    @Override
     public void show() {
-        pane.setStyle("-fx-background-color: rgba(44,62,80,0.95);");
-        pane.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
-        StackPane.setAlignment(title, Pos.TOP_CENTER);
-        StackPane.setAlignment(content, Pos.CENTER);
-        StackPane.setAlignment(coinText, Pos.TOP_RIGHT);
-
-        pane.getChildren().addAll(box, coinText);
+        if (layout == null) {
+            initializeUI();
+        }
+        if (!root.getChildren().contains(layout)) {
+            root.getChildren().add(layout);
+        }
     }
+
+    @Override
     public void hide() {
-        pane.getChildren().clear();
+        if (layout != null) {
+            root.getChildren().remove(layout);
+        }
+    }
+
+    @Override
+    public void refresh() {
+        if (layout != null) {
+            hide();
+        }
+        layout = null;
     }
 }
-

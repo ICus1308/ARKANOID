@@ -29,6 +29,7 @@ public class GamePlay extends Application {
     private LevelManager levelManager;
     private CollisionManager collisionManager;
     private ScoreManager scoreManager;
+    private CoinManager coinManager;
 
     private MenuScreen menuScreen;
     private GameModeScreen gameModeScreen;
@@ -36,6 +37,7 @@ public class GamePlay extends Application {
     private SettingScreen settingScreen;
     private SingleplayerScreen singleplayerScreen;
     private GameOverScreen gameOverScreen;
+    private ShopScreen shopScreen;
 
     private Paddle paddle;
     private final java.util.List<Ball> balls = new java.util.ArrayList<>();
@@ -68,13 +70,15 @@ public class GamePlay extends Application {
         levelManager = new LevelManager();
         collisionManager = new CollisionManager(levelManager, root);
         scoreManager = new ScoreManager();
+        coinManager = new CoinManager();
     }
 
     private void initializeScreens() {
         menuScreen = new MenuScreen(
             this::showGameModeScreen,
             this::showHighScoreScreen,
-            this::showSettingScreen
+            this::showSettingScreen,
+            this::showShopScreen
         );
 
         gameModeScreen = new GameModeScreen(
@@ -100,6 +104,13 @@ public class GamePlay extends Application {
             this::retryLevel,
             this::startNewGame,
             this::returnToMenu
+        );
+
+        shopScreen = new ShopScreen(
+            root,
+            coinManager,
+            this::applySkin,
+            this::showMenuScreen
         );
     }
 
@@ -186,6 +197,11 @@ public class GamePlay extends Application {
         highScoreScreen.show();
     }
 
+    private void showShopScreen() {
+        hideAllScreens();
+        shopScreen.show();
+    }
+
     private void hideAllScreens() {
         if (menuScreen != null && menuScreen.getStackPane() != null) {
             menuScreen.getStackPane().setVisible(false);
@@ -194,13 +210,15 @@ public class GamePlay extends Application {
         highScoreScreen.hide();
         settingScreen.hide();
         gameOverScreen.hide();
+        shopScreen.hide();
     }
 
     private void refreshAllScreens() {
             highScoreScreen.refresh();
             gameModeScreen.refresh();
-            menuScreen.refresh(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen);
+            menuScreen.refresh(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen, this::showShopScreen);
             gameOverScreen.refresh();
+            shopScreen.refresh();
 
         root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
@@ -227,7 +245,7 @@ public class GamePlay extends Application {
         cleanupGameObjects();
         initializeGameElements();
 
-        singleplayerScreen = new SingleplayerScreen(root);
+        singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
         singleplayerScreen.updateScore(0);
 
@@ -249,7 +267,7 @@ public class GamePlay extends Application {
         gameOverScreen.hide();
 
         initializeGameElements();
-        singleplayerScreen = new SingleplayerScreen(root);
+        singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
         singleplayerScreen.updateScore(0);
 
@@ -264,7 +282,7 @@ public class GamePlay extends Application {
 
         levelManager.currentLevel = 1;
         initializeGameElements();
-        singleplayerScreen = new SingleplayerScreen(root);
+        singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
         singleplayerScreen.updateScore(0);
 
@@ -515,5 +533,12 @@ public class GamePlay extends Application {
             int finalScore = singleplayerScreen.getScore();
             scoreManager.addScore(name, finalScore);
         });
+    }
+
+    private void applySkin(String skinId) {
+        // Apply the skin to the paddle if it exists
+        if (paddle != null) {
+            paddle.applySkin(skinId);
+        }
     }
 }
