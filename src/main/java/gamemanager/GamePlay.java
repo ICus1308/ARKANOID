@@ -71,6 +71,7 @@ public class GamePlay extends Application {
         collisionManager = new CollisionManager(levelManager, root);
         scoreManager = new ScoreManager();
         coinManager = new CoinManager();
+        collisionManager.setCoinManager(coinManager);
     }
 
     private void initializeScreens() {
@@ -248,6 +249,7 @@ public class GamePlay extends Application {
         singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
         singleplayerScreen.updateScore(0);
+        singleplayerScreen.updateCoins();
 
         levelManager.loadLevel(1, root);
         changeGameState(GameState.START);
@@ -270,6 +272,7 @@ public class GamePlay extends Application {
         singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
         singleplayerScreen.updateScore(0);
+        singleplayerScreen.updateCoins();
 
         levelManager.loadLevel(levelManager.currentLevel, root);
         changeGameState(GameState.START);
@@ -285,6 +288,7 @@ public class GamePlay extends Application {
         singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
         singleplayerScreen.updateScore(0);
+        singleplayerScreen.updateCoins();
 
         levelManager.loadLevel(1, root);
         changeGameState(GameState.START);

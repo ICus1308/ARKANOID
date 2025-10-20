@@ -102,6 +102,7 @@ public class CollisionManager {
             // award coins when a brick is destroyed
             if (coinManager != null) {
                 coinManager.addCoins(5);
+                ui.updateCoins(); // Update the UI to reflect new coin count
             }
             levelManager.removeBrick(brick, root);
         }

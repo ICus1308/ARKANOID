@@ -56,7 +56,7 @@ public class ShopScreen extends UIManager {
         // Coin display
         coinText = createStyledText("Coins: " + coinManager.getCoins(), 0, 0, UI_FONT, GOLD_COLOR);
         HBox coinBox = new HBox(coinText);
-        coinBox.setAlignment(Pos.CENTER_RIGHT);
+        coinBox.setAlignment(Pos.TOP_RIGHT);
         coinBox.setPadding(new Insets(30, 30, 0, 0));
         coinBox.setMouseTransparent(true); // Allow mouse events to pass through
 
