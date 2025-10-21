@@ -2,10 +2,14 @@ package userinterface;
 
 import gamemanager.GameButton;
 import gamemanager.UIManager;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
@@ -22,6 +26,12 @@ public class SettingScreen extends UIManager {
     private GameButton debugButton;
 
     private ComboBox<String> resolutionCombo;
+
+    private Slider masterVolumeSlider;
+    private CheckBox muteCheckbox;
+    private Label volumeValueLabel;
+    private double masterVolume = 100.0;
+    private boolean muted = false;
 
     private final String[] resolutions = {"800x600", "1000x600"};
     private final String[] displayModes = {"Windowed"};
@@ -153,10 +163,45 @@ public class SettingScreen extends UIManager {
         Label titleLabel = createTitleLabel("AUDIO SETTINGS");
         VBox settingsPanel = createSettingsPanel();
 
-        Label placeholderLabel = createLabel("Audio settings coming soon...", TEXT_COLOR.darker());
+        Label volumeLabel = createLabel("Master Volume:", TEXT_COLOR);
+        masterVolumeSlider = new Slider(0, 100, masterVolume);
+        masterVolumeSlider.setPrefWidth(360 * UI_SCALE_X);
+        masterVolumeSlider.setPrefHeight(35);
+        masterVolumeSlider.setMajorTickUnit(10);
+        masterVolumeSlider.setShowTickMarks(false);
+        masterVolumeSlider.setShowTickLabels(false);
 
-        settingsPanel.getChildren().add(placeholderLabel);
-        contentArea.getChildren().addAll(titleLabel, settingsPanel);
+        volumeValueLabel = createLabel((int) masterVolume + "%", TEXT_COLOR);
+        volumeValueLabel.setPadding(new Insets(0, 0, 0, 10));
+
+        masterVolumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int val = (int) Math.round(newValue.doubleValue());
+            volumeValueLabel.setText(val + "%");
+        });
+
+        HBox volumeRow = new HBox(10, masterVolumeSlider, volumeValueLabel);
+        volumeRow.setAlignment(Pos.CENTER_LEFT);
+
+        muteCheckbox = new CheckBox("Mute");
+        muteCheckbox.setStyle("-fx-text-fill: white;");
+        muteCheckbox.setSelected(muted);
+        muteCheckbox.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            masterVolumeSlider.setDisable(isSelected);
+        });
+
+        VBox volumeSection = new VBox(5, volumeLabel, volumeRow, muteCheckbox);
+
+        settingsPanel.getChildren().addAll(volumeSection);
+
+        GameButton applyButton = createButton("✓ APPLY CHANGES", GameButton.ButtonStyle.APPLY, this::applyAudioSettings);
+        HBox applyButtonBox = new HBox(applyButton);
+        applyButtonBox.setAlignment(Pos.BOTTOM_RIGHT);
+        applyButtonBox.setPadding(new Insets(30, 0, 0, 0));
+
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+
+        contentArea.getChildren().addAll(titleLabel, settingsPanel, spacer, applyButtonBox);
     }
 
     private void showDebugSettings() {
@@ -174,10 +219,10 @@ public class SettingScreen extends UIManager {
         settingsPanel.setPadding(new Insets(40, 40, 40, 40));
 
         String panelStyle = "-fx-border-color: #00d9ff; " +
-            "-fx-border-width: 2px; " +
-            "-fx-background-color: rgba(22, 33, 62, 0.8); " +
-            "-fx-border-radius: 5px; " +
-            "-fx-background-radius: 5px;";
+                "-fx-border-width: 2px; " +
+                "-fx-background-color: rgba(22, 33, 62, 0.8); " +
+                "-fx-border-radius: 5px; " +
+                "-fx-background-radius: 5px;";
         settingsPanel.setStyle(panelStyle);
         settingsPanel.setPrefWidth(500 * UI_SCALE_X);
         settingsPanel.setPrefHeight(300);
@@ -193,7 +238,7 @@ public class SettingScreen extends UIManager {
         comboBox.setPrefHeight(35);
 
         comboBox.setStyle("-fx-background-color: #2c3e50; " +
-                         "-fx-font-size: " + (16 * UI_SCALE) + "px;");
+                "-fx-font-size: " + (16 * UI_SCALE) + "px;");
 
         comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
             @Override
@@ -256,6 +301,13 @@ public class SettingScreen extends UIManager {
                 System.err.println("Invalid resolution format: " + resolution);
             }
         }
+    }
+
+    private void applyAudioSettings() {
+        masterVolume = masterVolumeSlider.getValue();
+        muted = muteCheckbox.isSelected();
+
+        System.out.println("Applied audio settings - Volume: " + (int) masterVolume + "%, Muted: " + muted);
     }
 
     @Override
