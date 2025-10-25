@@ -63,6 +63,7 @@ public class BExplodingBrick extends Brick {
         for (Brick brick : allBricks) {
             if (brick == this) continue;
 
+
             double brickX = brick.getX();
             double brickY = brick.getY();
             double brickWidth = brick.getWidth();
