@@ -62,6 +62,12 @@ public class LevelManager {
                         case '5':
                             newBrick = new BMultiHitBrick(x, y, brickWidth, brickHeight,5);
                             break;
+                        case 'B':
+                            BExplodingBrick explodingBrick = new BExplodingBrick(x, y, brickWidth, brickHeight);
+                            explodingBrick.setLevelManager(this);
+                            explodingBrick.setRoot(root);
+                            newBrick = explodingBrick;
+                            break;
                         case '0':
                         default:
                             break;
