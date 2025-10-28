@@ -2,8 +2,6 @@ package userinterface;
 
 import gamemanager.GameButton;
 import gamemanager.UIManager;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -174,7 +172,10 @@ public class SettingScreen extends UIManager {
         volumeValueLabel = createLabel((int) masterVolume + "%", TEXT_COLOR);
         volumeValueLabel.setPadding(new Insets(0, 0, 0, 10));
 
-        masterVolumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+        masterVolumeSlider.valueProperty().addListener((
+                observable,
+                oldValue,
+                newValue) -> {
             int val = (int) Math.round(newValue.doubleValue());
             volumeValueLabel.setText(val + "%");
         });
@@ -185,7 +186,10 @@ public class SettingScreen extends UIManager {
         muteCheckbox = new CheckBox("Mute");
         muteCheckbox.setStyle("-fx-text-fill: white;");
         muteCheckbox.setSelected(muted);
-        muteCheckbox.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+        muteCheckbox.selectedProperty().addListener((
+                obs,
+                wasSelected,
+                isSelected) -> {
             masterVolumeSlider.setDisable(isSelected);
         });
 

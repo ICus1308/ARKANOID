@@ -12,6 +12,8 @@ public final class GameConfig {
     public static final double PADDLE_HEIGHT = 15.0;
     public static final double BALL_RADIUS = 8.0;
     public static final double BALL_SPEED = 10.0;
+    public static final double BRICK_WIDTH = 40;
+    public static final double BRICK_HEIGHT = 20;
 
     // UI scaling factors based on resolution
     public static double UI_SCALE_X = 1.0;  // Width scale
@@ -36,6 +38,12 @@ public final class GameConfig {
         LEVEL_CLEARED,
         TUTORIAL,
         SHOP
+    }
+    public enum PaddleSkin {
+        CLASSIC,
+        FIRE,
+        ICE,
+        GOLDEN
     }
 
     public enum WallSideType {
