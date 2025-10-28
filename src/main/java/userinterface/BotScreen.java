@@ -7,7 +7,7 @@ import javafx.scene.text.Text;
 
 import static gameconfig.GameConfig.*;
 
-public class SingleplayerScreen extends UIManager implements GameScreen {
+public class BotScreen extends UIManager implements GameScreen {
     private int lives = 3;
     private int score = 0;
     private Text scoreText;
@@ -15,7 +15,7 @@ public class SingleplayerScreen extends UIManager implements GameScreen {
     private Text coinsText;
     private final CoinManager coinManager;
 
-    public SingleplayerScreen(Pane root, CoinManager coinManager) {
+    public BotScreen(Pane root, CoinManager coinManager) {
         super(root);
         this.coinManager = coinManager;
         initializeUI();
@@ -27,7 +27,7 @@ public class SingleplayerScreen extends UIManager implements GameScreen {
         livesText = createStyledText("Lives: 3", GAME_WIDTH - 100, 25, UI_FONT, TEXT_COLOR);
         coinsText = createStyledText("Coins: " + (coinManager != null ? coinManager.getCoins() : 0),
                 GAME_WIDTH / 2 - 50, 25, UI_FONT, GOLD_COLOR);
-        gameMessage = createStyledText("PRESS SPACE TO START", GAME_WIDTH / 2 - 200, GAME_HEIGHT / 2, MESSAGE_FONT, GOLD_COLOR);
+        gameMessage = createStyledText("PRESS SPACE TO START", GAME_WIDTH / 2 - 250, GAME_HEIGHT / 2, MESSAGE_FONT, GOLD_COLOR);
 
         root.getChildren().addAll(scoreText, livesText, coinsText, gameMessage);
     }
@@ -91,3 +91,4 @@ public class SingleplayerScreen extends UIManager implements GameScreen {
         }
     }
 }
+

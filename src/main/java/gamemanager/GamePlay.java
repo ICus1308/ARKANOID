@@ -36,11 +36,14 @@ public class GamePlay extends Application {
     private HighScoreScreen highScoreScreen;
     private SettingScreen settingScreen;
     private SingleplayerScreen singleplayerScreen;
+    private BotScreen botScreen;
     private GameOverScreen gameOverScreen;
     private ShopScreen shopScreen;
 
     private Paddle paddle;
     private final java.util.List<Ball> balls = new java.util.ArrayList<>();
+    private AIManager aiManager;
+    private boolean isBotMode = false;
 
     private PauseTransition oneshotTimer;
     private AnimationTimer gameLoop;
@@ -85,6 +88,7 @@ public class GamePlay extends Application {
         gameModeScreen = new GameModeScreen(
             root,
             this::startSinglePlayerGame,
+            this::startBotGame,
             this::showMenuScreen
         );
 
@@ -245,11 +249,31 @@ public class GamePlay extends Application {
         hideAllScreens();
         cleanupGameObjects();
         initializeGameElements();
+        isBotMode = false;
 
         singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
         singleplayerScreen.updateScore(0);
         singleplayerScreen.updateCoins();
+
+        levelManager.loadLevel(1, root);
+        changeGameState(GameState.START);
+    }
+
+    private void startBotGame() {
+        hideAllScreens();
+        cleanupGameObjects();
+        initializeGameElements();
+        isBotMode = true;
+
+        // Initialize AI Manager
+        aiManager = new AIManager(paddle);
+        aiManager.setEaseFactor(0.15); // Set AI difficulty
+
+        botScreen = new BotScreen(root, coinManager);
+        botScreen.updateLives(3);
+        botScreen.updateScore(0);
+        botScreen.updateCoins();
 
         levelManager.loadLevel(1, root);
         changeGameState(GameState.START);
@@ -322,6 +346,11 @@ public class GamePlay extends Application {
             singleplayerScreen.cleanup();
             singleplayerScreen = null;
         }
+
+        if (botScreen != null) {
+            botScreen.cleanup();
+            botScreen = null;
+        }
     }
 
 
@@ -351,11 +380,15 @@ public class GamePlay extends Application {
     }
 
     private void processInput(double tpf) {
-        if (isMovingLeft) {
-            paddle.moveLeft(tpf);
-        }
-        if (isMovingRight) {
-            paddle.moveRight(tpf);
+        if (isBotMode && aiManager != null) {
+            aiManager.update(balls, levelManager.getPowerups(), tpf);
+        } else {
+            if (isMovingLeft) {
+                paddle.moveLeft(tpf);
+            }
+            if (isMovingRight) {
+                paddle.moveRight(tpf);
+            }
         }
     }
 
@@ -388,7 +421,11 @@ public class GamePlay extends Application {
             java.util.List<Brick> bricks = levelManager.getBricks();
             Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
             if (hitBrick != null) {
-                collisionManager.handleBrickBallCollision(b, hitBrick, singleplayerScreen);
+                if (isBotMode && botScreen != null) {
+                    collisionManager.handleBrickBallCollision(b, hitBrick, botScreen);
+                } else if (singleplayerScreen != null) {
+                    collisionManager.handleBrickBallCollision(b, hitBrick, singleplayerScreen);
+                }
                 if (levelManager.isLevelComplete()) {
                     changeGameState(GameConfig.GameState.LEVEL_CLEARED);
                     return;
@@ -404,10 +441,18 @@ public class GamePlay extends Application {
         }
 
         if (!toRemove.isEmpty() && balls.isEmpty()) {
-            singleplayerScreen.decreaseLives();
-            resetBallAndPaddle();
-            if (singleplayerScreen.getLives() <= 0) {
-                changeGameState(GameConfig.GameState.GAME_OVER);
+            if (isBotMode && botScreen != null) {
+                botScreen.decreaseLives();
+                resetBallAndPaddle();
+                if (botScreen.getLives() <= 0) {
+                    changeGameState(GameConfig.GameState.GAME_OVER);
+                }
+            } else if (singleplayerScreen != null) {
+                singleplayerScreen.decreaseLives();
+                resetBallAndPaddle();
+                if (singleplayerScreen.getLives() <= 0) {
+                    changeGameState(GameConfig.GameState.GAME_OVER);
+                }
             }
         }
 
@@ -445,7 +490,9 @@ public class GamePlay extends Application {
     private void changeGameState(GameConfig.GameState newState) {
         this.gameState = newState;
 
-        if (singleplayerScreen != null) {
+        if (isBotMode && botScreen != null) {
+            botScreen.showGameMessage(newState);
+        } else if (singleplayerScreen != null) {
             singleplayerScreen.showGameMessage(newState);
         }
 
@@ -470,16 +517,24 @@ public class GamePlay extends Application {
         if (levelManager.currentLevel <= levelManager.maxLevel) {
             resetBallAndPaddle();
             levelManager.loadLevel(levelManager.currentLevel, root);
-            singleplayerScreen.showLevel(levelManager.currentLevel);
+            if (isBotMode && botScreen != null) {
+                botScreen.showLevel(levelManager.currentLevel);
+            } else if (singleplayerScreen != null) {
+                singleplayerScreen.showLevel(levelManager.currentLevel);
+            }
         } else {
             changeGameState(GameConfig.GameState.GAME_OVER);
         }
     }
 
     private void handleGameOver() {
-        if (singleplayerScreen != null) {
+        if (isBotMode && botScreen != null) {
+            botScreen.hideGameMessage();
+            int finalScore = botScreen.getScore();
+            gameOverScreen.setFinalScore(finalScore);
+            System.out.println("AI Final Score: " + finalScore);
+        } else if (singleplayerScreen != null) {
             singleplayerScreen.hideGameMessage();
-
             int finalScore = singleplayerScreen.getScore();
             gameOverScreen.setFinalScore(finalScore);
             System.out.println("Final Score: " + finalScore);
@@ -489,7 +544,9 @@ public class GamePlay extends Application {
         gameOverScreen.show();
         System.out.println("GameOverScreen showed");
 
-        promptAndSaveScore();
+        if (!isBotMode) {
+            promptAndSaveScore();
+        }
     }
 
     public void spawnExtraBall() {
