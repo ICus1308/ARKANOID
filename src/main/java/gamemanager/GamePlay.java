@@ -1,11 +1,7 @@
 package gamemanager;
 
 import gameconfig.GameConfig;
-import gameobject.Ball;
-import gameobject.Brick;
-import gameobject.Indicator;
-import gameobject.Paddle;
-import gameobject.Powerup;
+import gameobject.*;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
@@ -51,6 +47,7 @@ public class GamePlay extends Application {
     private AnimationTimer gameLoop;
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
+
 
     @Override
     public void start(Stage primaryStage) {
