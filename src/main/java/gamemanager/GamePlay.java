@@ -277,11 +277,9 @@ public class GamePlay extends Application {
         hideAllScreens();
         cleanupGameObjects();
         initializeGameElements();
-        isBotMode = true;
 
-        // Initialize AI Manager
+        isBotMode = true;
         aiManager = new AIManager(paddle);
-        aiManager.setEaseFactor(1);
 
         botScreen = new BotScreen(root, coinManager);
         botScreen.updateLives(3);

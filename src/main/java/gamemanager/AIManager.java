@@ -23,44 +23,42 @@ public class AIManager {
     private static final double DRIFT_MIN_RANGE = 0.2;
     private static final double DRIFT_MAX_RANGE = 0.8;
     private static final int MISTAKE_RECALC_INTERVAL = 60;
-    private static final int DRIFT_RECALC_INTERVAL = 120;
     private static final int CONFUSION_DURATION_FRAMES = 60;
     private static final int DANGEROUS_BALL_THRESHOLD = 2;
     private static final double CONFUSION_CHANCE = 0.10;
     private static final double MISTAKE_FACTOR = 0.4;
     private static final double CATCHABLE_DISTANCE_THRESHOLD = 150.0;
     private static final double MIN_MOVEMENT_THRESHOLD = 1.0;
-    private static final double MIN_DRIFT_THRESHOLD = 2.0;
+    private static final double DESTINATION_REACHED_THRESHOLD = 5.0;
 
 
     private final Paddle paddle;
     private final Random random;
     private double targetX;
     private double mistakeOffset;
-    private double easeFactor;
     private int mistakeRecalcCounter;
     private double driftTargetX;
-    private int driftRecalcCounter;
     private boolean isConfused;
     private int confusionDuration;
+    private boolean wasInDriftMode;
 
 
     public AIManager(Paddle paddle) {
         this.paddle = paddle;
         this.random = new Random();
-        this.easeFactor = 0.05;
         this.targetX = getPaddleCenterX();
-        this.driftTargetX = GAME_WIDTH / 2;
         this.mistakeOffset = 0;
         this.mistakeRecalcCounter = 0;
-        this.driftRecalcCounter = 0;
         this.isConfused = false;
         this.confusionDuration = 0;
+        this.wasInDriftMode = true;
+        calculateDriftTarget();
     }
 
 
     public void update(List<Ball> balls, List<Powerup> powerups, double tpf) {
         if (balls.isEmpty()) {
+            handleDriftBehavior(tpf);
             return;
         }
 
@@ -105,6 +103,7 @@ public class AIManager {
             return false;
         }
 
+        wasInDriftMode = false;
         double powerupCenterX = targetPowerup.getX() + targetPowerup.getWidth() / 2;
         targetX = clampTargetX(powerupCenterX);
         movePaddleToTarget(tpf);
@@ -127,6 +126,7 @@ public class AIManager {
             return;
         }
 
+        wasInDriftMode = false;
         updateMistakeOffset();
 
         double predictedX = predictBallLandingX(ball) + mistakeOffset;
@@ -203,11 +203,15 @@ public class AIManager {
     }
 
     private void handleDriftBehavior(double tpf) {
-        driftRecalcCounter++;
-
-        if (driftRecalcCounter >= DRIFT_RECALC_INTERVAL) {
+        if (!wasInDriftMode) {
             calculateDriftTarget();
-            driftRecalcCounter = 0;
+            wasInDriftMode = true;
+        }
+
+        double paddleCenterX = getPaddleCenterX();
+
+        if (Math.abs(driftTargetX - paddleCenterX) <= DESTINATION_REACHED_THRESHOLD) {
+            calculateDriftTarget();
         }
 
         movePaddleToDriftTarget(tpf);
@@ -220,16 +224,18 @@ public class AIManager {
     }
 
     private void movePaddleToDriftTarget(double tpf) {
-
         double paddleCenterX = getPaddleCenterX();
         double difference = driftTargetX - paddleCenterX;
 
-        if (Math.abs(difference) > MIN_DRIFT_THRESHOLD) {
-            double driftSpeed = PADDLE_SPEED * DRIFT_SPEED_MULTIPLIER;
+        if (Math.abs(difference) > MIN_MOVEMENT_THRESHOLD) {
+            double driftSpeed = PADDLE_SPEED * DRIFT_SPEED_MULTIPLIER * tpf * 60;
+
             if (difference < 0) {
-                paddle.setX(paddle.getX() - driftSpeed * tpf);
+                double newX = Math.max(0, paddle.getX() - driftSpeed);
+                paddle.setX(newX);
             } else {
-                paddle.setX(paddle.getX() + driftSpeed * tpf);
+                double newX = Math.min(GAME_WIDTH - paddle.getWidth(), paddle.getX() + driftSpeed);
+                paddle.setX(newX);
             }
         }
     }
@@ -301,10 +307,6 @@ public class AIManager {
 
     private double getPaddleCenterX() {
         return paddle.getX() + paddle.getWidth() / 2;
-    }
-
-    public void setEaseFactor(double easeFactor) {
-        this.easeFactor = Math.max(0.0, Math.min(1.0, easeFactor));
     }
 }
 
