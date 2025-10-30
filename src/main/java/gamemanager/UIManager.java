@@ -10,7 +10,7 @@ import javafx.scene.text.FontWeight;
 
 import static gameconfig.GameConfig.*;
 
-public abstract class UIManager {
+public abstract class UIManager extends GamePlay {
     protected Pane root;
     protected Text gameMessage;
     
@@ -47,7 +47,7 @@ public abstract class UIManager {
     /**
      * Creates a styled button with specific style
      */
-    protected GameButton createButton(String text, GameButton.ButtonStyle style, Runnable action) {
+    protected GameButton createButton(String text, ButtonStyle style, Runnable action) {
         GameButton button = new GameButton(text, style);
         if (action != null) {
             button.setOnAction(e -> action.run());

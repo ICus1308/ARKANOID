@@ -18,7 +18,7 @@ import static gameconfig.GameConfig.*;
  * - Confusion state when multiple balls approach
  * - Drift behavior when no threats are present
  */
-public class AIManager {
+public class AIManager extends GamePlay {
     private static final double DRIFT_SPEED_MULTIPLIER = 0.4;
     private static final double DRIFT_MIN_RANGE = 0.2;
     private static final double DRIFT_MAX_RANGE = 0.8;
@@ -42,7 +42,11 @@ public class AIManager {
     private int confusionDuration;
     private boolean wasInDriftMode;
 
-
+    /**
+     * Constructor for AIManager.
+     *
+     * @param paddle The paddle controlled by the AI.
+     */
     public AIManager(Paddle paddle) {
         this.paddle = paddle;
         this.random = new Random();

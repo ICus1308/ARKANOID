@@ -1,6 +1,6 @@
 package gamemanager;
 
-public abstract class GameObject {
+public abstract class GameObject extends GamePlay {
     protected double x, y, width, height;
 
     public GameObject(double x, double y, double width, double height) {

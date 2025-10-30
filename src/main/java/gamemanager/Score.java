@@ -2,7 +2,7 @@ package gamemanager;
 
 import java.io.Serializable;
 
-public class Score implements Serializable {
+public class Score extends GamePlay implements Serializable {
 
     private final String playerName;
     private final int score;

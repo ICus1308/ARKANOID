@@ -12,7 +12,7 @@ import java.util.Random;
 
 import static gameconfig.GameConfig.*;
 
-public class LevelManager {
+public class LevelManager extends GamePlay {
     private final List<Brick> bricks = new ArrayList<>();
     private final List<Powerup> powerups = new ArrayList<>();
     public int currentLevel = 1;

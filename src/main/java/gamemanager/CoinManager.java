@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Simple coin and skin persistence using a properties file.
  */
-public class CoinManager {
+public class CoinManager extends GamePlay {
     private static final String COIN_FILE = "coins.properties";
     private int coins = 0;
     private final Set<String> ownedSkins = new HashSet<>();

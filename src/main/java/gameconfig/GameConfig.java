@@ -60,4 +60,11 @@ public final class GameConfig {
         ONESHOT,
         EXPAND
     }
+
+    public enum ButtonStyle {
+        PRIMARY,
+        CATEGORY_UNSELECTED,
+        CATEGORY_SELECTED,
+        APPLY
+    }
 }

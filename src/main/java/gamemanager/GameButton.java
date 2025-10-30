@@ -6,17 +6,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.scene.control.ContentDisplay;
 
-import static gameconfig.GameConfig.UI_SCALE;
-import static gameconfig.GameConfig.UI_SCALE_X;
+import static gameconfig.GameConfig.*;
 
 public class GameButton extends Button {
-
-    public enum ButtonStyle {
-        PRIMARY,
-        CATEGORY_UNSELECTED,
-        CATEGORY_SELECTED,
-        APPLY
-    }
 
     private ButtonStyle currentStyle;
 

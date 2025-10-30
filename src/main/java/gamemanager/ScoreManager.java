@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class ScoreManager {
+public class ScoreManager extends  GamePlay {
     private static final String HIGH_SCORE_FILE = "highscores.dat";
     private final ObservableList<Score> highScores;
 

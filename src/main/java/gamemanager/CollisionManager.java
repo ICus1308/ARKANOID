@@ -10,7 +10,7 @@ import userinterface.GameScreen;
 
 import java.util.List;
 
-public class CollisionManager {
+public class CollisionManager extends GamePlay {
     private final LevelManager levelManager;
     private final Pane root;
     private boolean oneshotActive = false;

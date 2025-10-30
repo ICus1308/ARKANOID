@@ -74,11 +74,11 @@ public class SettingScreen extends UIManager {
     }
 
     private void createCategoryButtons() {
-        videoButton = createButton("VIDEO", GameButton.ButtonStyle.CATEGORY_UNSELECTED, null);
-        audioButton = createButton("AUDIO", GameButton.ButtonStyle.CATEGORY_UNSELECTED, null);
-        debugButton = createButton("DEBUG", GameButton.ButtonStyle.CATEGORY_UNSELECTED, null);
+        videoButton = createButton("VIDEO", ButtonStyle.CATEGORY_UNSELECTED, null);
+        audioButton = createButton("AUDIO", ButtonStyle.CATEGORY_UNSELECTED, null);
+        debugButton = createButton("DEBUG", ButtonStyle.CATEGORY_UNSELECTED, null);
 
-        videoButton.switchStyle(GameButton.ButtonStyle.CATEGORY_SELECTED);
+        videoButton.switchStyle(ButtonStyle.CATEGORY_SELECTED);
 
         videoButton.setOnAction(e -> selectCategory("VIDEO", videoButton));
         audioButton.setOnAction(e -> selectCategory("AUDIO", audioButton));
@@ -86,10 +86,10 @@ public class SettingScreen extends UIManager {
     }
 
     private void selectCategory(String category, GameButton selectedButton) {
-        videoButton.switchStyle(GameButton.ButtonStyle.CATEGORY_UNSELECTED);
-        audioButton.switchStyle(GameButton.ButtonStyle.CATEGORY_UNSELECTED);
-        debugButton.switchStyle(GameButton.ButtonStyle.CATEGORY_UNSELECTED);
-        selectedButton.switchStyle(GameButton.ButtonStyle.CATEGORY_SELECTED);
+        videoButton.switchStyle(ButtonStyle.CATEGORY_UNSELECTED);
+        audioButton.switchStyle(ButtonStyle.CATEGORY_UNSELECTED);
+        debugButton.switchStyle(ButtonStyle.CATEGORY_UNSELECTED);
+        selectedButton.switchStyle(ButtonStyle.CATEGORY_SELECTED);
 
         updateContentArea(category);
     }
@@ -120,7 +120,7 @@ public class SettingScreen extends UIManager {
     private void showVideoSettings() {
         Label titleLabel = createTitleLabel("VIDEO SETTINGS");
         VBox settingsPanel = createVideoSettingsPanel();
-        GameButton applyButton = createButton("✓ APPLY CHANGES", GameButton.ButtonStyle.APPLY, this::applyVideoSettings);
+        GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyVideoSettings);
 
         HBox applyButtonBox = new HBox(applyButton);
         applyButtonBox.setAlignment(Pos.BOTTOM_RIGHT);
@@ -197,7 +197,7 @@ public class SettingScreen extends UIManager {
 
         settingsPanel.getChildren().addAll(volumeSection);
 
-        GameButton applyButton = createButton("✓ APPLY CHANGES", GameButton.ButtonStyle.APPLY, this::applyAudioSettings);
+        GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyAudioSettings);
         HBox applyButtonBox = new HBox(applyButton);
         applyButtonBox.setAlignment(Pos.BOTTOM_RIGHT);
         applyButtonBox.setPadding(new Insets(30, 0, 0, 0));
