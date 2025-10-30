@@ -19,7 +19,6 @@ import static gameconfig.GameConfig.*;
  * - Drift behavior when no threats are present
  */
 public class AIManager {
-    private static final double DEFAULT_EASE_FACTOR = 0.05;
     private static final double DRIFT_SPEED_MULTIPLIER = 0.4;
     private static final double DRIFT_MIN_RANGE = 0.2;
     private static final double DRIFT_MAX_RANGE = 0.8;
@@ -49,7 +48,7 @@ public class AIManager {
     public AIManager(Paddle paddle) {
         this.paddle = paddle;
         this.random = new Random();
-        this.easeFactor = DEFAULT_EASE_FACTOR;
+        this.easeFactor = 0.05;
         this.targetX = getPaddleCenterX();
         this.driftTargetX = GAME_WIDTH / 2;
         this.mistakeOffset = 0;

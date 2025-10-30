@@ -45,6 +45,18 @@ public class Ball extends GameObject {
         stuck = false;
     }
 
+    public void launch(double directionX, double directionY) {
+        double magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+        if (magnitude > 0) {
+            directionX /= magnitude;
+            directionY /= magnitude;
+        }
+
+        vx = directionX * speed;
+        vy = directionY * speed;
+        stuck = false;
+    }
+
     public void reset(double x, double y) {
         setX(x - radius);
         setY(y - radius);

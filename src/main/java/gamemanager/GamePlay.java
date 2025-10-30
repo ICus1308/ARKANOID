@@ -3,6 +3,7 @@ package gamemanager;
 import gameconfig.GameConfig;
 import gameobject.Ball;
 import gameobject.Brick;
+import gameobject.Indicator;
 import gameobject.Paddle;
 import gameobject.Powerup;
 import javafx.animation.AnimationTimer;
@@ -42,6 +43,7 @@ public class GamePlay extends Application {
 
     private Paddle paddle;
     private final java.util.List<Ball> balls = new java.util.ArrayList<>();
+    private Indicator indicator;
     private AIManager aiManager;
     private boolean isBotMode = false;
 
@@ -125,11 +127,19 @@ public class GamePlay extends Application {
             switch (e.getCode()) {
                 case A:
                 case LEFT:
-                    isMovingLeft = true;
+                    if (gameState == GameState.START && indicator != null) {
+                        indicator.rotateLeft(0.05);
+                    } else {
+                        isMovingLeft = true;
+                    }
                     break;
                 case D:
                 case RIGHT:
-                    isMovingRight = true;
+                    if (gameState == GameState.START && indicator != null) {
+                        indicator.rotateRight(0.05);
+                    } else {
+                        isMovingRight = true;
+                    }
                     break;
                 case SPACE:
                     if (gameState == GameState.START || gameState == GameState.LEVEL_CLEARED) {
@@ -242,7 +252,10 @@ public class GamePlay extends Application {
         Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
         balls.add(ball);
 
-        root.getChildren().addAll(paddle.getNode(), ball.getNode());
+        indicator = new Indicator(ballX, ballY);
+        indicator.pointAtBall(ball);
+
+        root.getChildren().addAll(paddle.getNode(), ball.getNode(), indicator.getNode());
     }
 
     private void startSinglePlayerGame() {
@@ -268,7 +281,7 @@ public class GamePlay extends Application {
 
         // Initialize AI Manager
         aiManager = new AIManager(paddle);
-        aiManager.setEaseFactor(0.15); // Set AI difficulty
+        aiManager.setEaseFactor(1);
 
         botScreen = new BotScreen(root, coinManager);
         botScreen.updateLives(3);
@@ -280,10 +293,27 @@ public class GamePlay extends Application {
     }
 
     private void startGame() {
+        double[] launchDirection = null;
+        if (indicator != null) {
+            launchDirection = indicator.getLaunchDirection();
+        }
+
         for (Ball b : balls) {
             b.setStuck(false);
-            b.launch();
+            if (launchDirection != null) {
+                b.launch(launchDirection[0], launchDirection[1]);
+            } else {
+                b.launch();
+            }
         }
+
+        if (indicator != null) {
+            if (indicator.getNode().getParent() != null) {
+                root.getChildren().remove(indicator.getNode());
+            }
+            indicator = null;
+        }
+
         changeGameState(GameConfig.GameState.PLAYING);
     }
 
@@ -335,6 +365,13 @@ public class GamePlay extends Application {
             }
         }
         balls.clear();
+
+        if (indicator != null) {
+            if (indicator.getNode().getParent() != null) {
+                root.getChildren().remove(indicator.getNode());
+            }
+            indicator = null;
+        }
 
         for (Brick brick : new java.util.ArrayList<>(levelManager.getBricks())) {
             levelManager.removeBrick(brick, root);
@@ -395,6 +432,10 @@ public class GamePlay extends Application {
     private void updateGame(double tpf) {
         for (Ball b : new java.util.ArrayList<>(balls)) {
             b.update(tpf, paddle, GAME_WIDTH, GAME_HEIGHT);
+        }
+
+        if (indicator != null && !balls.isEmpty() && gameState == GameState.START) {
+            indicator.pointAtBall(balls.get(0));
         }
 
         for (Powerup p : new java.util.ArrayList<>(levelManager.getPowerups())) {
@@ -480,6 +521,13 @@ public class GamePlay extends Application {
         Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, BALL_RADIUS, BALL_SPEED);
         balls.add(ball);
         root.getChildren().add(ball.getNode());
+
+        if (indicator != null && indicator.getNode().getParent() != null) {
+            root.getChildren().remove(indicator.getNode());
+        }
+        indicator = new Indicator(ball.getX() + ball.getRadius(), ball.getY());
+        indicator.pointAtBall(ball);
+        root.getChildren().add(indicator.getNode());
 
         gameState = GameState.START;
         for (Ball b : balls) {
