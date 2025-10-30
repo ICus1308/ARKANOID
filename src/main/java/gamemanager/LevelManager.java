@@ -90,7 +90,7 @@ public class LevelManager {
     public void removeBrick(Brick brick, Pane root) {
         root.getChildren().remove(brick.getNode());
         bricks.remove(brick);
-        if (new Random().nextDouble() < 1) {
+        if (new Random().nextDouble() < 0.1) {
             PowerUpType type = PowerUpType.values()
                     [new Random().nextInt(PowerUpType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);

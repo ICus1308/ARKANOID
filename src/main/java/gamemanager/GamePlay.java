@@ -429,7 +429,7 @@ public class GamePlay extends Application {
 
     private void updateGame(double tpf) {
         for (Ball b : new java.util.ArrayList<>(balls)) {
-            b.update(tpf, paddle, GAME_WIDTH, GAME_HEIGHT);
+            b.update(tpf, paddle);
         }
 
         if (indicator != null && !balls.isEmpty() && gameState == GameState.START) {

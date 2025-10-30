@@ -67,7 +67,7 @@ public class Ball extends GameObject {
         node.setCenterY(this.y + radius);
     }
 
-    public void update(double tpf, Paddle paddle, double gameWidth, double gameHeight) {
+    public void update(double tpf, Paddle paddle) {
         if (stuck) {
             setX(paddle.getX() + paddle.getWidth() / 2 - radius);
             setY(paddle.getY() - height);
