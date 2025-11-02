@@ -14,7 +14,8 @@ public class CollisionManager extends GamePlay {
     private final LevelManager levelManager;
     private final Pane root;
     private boolean oneshotActive = false;
-    private CoinManager coinManager; // optional
+    private CoinManager coinManager;
+    private ScoreManager scoreManager;
 
     public CollisionManager(LevelManager levelManager, Pane root) {
         this.levelManager = levelManager;
@@ -25,6 +26,10 @@ public class CollisionManager extends GamePlay {
         this.coinManager = coinManager;
     }
 
+    public void setScoreManager(ScoreManager scoreManager) {
+        this.scoreManager = scoreManager;
+    }
+
     public void setOneshotActive(boolean active) {
         this.oneshotActive = active;
     }
@@ -32,36 +37,51 @@ public class CollisionManager extends GamePlay {
     public void handlePaddleBallCollision(Paddle paddle, Ball ball) {
         javafx.geometry.Bounds ballBounds = ball.getShape().getBoundsInParent();
         javafx.geometry.Bounds paddleBounds = paddle.getNode().getBoundsInParent();
+    // Calculate overlaps
+        double ballCenterX = ballBounds.getMinX() + ballBounds.getWidth() / 2;
+        double paddleLeft = paddleBounds.getMinX();
+        double paddleRight = paddleBounds.getMaxX();
+        double paddleTop = paddleBounds.getMinY();
+        double overlapLeft = ballBounds.getMaxX() - paddleLeft;
+        double overlapRight = paddleRight - ballBounds.getMinX();
+        double overlapTop = ballBounds.getMaxY() - paddleTop;
+    // Determine collision side
+        boolean isLeftSideCollision = overlapLeft < overlapTop && ballCenterX < paddleLeft;
+        boolean isRightSideCollision = overlapRight < overlapTop && ballCenterX > paddleRight;
+    // Adjust ball position and velocity based on collision side
+        if (isLeftSideCollision) {
+            ball.setX(paddleLeft - ball.getWidth());
+            ball.setVx(-Math.abs(ball.getVx()));
+        } else if (isRightSideCollision) {
+            ball.setX(paddleRight);
+            ball.setVx(Math.abs(ball.getVx()));
+        } else {
+            double overlapY = ballBounds.getMaxY() - paddleBounds.getMinY();
+            ball.setY(ball.getY() - overlapY);
 
-        double overlapY = ballBounds.getMaxY() - paddleBounds.getMinY();
-
-        ball.setY(ball.getY() - overlapY);
-
-        double relativeIntersectX = (paddle.getX() + (paddle.getWidth() / 2)) - (ball.getX() + ball.getRadius());
-        double normalizedRelativeIntersectionX = relativeIntersectX / (paddle.getWidth() / 2);
-        double angleAdjustment = normalizedRelativeIntersectionX * ball.speed * 1;
-        ball.setVy(-Math.abs(ball.getVy()));
-        ball.setVx(ball.getVx() - angleAdjustment);
-        double currentSpeed = Math.sqrt(ball.getVx() * ball.getVx() + ball.getVy() * ball.getVy());
-        double factor = ball.speed / currentSpeed;
-        ball.setVx(ball.getVx() * factor);
-        ball.setVy(ball.getVy() * factor);
+            double relativeIntersectX = (paddle.getX() + (paddle.getWidth() / 2)) - (ball.getX() + ball.getRadius());
+            double normalizedRelativeIntersectionX = relativeIntersectX / (paddle.getWidth() / 2);
+            double angleAdjustment = normalizedRelativeIntersectionX * ball.speed * 1;
+            ball.setVy(-Math.abs(ball.getVy()));
+            ball.setVx(ball.getVx() - angleAdjustment);
+            double currentSpeed = Math.sqrt(ball.getVx() * ball.getVx() + ball.getVy() * ball.getVy());
+            double factor = ball.speed / currentSpeed;
+            ball.setVx(ball.getVx() * factor);
+            ball.setVy(ball.getVy() * factor);
+        }
     }
-
+    // Handle collision between ball and brick
     public void handleBrickBallCollision(Ball ball, Brick brick, GameScreen ui) {
         javafx.geometry.Bounds ballBounds = ball.getShape().getBoundsInParent();
         javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
-
 
         double ballCenterX = ballBounds.getMinX() + ballBounds.getWidth() / 2;
         double ballCenterY = ballBounds.getMinY() + ballBounds.getHeight() / 2;
         double brickCenterX = brickBounds.getMinX() + brickBounds.getWidth() / 2;
         double brickCenterY = brickBounds.getMinY() + brickBounds.getHeight() / 2;
 
-
         double halfWidths = (ballBounds.getWidth() + brickBounds.getWidth()) / 2;
         double halfHeights = (ballBounds.getHeight() + brickBounds.getHeight()) / 2;
-
 
         double dx = ballCenterX - brickCenterX;
         double dy = ballCenterY - brickCenterY;
@@ -85,29 +105,32 @@ public class CollisionManager extends GamePlay {
             ball.bounce(GameConfig.WallSideType.NORTH);
         }
 
-        int score;
-        if (oneshotActive) {
-            if (brick.getHitCount() > 0) {
-                score = 10;
-                brick.destroy();
-            } else {
-                score = 0;
-            }
+        int score = 0;
+        if (scoreManager != null) {
+            score = scoreManager.calculateBrickScore(brick, oneshotActive);
         } else {
-            score = brick.hit();
+            if (oneshotActive) {
+                if (brick.getHitCount() > 0) {
+                    score = 10;
+                    brick.destroy();
+                } else {
+                    score = 0;
+                }
+            } else {
+                score = brick.hit();
+            }
         }
         ui.increaseScore(score);
         brick.updateDraw();
         if (brick.getHitCount() == 0) {
-            // award coins when a brick is destroyed
             if (coinManager != null) {
                 coinManager.addCoins(5);
-                ui.updateCoins(); // Update the UI to reflect new coin count
+                ui.updateCoins();
             }
             levelManager.removeBrick(brick, root);
         }
     }
-
+    // Check collision between ball and walls
     public GameConfig.WallSideType checkWallCollision(Ball ball, double gameWidth, double gameHeight) {
         if (ball.getY() <= 0) {
             ball.setY(0);

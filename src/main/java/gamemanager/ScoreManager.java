@@ -1,5 +1,6 @@
 package gamemanager;
 
+import gameobject.Brick;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -11,14 +12,40 @@ import java.util.List;
 public class ScoreManager extends  GamePlay {
     private static final String HIGH_SCORE_FILE = "highscores.dat";
     private final ObservableList<Score> highScores;
+    private int currentScore;
 
     public ScoreManager() {
         highScores = FXCollections.observableArrayList();
+        currentScore = 0;
         loadScores();
     }
 
     public ObservableList<Score> getScores() {
         return highScores;
+    }
+
+    public int getCurrentScore() {
+        return currentScore;
+    }
+
+    public void resetCurrentScore() {
+        currentScore = 0;
+    }
+
+    public int calculateBrickScore(Brick brick, boolean oneshotActive) {
+        int score;
+        if (oneshotActive) {
+            if (brick.getHitCount() > 0) {
+                score = 10;
+                brick.destroy();
+            } else {
+                score = 0;
+            }
+        } else {
+            score = brick.hit();
+        }
+        currentScore += score;
+        return score;
     }
 
     public void addScore(String playerName, int score) {

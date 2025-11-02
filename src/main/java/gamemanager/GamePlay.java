@@ -74,6 +74,7 @@ public class GamePlay extends Application {
         scoreManager = new ScoreManager();
         coinManager = new CoinManager();
         collisionManager.setCoinManager(coinManager);
+        collisionManager.setScoreManager(scoreManager);
     }
 
     private void initializeScreens() {
@@ -153,6 +154,10 @@ public class GamePlay extends Application {
                     if (levelManager.isLevelComplete()) {
                         changeGameState(GameState.LEVEL_CLEARED);
                     }
+                    break;
+                case Y:
+                    levelManager.loadRandomLevel(0.6, root);
+                    resetBallAndPaddle();
                     break;
                 default:
                     break;
