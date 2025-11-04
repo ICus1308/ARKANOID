@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import userinterface.*;
 
+import java.awt.*;
 import java.util.Optional;
 
 import static gameconfig.GameConfig.*;
@@ -47,11 +48,14 @@ public class GamePlay extends Application {
     private AnimationTimer gameLoop;
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
+    private double monitorRefreshRate = 60.0;
 
 
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
+
+        initializeMonitorRefreshRate();
         initializeRoot();
         initializeManagers();
         initializeScreens();
@@ -60,6 +64,19 @@ public class GamePlay extends Application {
 
         showMenuScreen();
         initGameLoop();
+    }
+
+    private void initializeMonitorRefreshRate() {
+        try {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice gd = ge.getDefaultScreenDevice();
+            DisplayMode dm = gd.getDisplayMode();
+
+            monitorRefreshRate = dm.getRefreshRate();
+        } catch (Exception e) {
+            monitorRefreshRate = 60.0;
+            System.out.println("Could not initialize monitor refresh rate " + monitorRefreshRate);
+        }
     }
 
     private void initializeRoot() {
@@ -405,7 +422,7 @@ public class GamePlay extends Application {
                 if (gameState == GameConfig.GameState.PLAYING) {
                     double timeStep = 1.0 / 240.0;
 
-                    for (int i = 0; i < 4; i++) {
+                    for (int i = 0; i < (240 / monitorRefreshRate); i++) {
                         processInput(timeStep);
                         updateGame(timeStep);
                         handleCollisions();
