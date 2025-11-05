@@ -36,6 +36,7 @@ public class GamePlay extends Application {
     private BotScreen botScreen;
     private GameOverScreen gameOverScreen;
     private ShopScreen shopScreen;
+    private PauseScreen pauseScreen;
 
     private Paddle paddle;
     private final java.util.List<Ball> balls = new java.util.ArrayList<>();
@@ -104,6 +105,12 @@ public class GamePlay extends Application {
             this::refreshAllScreens
         );
 
+        pauseScreen = new PauseScreen(
+            root,
+            this ::resumeGame,
+            this ::returnToMenuFromPause
+        );
+
         gameOverScreen = new GameOverScreen(
             root,
             this::retryLevel,
@@ -145,7 +152,11 @@ public class GamePlay extends Application {
                     }
                     break;
                 case ESCAPE:
-                    if (gameState == GameState.PLAYING || gameState == GameState.START || gameState == GameState.GAME_OVER) {
+                    if (gameState == GameState.PLAYING) {
+                        pauseGame();
+                    } else if (gameState == GameState.PAUSED) {
+                        resumeGame();
+                    } else if (gameState == GameState.START || gameState == GameState.GAME_OVER) {
                         returnToMenu();
                     }
                     break;
@@ -228,6 +239,7 @@ public class GamePlay extends Application {
         settingScreen.hide();
         gameOverScreen.hide();
         shopScreen.hide();
+        pauseScreen.hide();
     }
 
     private void refreshAllScreens() {
@@ -236,6 +248,7 @@ public class GamePlay extends Application {
             menuScreen.refresh(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen, this::showShopScreen);
             gameOverScreen.refresh();
             shopScreen.refresh();
+            pauseScreen.refresh();
 
         root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
@@ -353,6 +366,24 @@ public class GamePlay extends Application {
         cleanupGameObjects();
         showMenuScreen();
     }
+
+    private void pauseGame() {
+        gameState = GameState.PAUSED;
+        gameLoop.stop();
+        pauseScreen.show();
+    }
+
+    private void resumeGame() {
+        pauseScreen.hide();
+        gameState = GameState.PLAYING;
+        gameLoop.start();
+    }
+
+    private void returnToMenuFromPause() {
+        pauseScreen.hide();
+        returnToMenu();
+    }
+
 
     private void cleanupGameObjects() {
         if (paddle != null && paddle.getNode().getParent() != null) {
