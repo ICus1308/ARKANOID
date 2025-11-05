@@ -2,6 +2,7 @@ package gameobject;
 
 import gamemanager.GameObject;
 import gamemanager.GamePlay;
+import gamemanager.SoundManager;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import gameconfig.GameConfig;
@@ -37,6 +38,8 @@ public class Powerup extends GameObject {
     }
 
     public void activate(Object game, Paddle paddle) {
+        SoundManager.getInstance().playSound(SoundManager.SoundType.POWERUP_COLLECT);
+
         switch (powerupType) {
             case EXPAND -> paddle.applyPowerup(GameConfig.PowerUpType.EXPAND);
             case MULTIPLY -> {

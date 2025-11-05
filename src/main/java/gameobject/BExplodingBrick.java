@@ -1,6 +1,7 @@
 package gameobject;
 
 import gamemanager.LevelManager;
+import gamemanager.SoundManager;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 
@@ -49,6 +50,7 @@ public class BExplodingBrick extends Brick {
     }
 
     private void explode() {
+        SoundManager.getInstance().playSound(SoundManager.SoundType.EXPLOSION);
 
         // QUAN TRỌNG: Tạo bản sao để tránh ConcurrentModificationException
         java.util.List<Brick> allBricks = new java.util.ArrayList<>(levelManager.getBricks());

@@ -27,6 +27,8 @@ public class GamePlay extends Application {
     private CollisionManager collisionManager;
     private ScoreManager scoreManager;
     private CoinManager coinManager;
+    private SoundManager soundManager;
+
 
     private MenuScreen menuScreen;
     private GameModeScreen gameModeScreen;
@@ -74,6 +76,7 @@ public class GamePlay extends Application {
         collisionManager = new CollisionManager(levelManager, root);
         scoreManager = new ScoreManager();
         coinManager = new CoinManager();
+        soundManager = SoundManager.getInstance();
         collisionManager.setCoinManager(coinManager);
         collisionManager.setScoreManager(scoreManager);
     }
@@ -203,6 +206,7 @@ public class GamePlay extends Application {
 
     private void showMenuScreen() {
         hideAllScreens();
+        soundManager.playMusic(SoundManager.SoundType.MENU_MUSIC, true);
         if (!root.getChildren().contains(menuScreen.getStackPane())) {
             root.getChildren().add(menuScreen.getStackPane());
         }
@@ -276,6 +280,7 @@ public class GamePlay extends Application {
     private void startSinglePlayerGame() {
         hideAllScreens();
         cleanupGameObjects();
+        soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
         initializeGameElements();
         isBotMode = false;
 
@@ -291,6 +296,7 @@ public class GamePlay extends Application {
     private void startBotGame() {
         hideAllScreens();
         cleanupGameObjects();
+        soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
         initializeGameElements();
 
         isBotMode = true;
@@ -577,9 +583,11 @@ public class GamePlay extends Application {
 
         switch (newState) {
             case LEVEL_CLEARED:
+                soundManager.playSound(SoundManager.SoundType.LEVEL_COMPLETE);
                 handleLevelCleared();
                 break;
             case GAME_OVER:
+                soundManager.playSound(SoundManager.SoundType.GAME_OVER);
                 handleGameOver();
                 break;
             case PLAYING:

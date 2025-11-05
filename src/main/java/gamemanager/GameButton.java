@@ -21,6 +21,9 @@ public class GameButton extends Button {
         this.currentStyle = style;
         applyStyle(style);
         setupButton(style);
+        setOnMouseClicked(e -> {
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BUTTON_CLICK);
+        });
     }
 
     private void applyStyle(ButtonStyle style) {

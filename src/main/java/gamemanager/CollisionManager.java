@@ -69,6 +69,7 @@ public class CollisionManager extends GamePlay {
             ball.setVx(ball.getVx() * factor);
             ball.setVy(ball.getVy() * factor);
         }
+        SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_PADDLE_HIT);
     }
     // Handle collision between ball and brick
     public void handleBrickBallCollision(Ball ball, Brick brick, GameScreen ui) {
@@ -122,7 +123,9 @@ public class CollisionManager extends GamePlay {
         }
         ui.increaseScore(score);
         brick.updateDraw();
+        SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
         if (brick.getHitCount() == 0) {
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BRICK_BREAK);
             if (coinManager != null) {
                 coinManager.addCoins(5);
                 ui.updateCoins();
@@ -135,16 +138,19 @@ public class CollisionManager extends GamePlay {
         if (ball.getY() <= 0) {
             ball.setY(0);
             ball.bounce(GameConfig.WallSideType.NORTH);
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_WALL_HIT);
             return GameConfig.WallSideType.NORTH;
         }
         if (ball.getX() <= 0) {
             ball.setX(0);
             ball.bounce(GameConfig.WallSideType.WEST);
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_WALL_HIT);
             return GameConfig.WallSideType.WEST;
         }
         if (ball.getRightX() >= gameWidth) {
             ball.setX(gameWidth - ball.getWidth());
             ball.bounce(GameConfig.WallSideType.EAST);
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_WALL_HIT);
             return GameConfig.WallSideType.EAST;
         }
         if (ball.getY() >= gameHeight) {

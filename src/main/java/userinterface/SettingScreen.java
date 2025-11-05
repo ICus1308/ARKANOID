@@ -2,6 +2,7 @@ package userinterface;
 
 import gamemanager.GameButton;
 import gamemanager.UIManager;
+import gamemanager.SoundManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -158,6 +159,10 @@ public class SettingScreen extends UIManager {
     }
 
     private void showAudioSettings() {
+        SoundManager soundManager = SoundManager.getInstance();
+        masterVolume = soundManager.getMasterVolume() * 100;
+        muted = soundManager.isMuted();
+
         Label titleLabel = createTitleLabel("AUDIO SETTINGS");
         VBox settingsPanel = createSettingsPanel();
 
@@ -310,6 +315,10 @@ public class SettingScreen extends UIManager {
     private void applyAudioSettings() {
         masterVolume = masterVolumeSlider.getValue();
         muted = muteCheckbox.isSelected();
+
+        SoundManager soundManager = SoundManager.getInstance();
+        soundManager.setMasterVolume(masterVolume / 100.0);
+        soundManager.setMuted(muted);
 
         System.out.println("Applied audio settings - Volume: " + (int) masterVolume + "%, Muted: " + muted);
     }
