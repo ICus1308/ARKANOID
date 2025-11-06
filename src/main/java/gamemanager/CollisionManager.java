@@ -34,54 +34,89 @@ public class CollisionManager extends GamePlay {
         this.oneshotActive = active;
     }
 
-    public void handlePaddleBallCollision(Paddle paddle, Ball ball) {
-        javafx.geometry.Bounds ballBounds = ball.getShape().getBoundsInParent();
-        javafx.geometry.Bounds paddleBounds = paddle.getNode().getBoundsInParent();
-    // Calculate overlaps
-        double ballCenterX = ballBounds.getMinX() + ballBounds.getWidth() / 2;
-        double paddleLeft = paddleBounds.getMinX();
-        double paddleRight = paddleBounds.getMaxX();
-        double paddleTop = paddleBounds.getMinY();
-        double overlapLeft = ballBounds.getMaxX() - paddleLeft;
-        double overlapRight = paddleRight - ballBounds.getMinX();
-        double overlapTop = ballBounds.getMaxY() - paddleTop;
-    // Determine collision side
-        boolean isLeftSideCollision = overlapLeft < overlapTop && ballCenterX < paddleLeft;
-        boolean isRightSideCollision = overlapRight < overlapTop && ballCenterX > paddleRight;
-    // Adjust ball position and velocity based on collision side
-        if (isLeftSideCollision) {
-            ball.setX(paddleLeft - ball.getWidth());
-            ball.setVx(-Math.abs(ball.getVx()));
-        } else if (isRightSideCollision) {
-            ball.setX(paddleRight);
-            ball.setVx(Math.abs(ball.getVx()));
-        } else {
-            double overlapY = ballBounds.getMaxY() - paddleBounds.getMinY();
-            ball.setY(ball.getY() - overlapY);
+    public boolean isOneshotActive() {
+        return this.oneshotActive;
+    }
 
-            double relativeIntersectX = (paddle.getX() + (paddle.getWidth() / 2)) - (ball.getX() + ball.getRadius());
-            double normalizedRelativeIntersectionX = relativeIntersectX / (paddle.getWidth() / 2);
-            double angleAdjustment = normalizedRelativeIntersectionX * ball.speed * 1;
+    // Helper: circle-rect intersection test using circle center and radius and rectangle bounds
+    private boolean circleIntersectsRect(double cx, double cy, double radius, javafx.geometry.Bounds rect) {
+        double closestX = Math.max(rect.getMinX(), Math.min(cx, rect.getMaxX()));
+        double closestY = Math.max(rect.getMinY(), Math.min(cy, rect.getMaxY()));
+        double dx = cx - closestX;
+        double dy = cy - closestY;
+        return dx * dx + dy * dy <= radius * radius;
+    }
+
+    public void handlePaddleBallCollision(Paddle paddle, Ball ball) {
+        javafx.geometry.Bounds paddleBounds = paddle.getNode().getBoundsInParent();
+        double ballCenterX = ball.getX() + ball.getRadius();
+        double ballCenterY = ball.getY() + ball.getRadius();
+        double r = ball.getRadius();
+
+        // Use circle-rect collision resolution similar to brick collision
+        double paddleCenterX = paddleBounds.getMinX() + paddleBounds.getWidth() / 2.0;
+        double paddleCenterY = paddleBounds.getMinY() + paddleBounds.getHeight() / 2.0;
+
+        double halfWidths = (r * 2 + paddleBounds.getWidth()) / 2.0;
+        double halfHeights = (r * 2 + paddleBounds.getHeight()) / 2.0;
+
+        double dx = ballCenterX - paddleCenterX;
+        double dy = ballCenterY - paddleCenterY;
+
+        double overlapX = halfWidths - Math.abs(dx);
+        double overlapY = halfHeights - Math.abs(dy);
+
+        if (overlapX <= 0 || overlapY <= 0) return; // no collision
+
+        // Determine collision side and respond
+        if (overlapX < overlapY) {
+            // horizontal collision
+            if (dx > 0) {
+                ball.setX(ball.getX() + overlapX);
+                ball.setVx(Math.abs(ball.getVx()));
+            } else {
+                ball.setX(ball.getX() - overlapX);
+                ball.setVx(-Math.abs(ball.getVx()));
+            }
+        } else {
+            // vertical collision (top of paddle)
+            if (dy > 0) {
+                ball.setY(ball.getY() + overlapY);
+            } else {
+                ball.setY(ball.getY() - overlapY);
+            }
+
+            // reflect vertically and tweak horizontal velocity based on where the ball hit the paddle
             ball.setVy(-Math.abs(ball.getVy()));
+
+            double relativeIntersectX = (paddle.getX() + (paddle.getWidth() / 2.0)) - (ball.getX() + ball.getRadius());
+            double normalizedRelativeIntersectionX = 0;
+            if (paddle.getWidth() != 0) {
+                normalizedRelativeIntersectionX = relativeIntersectX / (paddle.getWidth() / 2.0);
+            }
+            double angleAdjustment = normalizedRelativeIntersectionX * ball.speed * 1;
             ball.setVx(ball.getVx() - angleAdjustment);
+
+            // normalize speed to maintain constant ball.speed
             double currentSpeed = Math.sqrt(ball.getVx() * ball.getVx() + ball.getVy() * ball.getVy());
-            double factor = ball.speed / currentSpeed;
-            ball.setVx(ball.getVx() * factor);
-            ball.setVy(ball.getVy() * factor);
+            if (currentSpeed != 0) {
+                double factor = ball.speed / currentSpeed;
+                ball.setVx(ball.getVx() * factor);
+                ball.setVy(ball.getVy() * factor);
+            }
         }
     }
     // Handle collision between ball and brick
     public void handleBrickBallCollision(Ball ball, Brick brick, GameScreen ui) {
-        javafx.geometry.Bounds ballBounds = ball.getShape().getBoundsInParent();
         javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
 
-        double ballCenterX = ballBounds.getMinX() + ballBounds.getWidth() / 2;
-        double ballCenterY = ballBounds.getMinY() + ballBounds.getHeight() / 2;
-        double brickCenterX = brickBounds.getMinX() + brickBounds.getWidth() / 2;
-        double brickCenterY = brickBounds.getMinY() + brickBounds.getHeight() / 2;
+        double ballCenterX = ball.getX() + ball.getRadius();
+        double ballCenterY = ball.getY() + ball.getRadius();
+        double brickCenterX = brickBounds.getMinX() + brickBounds.getWidth() / 2.0;
+        double brickCenterY = brickBounds.getMinY() + brickBounds.getHeight() / 2.0;
 
-        double halfWidths = (ballBounds.getWidth() + brickBounds.getWidth()) / 2;
-        double halfHeights = (ballBounds.getHeight() + brickBounds.getHeight()) / 2;
+        double halfWidths = (ball.getRadius() * 2 + brickBounds.getWidth()) / 2.0;
+        double halfHeights = (ball.getRadius() * 2 + brickBounds.getHeight()) / 2.0;
 
         double dx = ballCenterX - brickCenterX;
         double dy = ballCenterY - brickCenterY;
@@ -105,7 +140,7 @@ public class CollisionManager extends GamePlay {
             ball.bounce(GameConfig.WallSideType.NORTH);
         }
 
-        int score = 0;
+        int score;
         if (scoreManager != null) {
             score = scoreManager.calculateBrickScore(brick, oneshotActive);
         } else {
@@ -154,10 +189,10 @@ public class CollisionManager extends GamePlay {
     }
 
     public boolean checkPaddleBallCollision(Paddle paddle, Ball ball) {
-        return ball.getBottomY() >= paddle.getY() &&
-                ball.getX() < paddle.getRightX() &&
-                ball.getRightX() > paddle.getX() &&
-                ball.getBottomY() < paddle.getBottomY() + ball.getVy() * 60;
+        javafx.geometry.Bounds paddleBounds = paddle.getNode().getBoundsInParent();
+        double ballCenterX = ball.getX() + ball.getRadius();
+        double ballCenterY = ball.getY() + ball.getRadius();
+        return circleIntersectsRect(ballCenterX, ballCenterY, ball.getRadius(), paddleBounds);
     }
 
     public boolean checkPaddlePowerupCollision(Paddle paddle, Powerup powerup) {
@@ -168,8 +203,12 @@ public class CollisionManager extends GamePlay {
     }
 
     public Brick checkBrickBallCollision(Ball ball, List<Brick> bricks) {
+        double ballCenterX = ball.getX() + ball.getRadius();
+        double ballCenterY = ball.getY() + ball.getRadius();
+        double r = ball.getRadius();
         for (Brick brick : bricks) {
-            if (ball.getShape().getBoundsInParent().intersects(brick.getNode().getBoundsInParent())) {
+            javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
+            if (circleIntersectsRect(ballCenterX, ballCenterY, r, brickBounds)) {
                 return brick;
             }
         }
