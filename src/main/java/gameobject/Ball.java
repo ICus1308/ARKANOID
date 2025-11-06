@@ -4,7 +4,10 @@ import gameconfig.GameConfig.WallSideType;
 import gamemanager.GameObject;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.image.Image;
+import javafx.scene.paint.ImagePattern;
 
+import java.io.InputStream;
 import java.util.Random;
 
 public class Ball extends GameObject {
@@ -14,26 +17,57 @@ public class Ball extends GameObject {
     private final double radius;
     private boolean stuck = true;
 
+    // Skin/resource tracking
+    private static final String DEFAULT_SKIN = "/imageball/default.png";
+    private static final String ONESHOT_SKIN = "/imageball/oneshot.png";
+    private String currentSkinResource = DEFAULT_SKIN; // default skin
+    private String previousSkinResource = null;
+
     public Ball(double x, double y, double radius, double speed) {
         super(x - radius, y - radius, radius * 2, radius * 2);
         this.radius = radius;
         this.speed = speed;
-        this.node = new Circle(radius, Color.SALMON);
+        this.node = new Circle(radius);
+        applyDefaultSkin();
         reset(x, y);
     }
 
 
-    public javafx.scene.Node getNode() { return node; }
+    public javafx.scene.Node getNode() {
+        return node;
+    }
 
-    public void setX(double x) { this.x = x; }
-    public void setY(double y) { this.y = y; }
+    public void setX(double x) {
+        this.x = x;
+    }
 
-    public double getRadius() { return radius; }
-    public double getVx() { return vx; }
-    public double getVy() { return vy; }
-    public void setVx(double vx) { this.vx = vx; }
-    public void setVy(double vy) { this.vy = vy; }
-    public void setStuck(boolean stuck) { this.stuck = stuck; }
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public double getRadius() {
+        return radius;
+    }
+
+    public double getVx() {
+        return vx;
+    }
+
+    public double getVy() {
+        return vy;
+    }
+
+    public void setVx(double vx) {
+        this.vx = vx;
+    }
+
+    public void setVy(double vy) {
+        this.vy = vy;
+    }
+
+    public void setStuck(boolean stuck) {
+        this.stuck = stuck;
+    }
 
     public Circle getShape() {
         return node;
@@ -92,6 +126,67 @@ public class Ball extends GameObject {
             case BOTTOM_HIT:
             case HIT_OUT_OF_BOUNDS:
                 break;
+        }
+    }
+
+    // Skin management API
+    public String getCurrentSkinResource() {
+        return currentSkinResource;
+    }
+
+    // Apply a skin by resource path (e.g. "/imageball/oneshot.png"). If null or load fails, fall back to default skin.
+    public void applySkin(String resourcePath) {
+        if (resourcePath == null) {
+            applyDefaultSkin();
+            return;
+        }
+        Image img = null;
+        try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
+            if (is != null) img = new Image(is);
+        } catch (Exception ignored) {
+        }
+        if (img != null && img.getWidth() > 0 && img.getHeight() > 0) {
+            node.setFill(new ImagePattern(img, 0, 0, 1, 1, true));
+            this.currentSkinResource = resourcePath;
+        } else {
+            // fallback to default skin
+            applyDefaultSkin();
+        }
+    }
+
+    // Apply the project's default skin
+    public void applyDefaultSkin() {
+        Image img = null;
+        try (InputStream is = getClass().getResourceAsStream(DEFAULT_SKIN)) {
+            if (is != null) img = new Image(is);
+        } catch (Exception ignored) {
+        }
+        if (img != null && img.getWidth() > 0 && img.getHeight() > 0) {
+            node.setFill(new ImagePattern(img, 0, 0, 1, 1, true));
+            this.currentSkinResource = DEFAULT_SKIN;
+        } else {
+            node.setFill(Color.SALMON);
+            this.currentSkinResource = null;
+        }
+    }
+
+    // Convenience: apply oneshot skin
+    public void applyOneshotSkin() {
+        applySkin(ONESHOT_SKIN);
+    }
+
+    // Store the current skin so it can be restored later (used when applying temporary skins like oneshot)
+    public void storeSkin() {
+        this.previousSkinResource = this.currentSkinResource;
+    }
+
+    // Restore previously stored skin (or apply default if none stored)
+    public void restoreSkin() {
+        if (this.previousSkinResource != null) {
+            applySkin(this.previousSkinResource);
+            this.previousSkinResource = null;
+        } else {
+            applyDefaultSkin();
         }
     }
 }
