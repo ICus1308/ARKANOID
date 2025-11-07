@@ -126,7 +126,7 @@ public class AIManager {
     }
 
     private void handleBallTracking(Ball ball, double tpf) {
-        if (ball.getVy() <= 0) {
+        if (ball.getVy() >= 0) {
             return;
         }
 
@@ -168,7 +168,7 @@ public class AIManager {
     }
 
     private boolean isBallMovingDown(Ball ball) {
-        return ball.getVy() > 0;
+        return ball.getVy() < 0;
     }
 
     private double calculateDistanceToPaddle(Ball ball) {
@@ -250,7 +250,7 @@ public class AIManager {
         double vx = ball.getVx();
         double vy = ball.getVy();
 
-        if (vy <= 0) {
+        if (vy >= 0) {
             return ballX;
         }
 

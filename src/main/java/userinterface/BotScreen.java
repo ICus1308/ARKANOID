@@ -1,6 +1,5 @@
 package userinterface;
 
-import gamemanager.CoinManager;
 import gamemanager.UIManager;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
@@ -8,86 +7,97 @@ import javafx.scene.text.Text;
 import static gameconfig.GameConfig.*;
 
 public class BotScreen extends UIManager implements GameScreen {
-    private int lives = 3;
-    private int score = 0;
-    private Text scoreText;
-    private Text livesText;
-    private Text coinsText;
-    private final CoinManager coinManager;
+    private static final int INITIAL_LIVES = 3;
 
-    public BotScreen(Pane root, CoinManager coinManager) {
+    private int playerLives;
+    private int botLives;
+    private Text playerLivesText;
+    private Text botLivesText;
+
+    public BotScreen(Pane root) {
         super(root);
-        this.coinManager = coinManager;
+        this.playerLives = INITIAL_LIVES;
+        this.botLives = INITIAL_LIVES;
         initializeUI();
     }
 
     @Override
     protected void initializeUI() {
-        scoreText = createStyledText("Score: 0", 10, 25, UI_FONT, TEXT_COLOR);
-        livesText = createStyledText("Lives: 3", GAME_WIDTH - 100, 25, UI_FONT, TEXT_COLOR);
-        coinsText = createStyledText("Coins: " + (coinManager != null ? coinManager.getCoins() : 0),
-                GAME_WIDTH / 2 - 50, 25, UI_FONT, GOLD_COLOR);
-        gameMessage = createStyledText("PRESS SPACE TO START", GAME_WIDTH / 2 - 250, GAME_HEIGHT / 2, MESSAGE_FONT, GOLD_COLOR);
-
-        root.getChildren().addAll(scoreText, livesText, coinsText, gameMessage);
+        playerLivesText = createStyledText("Player Lives: " + INITIAL_LIVES, 10, GAME_HEIGHT - 25, UI_FONT, TEXT_COLOR);
+        botLivesText = createStyledText("Bot Lives: " + INITIAL_LIVES, GAME_WIDTH - 150, 25, UI_FONT, TEXT_COLOR);
+        gameMessage = createStyledText("PRESS SPACE TO START", GAME_WIDTH / 2 - 200, GAME_HEIGHT / 2, MESSAGE_FONT, GOLD_COLOR);
+        root.getChildren().addAll(playerLivesText, botLivesText, gameMessage);
     }
 
-    public void updateScore(int newScore) {
-        this.score = newScore;
-        scoreText.setText("Score: " + score);
+    public int getPlayerLives() {
+        return playerLives;
     }
 
-    public void increaseScore(int delta) {
-        updateScore(this.score + delta);
+    public void updatePlayerLives(int newLives) {
+        this.playerLives = newLives;
+        playerLivesText.setText("Player Lives: " + playerLives);
     }
 
+    public void decreasePlayerLives() {
+        updatePlayerLives(playerLives - 1);
+    }
+
+    public int getBotLives() {
+        return botLives;
+    }
+
+    public void updateBotLives(int newLives) {
+        this.botLives = newLives;
+        botLivesText.setText("Bot Lives: " + botLives);
+    }
+
+    public void decreaseBotLives() {
+        updateBotLives(botLives - 1);
+    }
+
+    @Override
+    public void updateScore(int newScore) {}
+
+    @Override
+    public void increaseScore(int delta) {}
+
+    @Override
     public int getScore() {
-        return score;
+        return 0;
     }
 
+    @Override
     public int getLives() {
-        return lives;
+        return playerLives;
     }
 
-    public void updateLives(int newLives) {
-        this.lives = newLives;
-        livesText.setText("Lives: " + lives);
-    }
+    @Override
+    public void updateLives(int newLives) {}
 
-    public void decreaseLives() {
-        updateLives(this.lives - 1);
-    }
+    @Override
+    public void decreaseLives() {}
 
-    public void updateCoins() {
-        if (coinManager != null) {
-            coinsText.setText("Coins: " + coinManager.getCoins());
-        }
-    }
+    @Override
+    public void updateCoins() {}
 
-    public void showLevel(int level) {
-        showGameMessage("LEVEL " + level, GOLD_COLOR);
-    }
+    @Override
+    public void showLevel(int level) {}
 
     public void showGameMessage(GameState state) {
         switch (state) {
             case START:
-                showGameMessage("PRESS SPACE TO LAUNCH", GOLD_COLOR);
+                hideGameMessage();
                 break;
             case GAME_OVER:
-                showGameMessage("GAME OVER | Final Score: " + score, RED_COLOR);
-                break;
-            case LEVEL_CLEARED:
-                showGameMessage("LEVEL CLEARED! | Press SPACE for Next Level", GREEN_COLOR);
-                break;
-            case PLAYING:
-                hideGameMessage();
+                String winner = playerLives > botLives ? "PLAYER" : "BOT";
+                showGameMessage("GAME OVER | " + winner + " WINS!", RED_COLOR);
                 break;
         }
     }
 
     public void cleanup() {
         if (root != null) {
-            root.getChildren().removeAll(scoreText, livesText, coinsText, gameMessage);
+            root.getChildren().removeAll(playerLivesText, botLivesText, gameMessage);
         }
     }
 }

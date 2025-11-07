@@ -10,7 +10,7 @@ import userinterface.GameScreen;
 
 import java.util.List;
 
-public class CollisionManager extends GamePlay {
+public class CollisionManager {
     private final LevelManager levelManager;
     private final Pane root;
     private boolean oneshotActive = false;
@@ -154,6 +154,35 @@ public class CollisionManager extends GamePlay {
     }
 
     public void handleBrickBallCollision(Ball ball, Brick brick, userinterface.OneVOneScreen ui, int player) {
+        javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
+
+        double ballCenterX = ball.getX() + ball.getRadius();
+        double ballCenterY = ball.getY() + ball.getRadius();
+        double brickCenterX = brickBounds.getMinX() + brickBounds.getWidth() / 2.0;
+        double brickCenterY = brickBounds.getMinY() + brickBounds.getHeight() / 2.0;
+
+        double halfWidths = (ball.getRadius() * 2 + brickBounds.getWidth()) / 2.0;
+        double halfHeights = (ball.getRadius() * 2 + brickBounds.getHeight()) / 2.0;
+
+        double dx = ballCenterX - brickCenterX;
+        double dy = ballCenterY - brickCenterY;
+
+        double overlapX = halfWidths - Math.abs(dx);
+        double overlapY = halfHeights - Math.abs(dy);
+
+        if (overlapX < overlapY) {
+            ball.setX(dx > 0 ? ball.getX() + overlapX : ball.getX() - overlapX);
+            ball.bounce(GameConfig.WallSideType.EAST);
+        } else {
+            ball.setY(dy > 0 ? ball.getY() + overlapY : ball.getY() - overlapY);
+            ball.bounce(GameConfig.WallSideType.NORTH);
+        }
+
+        brick.updateDraw();
+        SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
+    }
+
+    public void handleBrickBallCollision(Ball ball, Brick brick, userinterface.BotScreen ui, int player) {
         javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
 
         double ballCenterX = ball.getX() + ball.getRadius();

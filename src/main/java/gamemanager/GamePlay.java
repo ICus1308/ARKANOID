@@ -160,20 +160,20 @@ public class GamePlay extends Application {
         scene.setOnKeyPressed(e -> {
             switch (e.getCode()) {
                 case A:
-                    if (isOneVOneMode && gameState == GameState.START && indicator != null && lastScoredPlayer == 1) {
+                    if ((isOneVOneMode || isBotMode) && gameState == GameState.START && indicator != null && lastScoredPlayer == 1) {
                         // Player 1 is serving, can rotate indicator
                         indicator.rotateLeft(0.05);
-                    } else if (gameState == GameState.START && indicator != null && !isOneVOneMode) {
+                    } else if (gameState == GameState.START && indicator != null && !isOneVOneMode && !isBotMode) {
                         indicator.rotateLeft(0.05);
                     } else {
                         isMovingLeft = true;
                     }
                     break;
                 case D:
-                    if (isOneVOneMode && gameState == GameState.START && indicator != null && lastScoredPlayer == 1) {
+                    if ((isOneVOneMode || isBotMode) && gameState == GameState.START && indicator != null && lastScoredPlayer == 1) {
                         // Player 1 is serving, can rotate indicator
                         indicator.rotateRight(0.05);
-                    } else if (gameState == GameState.START && indicator != null && !isOneVOneMode) {
+                    } else if (gameState == GameState.START && indicator != null && !isOneVOneMode && !isBotMode) {
                         indicator.rotateRight(0.05);
                     } else {
                         isMovingRight = true;
@@ -375,17 +375,42 @@ public class GamePlay extends Application {
         hideAllScreens();
         cleanupGameObjects();
         soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
-        initializeGameElements();
 
         isBotMode = true;
-        aiManager = new AIManager(paddle);
+        isOneVOneMode = false;
+        lastScoredPlayer = 1; // Player starts with the ball
 
-        botScreen = new BotScreen(root, coinManager);
-        botScreen.updateLives(3);
-        botScreen.updateScore(0);
-        botScreen.updateCoins();
+        double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
+        paddle = new Paddle(paddleX, GAME_HEIGHT - 20, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        paddle2 = new Paddle(paddleX, 30, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        paddle.applySkin("blue");
+        paddle2.applySkin("red");
 
-        levelManager.loadLevel(1, root);
+        // Initialize AI for top paddle (paddle2)
+        aiManager = new AIManager(paddle2);
+
+        double ballX = paddle.getX() + paddle.getWidth() / 2;
+        double ballY = paddle.getY() - 8;
+        Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
+        ball.setStuck(true);
+
+        if (coinManager != null) {
+            String bSkin = coinManager.getSelectedBallSkin();
+            if (bSkin != null) ball.applySkin(skinIdToBallResource(bSkin));
+        }
+        balls.add(ball);
+
+        indicator = new Indicator(ballX, ballY);
+        indicator.setTopPaddle(false);
+        indicator.pointAtBall(ball);
+
+        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getNode(), indicator.getNode());
+
+        botScreen = new BotScreen(root);
+        botScreen.updatePlayerLives(3);
+        botScreen.updateBotLives(3);
+
+        levelManager.loadOneVOneLevel(root);
         changeGameState(GameState.START);
     }
 
@@ -588,7 +613,16 @@ public class GamePlay extends Application {
 
     private void processInput(double tpf) {
         if (isBotMode && aiManager != null) {
+            // Lock both paddles until ball is launched
+            if (gameState == GameState.START) {
+                // Don't move any paddle during START state
+                return;
+            }
+            // Bot controls the top paddle (paddle2)
             aiManager.update(balls, levelManager.getPowerups(), tpf);
+            // Player controls the bottom paddle (paddle)
+            if (isMovingLeft) paddle.moveLeft(tpf);
+            if (isMovingRight) paddle.moveRight(tpf);
         } else if (isOneVOneMode) {
             if (gameState == GameState.START) {
             } else {
@@ -607,7 +641,7 @@ public class GamePlay extends Application {
 
     private void updateGame(double tpf) {
         for (Ball b : new java.util.ArrayList<>(balls)) {
-            if (isOneVOneMode && gameState == GameState.START) {
+            if ((isOneVOneMode || isBotMode) && gameState == GameState.START) {
                 b.update(tpf, lastScoredPlayer == 2 ? paddle2 : paddle, lastScoredPlayer == 2);
             } else {
                 b.update(tpf, paddle, false);
@@ -632,15 +666,15 @@ public class GamePlay extends Application {
         for (Ball b : new java.util.ArrayList<>(balls)) {
             GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
 
-            if (isOneVOneMode) {
+            if (isOneVOneMode || isBotMode) {
                 if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
                     toRemove.add(b);
-                    lastScoredPlayer = 1;
+                    lastScoredPlayer = 1; // Player lost the ball
                     continue;
                 } else if (wallHit == GameConfig.WallSideType.NORTH) {
                     if (b.getY() < paddle2.getY() + paddle2.getHeight()) {
                         toRemove.add(b);
-                        lastScoredPlayer = 2;
+                        lastScoredPlayer = 2; // Bot lost the ball
                         continue;
                     }
                 }
@@ -655,7 +689,7 @@ public class GamePlay extends Application {
                 collisionManager.handlePaddleBallCollision(paddle, b);
             }
 
-            if (isOneVOneMode && paddle2 != null) {
+            if ((isOneVOneMode || isBotMode) && paddle2 != null) {
                 if (collisionManager.checkPaddleBallCollision(paddle2, b)) {
                     collisionManager.handlePaddleBallCollision(paddle2, b);
                 }
@@ -668,7 +702,8 @@ public class GamePlay extends Application {
                     int player = hitBrick.getY() < GAME_HEIGHT / 2 ? 1 : 2;
                     collisionManager.handleBrickBallCollision(b, hitBrick, oneVOneScreen, player);
                 } else if (isBotMode && botScreen != null) {
-                    collisionManager.handleBrickBallCollision(b, hitBrick, botScreen);
+                    // No scoring in bot mode, just break bricks
+                    collisionManager.handleBrickBallCollision(b, hitBrick, botScreen, 0);
                 } else if (singleplayerScreen != null) {
                     collisionManager.handleBrickBallCollision(b, hitBrick, singleplayerScreen);
                 }
@@ -700,11 +735,20 @@ public class GamePlay extends Application {
                 }
                 resetBallAndPaddleOneVOne();
             } else if (isBotMode && botScreen != null) {
-                botScreen.decreaseLives();
-                resetBallAndPaddle();
-                if (botScreen.getLives() <= 0) {
-                    changeGameState(GameConfig.GameState.GAME_OVER);
+                if (lastScoredPlayer == 1) {
+                    botScreen.decreasePlayerLives();
+                    if (botScreen.getPlayerLives() <= 0) {
+                        changeGameState(GameConfig.GameState.GAME_OVER);
+                        return;
+                    }
+                } else {
+                    botScreen.decreaseBotLives();
+                    if (botScreen.getBotLives() <= 0) {
+                        changeGameState(GameConfig.GameState.GAME_OVER);
+                        return;
+                    }
                 }
+                resetBallAndPaddleBot();
             } else if (singleplayerScreen != null) {
                 singleplayerScreen.decreaseLives();
                 resetBallAndPaddle();
@@ -714,7 +758,7 @@ public class GamePlay extends Application {
             }
         }
 
-        if (!isOneVOneMode) {
+        if (!isOneVOneMode && !isBotMode) {
             for (Powerup p : new java.util.ArrayList<>(levelManager.getPowerups())) {
                 if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
                     p.activate(GamePlay.this, paddle);
@@ -804,6 +848,43 @@ public class GamePlay extends Application {
         changeGameState(GameState.START);
     }
 
+    private void resetBallAndPaddleBot() {
+        for (Ball b : balls) {
+            root.getChildren().remove(b.getNode());
+        }
+        balls.clear();
+
+        paddle.reset();
+        paddle2.reset();
+        paddle.applySkin("blue");
+        paddle2.applySkin("red");
+
+        Ball ball = lastScoredPlayer == 1
+            ? new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED)
+            : new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
+
+        ball.setStuck(true);
+
+        if (coinManager != null) {
+            String bSkin = coinManager.getSelectedBallSkin();
+            if (bSkin != null) {
+                ball.applySkin(skinIdToBallResource(bSkin));
+            }
+        }
+        balls.add(ball);
+        root.getChildren().add(ball.getNode());
+
+        if (indicator != null && indicator.getNode().getParent() != null) {
+            root.getChildren().remove(indicator.getNode());
+        }
+        indicator = new Indicator(ball.getX() + ball.getRadius(), ball.getY());
+        indicator.setTopPaddle(lastScoredPlayer == 2);
+        indicator.pointAtBall(ball);
+        root.getChildren().add(indicator.getNode());
+
+        changeGameState(GameState.START);
+    }
+
     private void changeGameState(GameConfig.GameState newState) {
         this.gameState = newState;
 
@@ -839,9 +920,7 @@ public class GamePlay extends Application {
         if (levelManager.currentLevel <= levelManager.maxLevel) {
             resetBallAndPaddle();
             levelManager.loadLevel(levelManager.currentLevel, root);
-            if (isBotMode && botScreen != null) {
-                botScreen.showLevel(levelManager.currentLevel);
-            } else if (singleplayerScreen != null) {
+            if (singleplayerScreen != null) {
                 singleplayerScreen.showLevel(levelManager.currentLevel);
             }
         } else {
@@ -857,11 +936,9 @@ public class GamePlay extends Application {
             System.out.println("1v1 Game Over");
         } else if (isBotMode && botScreen != null) {
             botScreen.hideGameMessage();
-            int finalScore = botScreen.getScore();
-            gameOverScreen.setFinalScore(finalScore);
             gameOverScreen.refresh();
             gameOverScreen.show();
-            System.out.println("AI Final Score: " + finalScore);
+            System.out.println("Bot Mode Game Over");
         } else if (singleplayerScreen != null) {
             singleplayerScreen.hideGameMessage();
             int finalScore = singleplayerScreen.getScore();
