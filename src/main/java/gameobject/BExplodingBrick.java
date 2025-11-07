@@ -72,18 +72,18 @@ public class BExplodingBrick extends Brick {
 
             // Kiểm tra HÀNG NGANG: Y gần giống nhau (trong cùng 1 hàng)
             double deltaY = Math.abs(brickY - myY);
-            if (deltaY < myHeight + 2) {
+            if (deltaY < myHeight + 1) {
                 double deltaX = Math.abs(brickX - myX);
-                if (deltaX > 0 && deltaX <= (EXPLOSION_RANGE + 1) * (myWidth + 2)) {
+                if (deltaX > 0 && deltaX <= (EXPLOSION_RANGE + 1) * (myWidth + 1)) {
                     bricksToDestroy.add(brick);
                     continue;
                 }
             }
             double deltaX = Math.abs(brickX - myX);
 
-            if (deltaX < myWidth + 2) {
+            if (deltaX < myWidth + 1) {
                 deltaY = Math.abs(brickY - myY);
-                if (deltaY > 0 && deltaY <= (EXPLOSION_RANGE + 1) * (myHeight + 2)) {
+                if (deltaY > 0 && deltaY <= (EXPLOSION_RANGE + 1) * (myHeight + 1)) {
                     if (!bricksToDestroy.contains(brick)) {
                         bricksToDestroy.add(brick);
                     }
