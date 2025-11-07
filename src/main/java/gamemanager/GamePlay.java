@@ -28,6 +28,8 @@ public class GamePlay extends Application {
     private CollisionManager collisionManager;
     private ScoreManager scoreManager;
     private CoinManager coinManager;
+    private SoundManager soundManager;
+
 
     private MenuScreen menuScreen;
     private GameModeScreen gameModeScreen;
@@ -37,6 +39,7 @@ public class GamePlay extends Application {
     private BotScreen botScreen;
     private GameOverScreen gameOverScreen;
     private ShopScreen shopScreen;
+    private PauseScreen pauseScreen;
 
     private Paddle paddle;
     private final java.util.List<Ball> balls = new java.util.ArrayList<>();
@@ -75,6 +78,7 @@ public class GamePlay extends Application {
         collisionManager = new CollisionManager(levelManager, root);
         scoreManager = new ScoreManager();
         coinManager = new CoinManager();
+        soundManager = SoundManager.getInstance();
         collisionManager.setCoinManager(coinManager);
         collisionManager.setScoreManager(scoreManager);
     }
@@ -106,6 +110,12 @@ public class GamePlay extends Application {
             this::refreshAllScreens
         );
 
+        pauseScreen = new PauseScreen(
+            root,
+            this ::resumeGame,
+            this ::returnToMenuFromPause
+        );
+
         gameOverScreen = new GameOverScreen(
             root,
             this::retryLevel,
@@ -116,9 +126,26 @@ public class GamePlay extends Application {
         shopScreen = new ShopScreen(
             root,
             coinManager,
-            this::applySkin,
+            this::applyPaddleSkin,
+            this::applyBallSkin,
             this::showMenuScreen
         );
+    }
+
+    // Apply handlers called from shop sub-screens
+    private void applyPaddleSkin(String skinId) {
+        if (skinId == null) return;
+        if (coinManager != null) coinManager.setSelectedPaddleSkin(skinId);
+        if (paddle != null) paddle.applySkin(skinId);
+    }
+
+    private void applyBallSkin(String skinId) {
+        if (skinId == null) return;
+        if (coinManager != null) coinManager.setSelectedBallSkin(skinId);
+        String res = skinIdToBallResource(skinId);
+        for (Ball b : balls) {
+            b.applySkin(res);
+        }
     }
 
     private void setupScene() {
@@ -147,7 +174,11 @@ public class GamePlay extends Application {
                     }
                     break;
                 case ESCAPE:
-                    if (gameState == GameState.PLAYING || gameState == GameState.START || gameState == GameState.GAME_OVER) {
+                    if (gameState == GameState.PLAYING) {
+                        pauseGame();
+                    } else if (gameState == GameState.PAUSED) {
+                        resumeGame();
+                    } else if (gameState == GameState.START || gameState == GameState.GAME_OVER) {
                         returnToMenu();
                     }
                     break;
@@ -194,6 +225,7 @@ public class GamePlay extends Application {
 
     private void showMenuScreen() {
         hideAllScreens();
+        soundManager.playMusic(SoundManager.SoundType.MENU_MUSIC, true);
         if (!root.getChildren().contains(menuScreen.getStackPane())) {
             root.getChildren().add(menuScreen.getStackPane());
         }
@@ -230,6 +262,7 @@ public class GamePlay extends Application {
         settingScreen.hide();
         gameOverScreen.hide();
         shopScreen.hide();
+        pauseScreen.hide();
     }
 
     private void refreshAllScreens() {
@@ -238,6 +271,7 @@ public class GamePlay extends Application {
             menuScreen.refresh(this::showGameModeScreen, this::showHighScoreScreen, this::showSettingScreen, this::showShopScreen);
             gameOverScreen.refresh();
             shopScreen.refresh();
+            pauseScreen.refresh();
 
         root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
@@ -247,14 +281,26 @@ public class GamePlay extends Application {
 
 
     private void initializeGameElements() {
-        double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
-        double paddleY = GAME_HEIGHT - 20;
-        paddle = new Paddle(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
+         double paddleY = GAME_HEIGHT - 20;
+         paddle = new Paddle(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
 
-        double ballX = GAME_WIDTH / 2;
-        double ballY = GAME_HEIGHT - 35;
-        Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
-        balls.add(ball);
+         double ballX = GAME_WIDTH / 2;
+         double ballY = GAME_HEIGHT - 35;
+         Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
+         // apply selected skins from CoinManager if available
+         if (coinManager != null) {
+            String pSkin = coinManager.getSelectedPaddleSkin();
+            String bSkin = coinManager.getSelectedBallSkin();
+            if (pSkin != null) paddle.applySkin(pSkin);
+            if (bSkin != null) ball.applySkin(skinIdToBallResource(bSkin));
+            // if oneshot active, store pre-oneshot skin then apply oneshot
+            if (collisionManager != null && collisionManager.isOneshotActive()) {
+                ball.storeSkin();
+                ball.applyOneshotSkin();
+            }
+         }
+         balls.add(ball);
 
         indicator = new Indicator(ballX, ballY);
         indicator.pointAtBall(ball);
@@ -265,6 +311,7 @@ public class GamePlay extends Application {
     private void startSinglePlayerGame() {
         hideAllScreens();
         cleanupGameObjects();
+        soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
         initializeGameElements();
         isBotMode = false;
 
@@ -280,6 +327,7 @@ public class GamePlay extends Application {
     private void startBotGame() {
         hideAllScreens();
         cleanupGameObjects();
+        soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
         initializeGameElements();
 
         isBotMode = true;
@@ -355,6 +403,24 @@ public class GamePlay extends Application {
         cleanupGameObjects();
         showMenuScreen();
     }
+
+    private void pauseGame() {
+        gameState = GameState.PAUSED;
+        gameLoop.stop();
+        pauseScreen.show();
+    }
+
+    private void resumeGame() {
+        pauseScreen.hide();
+        gameState = GameState.PLAYING;
+        gameLoop.start();
+    }
+
+    private void returnToMenuFromPause() {
+        pauseScreen.hide();
+        returnToMenu();
+    }
+
 
     private void cleanupGameObjects() {
         if (paddle != null && paddle.getNode().getParent() != null) {
@@ -521,6 +587,19 @@ public class GamePlay extends Application {
         paddle.reset();
 
         Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, BALL_RADIUS, BALL_SPEED);
+        // apply selected skins
+        if (coinManager != null) {
+            String pSkin = coinManager.getSelectedPaddleSkin();
+            String bSkin = coinManager.getSelectedBallSkin();
+            if (pSkin != null) paddle.applySkin(pSkin);
+            if (bSkin != null) {
+                ball.applySkin(skinIdToBallResource(bSkin));
+                if (collisionManager != null && collisionManager.isOneshotActive()) {
+                    ball.storeSkin();
+                    ball.applyOneshotSkin();
+                }
+            }
+        }
         balls.add(ball);
         root.getChildren().add(ball.getNode());
 
@@ -548,9 +627,11 @@ public class GamePlay extends Application {
 
         switch (newState) {
             case LEVEL_CLEARED:
+                soundManager.playSound(SoundManager.SoundType.LEVEL_COMPLETE);
                 handleLevelCleared();
                 break;
             case GAME_OVER:
+                soundManager.playSound(SoundManager.SoundType.GAME_OVER);
                 handleGameOver();
                 break;
             case PLAYING:
@@ -599,16 +680,40 @@ public class GamePlay extends Application {
         }
     }
 
+    // Map logical skin id (selected in shop/coin manager) to a ball image resource path.
+    private String skinIdToBallResource(String skinId) {
+        if (skinId == null) return "/imageball/default.png";
+        return switch (skinId) {
+            case "skin1" -> "/imageball/skin1.png";
+            case "skin2" -> "/imageball/skin2.png";
+            case "oneshot" -> "/imageball/oneshot.png";
+            case "default" -> "/imageball/default.png";
+            default -> "/imageball/default.png";
+        };
+    }
+
     public void spawnExtraBall() {
         if (balls.isEmpty() || balls.size() > 300) return;
 
         int size = balls.size();
-        for (int i = 0; i < size; i++){
+        for (int i = 0; i < size; i++) {
             Ball ref = balls.get(i);
             Ball newBall = new Ball(ref.getX() + ref.getRadius(), ref.getY() + ref.getRadius(), ref.getRadius(), ref.speed);
             newBall.setVx(-ref.getVx());
             newBall.setVy(ref.getVy());
             newBall.setStuck(false);
+
+            if (collisionManager != null && collisionManager.isOneshotActive()) {
+                // if oneshot is active, set pre-oneshot skin from selectedBallSkin and apply oneshot
+                String sel = coinManager == null ? null : coinManager.getSelectedBallSkin();
+                newBall.applySkin(skinIdToBallResource(sel));
+                newBall.storeSkin();
+                newBall.applyOneshotSkin();
+            } else {
+                // inherit skin from reference ball
+                newBall.applySkin(ref.getCurrentSkinResource());
+            }
+
             balls.add(newBall);
             root.getChildren().add(newBall.getNode());
         }
@@ -616,21 +721,47 @@ public class GamePlay extends Application {
 
     public void enableOneshot() {
         collisionManager.setOneshotActive(true);
+        // store current skin and apply oneshot skin to all existing balls
+        for (Ball b : balls) {
+            b.storeSkin();
+            b.applyOneshotSkin();
+        }
+
         if (oneshotTimer != null) {
             oneshotTimer.stop();
         }
         oneshotTimer = new PauseTransition(Duration.seconds(7.5));
-        oneshotTimer.setOnFinished(event -> collisionManager.setOneshotActive(false));
+        oneshotTimer.setOnFinished(event -> {
+            collisionManager.setOneshotActive(false);
+            // restore each ball's stored skin (or default if none)
+            for (Ball b : balls) {
+                b.restoreSkin();
+            }
+            // also ensure paddle shows selected paddle skin
+            if (coinManager != null && paddle != null) {
+                String sel = coinManager.getSelectedPaddleSkin();
+                paddle.applySkin(sel);
+            }
+        });
         oneshotTimer.playFromStart();
     }
 
-
     private void spawnDebugBall() {
         Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, BALL_RADIUS, BALL_SPEED);
+        // inherit skin from existing first ball if there is one; otherwise use selected ball skin
+        if (!balls.isEmpty()) {
+            ball.applySkin(balls.get(0).getCurrentSkinResource());
+        } else if (coinManager != null) {
+            String sel = coinManager.getSelectedBallSkin();
+            ball.applySkin(skinIdToBallResource(sel));
+            if (collisionManager != null && collisionManager.isOneshotActive()) {
+                ball.storeSkin();
+                ball.applyOneshotSkin();
+            }
+            if (paddle != null) paddle.applySkin(coinManager.getSelectedPaddleSkin());
+        }
         balls.add(ball);
         root.getChildren().add(ball.getNode());
-        ball.setStuck(false);
-        ball.launch();
     }
 
     private void promptAndSaveScore() {
@@ -647,9 +778,14 @@ public class GamePlay extends Application {
     }
 
     private void applySkin(String skinId) {
-        // Apply the skin to the paddle if it exists
-        if (paddle != null) {
-            paddle.applySkin(skinId);
+        if (skinId == null) return;
+        // Apply to paddle
+        if (paddle != null) paddle.applySkin(skinId);
+        // Also apply to balls if this is a ball skin id
+        String res = skinIdToBallResource(skinId);
+        for (Ball b : balls) {
+            b.applySkin(res);
         }
     }
+
 }

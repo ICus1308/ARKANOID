@@ -197,6 +197,7 @@ public class LevelManager extends GamePlay {
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
             powerups.add(p);
             root.getChildren().add(p.getNode());
+            SoundManager.getInstance().playSound(SoundManager.SoundType.POWERUP_SPAWN);
         }
     }
     public boolean isLevelComplete() {

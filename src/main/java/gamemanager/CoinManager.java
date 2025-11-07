@@ -12,7 +12,8 @@ public class CoinManager extends GamePlay {
     private static final String COIN_FILE = "coins.properties";
     private int coins = 0;
     private final Set<String> ownedSkins = new HashSet<>();
-    private String selectedSkin = "default";
+    private String selectedPaddleSkin = "default";
+    private String selectedBallSkin = "default";
 
     public CoinManager() {
         load();
@@ -36,27 +37,39 @@ public class CoinManager extends GamePlay {
         return true;
     }
 
-    public boolean isSkinOwned(String skin) {
-        if (skin == null) return false;
-        return ownedSkins.contains(skin);
+    public boolean isSkinOwned(String category, String skin) {
+        if (skin == null || category == null) return false;
+        return ownedSkins.contains(category + ":" + skin);
     }
 
-    public boolean buySkin(String skin, int price) {
-        if (isSkinOwned(skin)) return false;
+    public boolean buySkin(String category, String skin, int price) {
+        if (isSkinOwned(category, skin)) return false;
         if (!spendCoins(price)) return false;
-        ownedSkins.add(skin);
+        ownedSkins.add(category + ":" + skin);
         save();
         return true;
     }
 
-    public String getSelectedSkin() {
-        return selectedSkin;
+    public String getSelectedPaddleSkin() {
+        return selectedPaddleSkin;
     }
 
-    public boolean setSelectedSkin(String skin) {
+    public String getSelectedBallSkin() {
+        return selectedBallSkin;
+    }
+
+    public boolean setSelectedPaddleSkin(String skin) {
         if (skin == null) return false;
-        if (!isSkinOwned(skin) && !"default".equals(skin)) return false;
-        selectedSkin = skin;
+        if (!isSkinOwned("paddle", skin) && !"default".equals(skin)) return false;
+        selectedPaddleSkin = skin;
+        save();
+        return true;
+    }
+
+    public boolean setSelectedBallSkin(String skin) {
+        if (skin == null) return false;
+        if (!isSkinOwned("ball", skin) && !"default".equals(skin)) return false;
+        selectedBallSkin = skin;
         save();
         return true;
     }
@@ -66,7 +79,8 @@ public class CoinManager extends GamePlay {
         try (FileInputStream fis = new FileInputStream(COIN_FILE)) {
             p.load(fis);
             coins = Integer.parseInt(p.getProperty("coins", "0"));
-            selectedSkin = p.getProperty("selected", "default");
+            selectedPaddleSkin = p.getProperty("selectedPaddle", p.getProperty("selected", "default"));
+            selectedBallSkin = p.getProperty("selectedBall", p.getProperty("selected", "default"));
             for (String name : p.stringPropertyNames()) {
                 if (name.startsWith("owned.")) {
                     String skin = name.substring("owned.".length());
@@ -79,15 +93,19 @@ public class CoinManager extends GamePlay {
             // file not found: initialize defaults
             coins = 0;
             ownedSkins.clear();
-            ownedSkins.add("default");
-            selectedSkin = "default";
+            // default ownership: both categories have 'default'
+            ownedSkins.add("paddle:default");
+            ownedSkins.add("ball:default");
+            selectedPaddleSkin = "default";
+            selectedBallSkin = "default";
         }
     }
 
     private void save() {
         Properties p = new Properties();
         p.setProperty("coins", Integer.toString(coins));
-        p.setProperty("selected", selectedSkin == null ? "default" : selectedSkin);
+        p.setProperty("selectedPaddle", selectedPaddleSkin == null ? "default" : selectedPaddleSkin);
+        p.setProperty("selectedBall", selectedBallSkin == null ? "default" : selectedBallSkin);
         for (String skin : ownedSkins) {
             p.setProperty("owned." + skin, "true");
         }
@@ -98,4 +116,3 @@ public class CoinManager extends GamePlay {
         }
     }
 }
-
