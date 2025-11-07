@@ -7,12 +7,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import gameconfig.GameConfig;
 
+import static gameconfig.GameConfig.*;
+
 public class Powerup extends GameObject {
     private final GameConfig.PowerUpType powerupType;
     private final Rectangle node;
 
     public Powerup(double x, double y, GameConfig.PowerUpType type) {
-        super(x, y, 20, 15);
+        super(x, y, POWERUP_WIDTH, POWERUP_HEIGHT);
         this.powerupType = type;
         this.node = new Rectangle(width, height);
         this.node.setArcWidth(5);
@@ -33,8 +35,7 @@ public class Powerup extends GameObject {
     public javafx.scene.Node getNode() { return node; }
 
     public void update() {
-        double fallSpeed = 1.0;
-        setY(y + fallSpeed);
+        setY(y + POWERUP_FALL_SPEED);
     }
 
     public void activate(Object game, Paddle paddle) {

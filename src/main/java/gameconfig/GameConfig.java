@@ -15,6 +15,30 @@ public final class GameConfig {
     public static final double BRICK_WIDTH = 40;
     public static final double BRICK_HEIGHT = 20;
 
+    // Ball skin paths
+    public static final String BALL_DEFAULT_SKIN = "/imageball/default.png";
+    public static final String BALL_ONESHOT_SKIN = "/imageball/oneshot.png";
+
+    // Brick properties
+    public static final int INDESTRUCTIBLE_HIT_COUNT = -1;
+    public static final String INDESTRUCTIBLE_COLOR = "#7f8c8d";
+    public static final int EXPLODING_HIT_COUNT = 1;
+    public static final String EXPLODING_COLOR = "#e67e22";
+    public static final int EXPLOSION_RANGE = 1;
+
+    // Indicator properties
+    public static final double INDICATOR_TRIANGLE_SIZE = 20.0;
+    public static final double INDICATOR_OFFSET_DISTANCE = 50.0;
+    public static final double INDICATOR_MIN_ANGLE_BOTTOM = -Math.PI;
+    public static final double INDICATOR_MAX_ANGLE_BOTTOM = 0.0;
+    public static final double INDICATOR_MIN_ANGLE_TOP = 0.0;
+    public static final double INDICATOR_MAX_ANGLE_TOP = Math.PI;
+
+    // Powerup dimensions
+    public static final double POWERUP_WIDTH = 20;
+    public static final double POWERUP_HEIGHT = 15;
+    public static final double POWERUP_FALL_SPEED = 1.0;
+
     // UI scaling factors based on resolution
     public static double UI_SCALE_X = 1.0;  // Width scale
     public static double UI_SCALE_Y = 1.0;  // Height scale (always 1.0 since height is fixed)
@@ -37,7 +61,8 @@ public final class GameConfig {
         GAME_OVER,
         LEVEL_CLEARED,
         TUTORIAL,
-        SHOP
+        SHOP,
+        ENDLESS
     }
     public enum PaddleSkin {
         CLASSIC,

@@ -18,7 +18,7 @@ import static gameconfig.GameConfig.*;
  * - Confusion state when multiple balls approach
  * - Drift behavior when no threats are present
  */
-public class AIManager extends GamePlay {
+public class AIManager {
     private static final double DRIFT_SPEED_MULTIPLIER = 0.4;
     private static final double DRIFT_MIN_RANGE = 0.2;
     private static final double DRIFT_MAX_RANGE = 0.8;
@@ -126,7 +126,7 @@ public class AIManager extends GamePlay {
     }
 
     private void handleBallTracking(Ball ball, double tpf) {
-        if (ball.getVy() <= 0) {
+        if (ball.getVy() >= 0) {
             return;
         }
 
@@ -168,7 +168,7 @@ public class AIManager extends GamePlay {
     }
 
     private boolean isBallMovingDown(Ball ball) {
-        return ball.getVy() > 0;
+        return ball.getVy() < 0;
     }
 
     private double calculateDistanceToPaddle(Ball ball) {
@@ -250,7 +250,7 @@ public class AIManager extends GamePlay {
         double vx = ball.getVx();
         double vy = ball.getVy();
 
-        if (vy <= 0) {
+        if (vy >= 0) {
             return ballX;
         }
 

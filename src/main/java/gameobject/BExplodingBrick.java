@@ -5,10 +5,9 @@ import gamemanager.SoundManager;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 
+import static gameconfig.GameConfig.*;
+
 public class BExplodingBrick extends Brick {
-    private static final int EXPLODING_HIT_COUNT = 1;
-    private static final String EXPLODING_COLOR = "#e67e22";
-    private static final int EXPLOSION_RANGE = 7;
 
     private LevelManager levelManager;
     private Pane root;

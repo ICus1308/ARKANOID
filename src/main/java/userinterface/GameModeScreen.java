@@ -15,16 +15,22 @@ public class GameModeScreen extends UIManager {
 
     private StackPane layout;
     private final Runnable onSinglePlayer;
+    private final Runnable onOneVOne;
     private final Runnable onBot;
+    private final Runnable onEndless;
     private final Runnable onBack;
 
     public GameModeScreen(Pane root,
                           Runnable onSinglePlayer,
+                          Runnable onOneVOne,
                           Runnable onBot,
+                          Runnable onEndless,
                           Runnable onBack) {
         super(root);
         this.onSinglePlayer = onSinglePlayer;
+        this.onOneVOne = onOneVOne;
         this.onBot = onBot;
+        this.onEndless = onEndless;
         this.onBack = onBack;
     }
 
@@ -42,9 +48,9 @@ public class GameModeScreen extends UIManager {
 
     private VBox createButtonBox() {
         GameButton singlePlayerButton = createButton("Singleplayer", onSinglePlayer);
-        GameButton oneVOneButton = createButton("1v1", () -> {});
+        GameButton oneVOneButton = createButton("1v1", onOneVOne);
         GameButton oneVBotButton = createButton("1vBot", onBot);
-        GameButton endlessButton = createButton("Endless Mode", () -> {});
+        GameButton endlessButton = createButton("Endless Mode", onEndless);
         GameButton backButton = createButton("Back", onBack);
 
         VBox buttonBox = new VBox(20, singlePlayerButton, oneVOneButton, oneVBotButton, endlessButton, backButton);
