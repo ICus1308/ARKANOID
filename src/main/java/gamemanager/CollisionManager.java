@@ -142,7 +142,6 @@ public class CollisionManager {
         }
         ui.increaseScore(score);
         brick.updateDraw();
-        SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
         if (brick.getHitCount() == 0) {
             SoundManager.getInstance().playSound(SoundManager.SoundType.BRICK_BREAK);
             if (coinManager != null) {
@@ -150,6 +149,9 @@ public class CollisionManager {
                 ui.updateCoins();
             }
             levelManager.removeBrick(brick, root);
+        }
+        else {
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
         }
     }
 
