@@ -41,6 +41,7 @@ public class GamePlay extends Application {
     private GameOverScreen gameOverScreen;
     private ShopScreen shopScreen;
     private PauseScreen pauseScreen;
+    private EndlessScreen endlessScreen;
 
     private Paddle paddle;
     private Paddle paddle2; // Second paddle for 1v1 mode
@@ -102,6 +103,7 @@ public class GamePlay extends Application {
             this::startSinglePlayerGame,
             this::startOneVOneGame,
             this::startBotGame,
+            this::startEndlessGame,
             this::showMenuScreen
         );
 
@@ -222,10 +224,6 @@ public class GamePlay extends Application {
                     if (levelManager.isLevelComplete()) {
                         changeGameState(GameState.LEVEL_CLEARED);
                     }
-                    break;
-                case Y:
-                    levelManager.loadRandomLevel(0.6, root);
-                    resetBallAndPaddle();
                     break;
                 default:
                     break;
@@ -351,6 +349,7 @@ public class GamePlay extends Application {
 
         indicator = new Indicator(ballX, ballY);
         indicator.pointAtBall(ball);
+        indicator.setRotation(-90);
 
         root.getChildren().addAll(paddle.getNode(), ball.getNode(), indicator.getNode());
     }
@@ -451,6 +450,24 @@ public class GamePlay extends Application {
         oneVOneScreen.updatePlayer2Lives(3);
 
         levelManager.loadOneVOneLevel(root);
+        changeGameState(GameState.START);
+    }
+
+    private void startEndlessGame() {
+        hideAllScreens();
+        cleanupGameObjects();
+        soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
+        initializeGameElements();
+        isBotMode = false;
+        isOneVOneMode = false;
+
+        endlessScreen = new EndlessScreen(root, coinManager);
+        endlessScreen.updateLives(3);
+        endlessScreen.updateScore(0);
+        endlessScreen.updateCoins();
+        endlessScreen.showLevel(1);
+
+        levelManager.generateEndlessLevel(root);
         changeGameState(GameState.START);
     }
 
@@ -704,8 +721,23 @@ public class GamePlay extends Application {
                 } else if (isBotMode && botScreen != null) {
                     // No scoring in bot mode, just break bricks
                     collisionManager.handleBrickBallCollision(b, hitBrick, botScreen, 0);
+                } else if (endlessScreen != null) {
+                    collisionManager.handleBrickBallCollision(b, hitBrick, endlessScreen);
                 } else if (singleplayerScreen != null) {
                     collisionManager.handleBrickBallCollision(b, hitBrick, singleplayerScreen);
+                }
+
+                if (!isOneVOneMode && !isBotMode && levelManager.isLevelComplete()) {
+                    if (endlessScreen != null) {
+                        // Generate new level for endless mode
+                        levelManager.generateEndlessLevel(root);
+                        resetBallAndPaddle();
+                        int currentEndlessLevel = (endlessScreen.getScore() / 1000) + 1;
+                        endlessScreen.showLevel(currentEndlessLevel);
+                    } else {
+                        changeGameState(GameState.LEVEL_CLEARED);
+                    }
+                    return; // Level is done, no more collision checks needed for this frame
                 }
             }
         }
@@ -749,6 +781,12 @@ public class GamePlay extends Application {
                     }
                 }
                 resetBallAndPaddleBot();
+            } else if (endlessScreen != null) {
+                endlessScreen.decreaseLives();
+                resetBallAndPaddle();
+                if (endlessScreen.getLives() <= 0) {
+                    changeGameState(GameConfig.GameState.GAME_OVER);
+                }
             } else if (singleplayerScreen != null) {
                 singleplayerScreen.decreaseLives();
                 resetBallAndPaddle();
@@ -803,6 +841,7 @@ public class GamePlay extends Application {
         }
         indicator = new Indicator(ball.getX() + ball.getRadius(), ball.getY());
         indicator.pointAtBall(ball);
+        indicator.setRotation(-90);
         root.getChildren().add(indicator.getNode());
 
         gameState = GameState.START;
@@ -892,6 +931,8 @@ public class GamePlay extends Application {
             oneVOneScreen.showGameMessage(newState);
         } else if (isBotMode && botScreen != null) {
             botScreen.showGameMessage(newState);
+        } else if (endlessScreen != null) {
+            endlessScreen.showGameMessage(newState);
         } else if (singleplayerScreen != null) {
             singleplayerScreen.showGameMessage(newState);
         }
@@ -939,6 +980,13 @@ public class GamePlay extends Application {
             gameOverScreen.refresh();
             gameOverScreen.show();
             System.out.println("Bot Mode Game Over");
+        } else if (endlessScreen != null) {
+            endlessScreen.hideGameMessage();
+            int finalScore = endlessScreen.getScore();
+            gameOverScreen.setFinalScore(finalScore);
+            gameOverScreen.refresh();
+            gameOverScreen.show();
+            System.out.println("Endless Mode - Final Score: " + finalScore);
         } else if (singleplayerScreen != null) {
             singleplayerScreen.hideGameMessage();
             int finalScore = singleplayerScreen.getScore();
@@ -1036,6 +1084,7 @@ public class GamePlay extends Application {
             if (paddle != null) paddle.applySkin(coinManager.getSelectedPaddleSkin());
         }
         balls.add(ball);
+        ball.launch();
         root.getChildren().add(ball.getNode());
     }
 
@@ -1047,7 +1096,7 @@ public class GamePlay extends Application {
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(name -> {
-            int finalScore = singleplayerScreen.getScore();
+            int finalScore = endlessScreen != null ? endlessScreen.getScore() : singleplayerScreen.getScore();
             scoreManager.addScore(name, finalScore);
         });
     }

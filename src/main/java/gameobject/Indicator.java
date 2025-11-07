@@ -4,15 +4,9 @@ import gamemanager.GameObject;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
+import static gameconfig.GameConfig.*;
+
 public class Indicator extends GameObject {
-    private static final double TRIANGLE_SIZE = 20.0;
-    private static final double OFFSET_DISTANCE = 50.0;
-
-    private static final double MIN_ANGLE_BOTTOM = -Math.PI;
-    private static final double MAX_ANGLE_BOTTOM = 0.0;
-    private static final double MIN_ANGLE_TOP = 0.0;
-    private static final double MAX_ANGLE_TOP = Math.PI;
-
     private final Polygon triangle;
     private double rotationAngle;
     private double ballCenterX;
@@ -20,7 +14,7 @@ public class Indicator extends GameObject {
     private boolean isTopPaddle = false;
 
     public Indicator(double x, double y) {
-        super(x, y, TRIANGLE_SIZE * Math.sqrt(2), TRIANGLE_SIZE);
+        super(x, y, INDICATOR_TRIANGLE_SIZE * Math.sqrt(2), INDICATOR_TRIANGLE_SIZE);
         this.rotationAngle = -Math.PI;
         this.triangle = createTriangle();
         updatePosition(x, y);
@@ -65,6 +59,10 @@ public class Indicator extends GameObject {
         updatePosition(ballCenterX, ballCenterY);
     }
 
+    public void setRotation(double angle) {
+        this.rotationAngle = Math.toRadians(angle);
+    }
+
     private Polygon createTriangle() {
         Polygon tri = new Polygon();
         tri.setFill(Color.YELLOW);
@@ -74,8 +72,8 @@ public class Indicator extends GameObject {
     }
 
     private void clampRotationAngle() {
-        double minAngle = isTopPaddle ? MIN_ANGLE_TOP : MIN_ANGLE_BOTTOM;
-        double maxAngle = isTopPaddle ? MAX_ANGLE_TOP : MAX_ANGLE_BOTTOM;
+        double minAngle = isTopPaddle ? INDICATOR_MIN_ANGLE_TOP : INDICATOR_MIN_ANGLE_BOTTOM;
+        double maxAngle = isTopPaddle ? INDICATOR_MAX_ANGLE_TOP : INDICATOR_MAX_ANGLE_BOTTOM;
 
         if (rotationAngle < minAngle) {
             rotationAngle = minAngle;
@@ -88,19 +86,19 @@ public class Indicator extends GameObject {
         double cosAngle = Math.cos(rotationAngle);
         double sinAngle = Math.sin(rotationAngle);
 
-        double baseX = ballCenterX + cosAngle * OFFSET_DISTANCE;
-        double baseY = ballCenterY + sinAngle * OFFSET_DISTANCE;
+        double baseX = ballCenterX + cosAngle * INDICATOR_OFFSET_DISTANCE;
+        double baseY = ballCenterY + sinAngle * INDICATOR_OFFSET_DISTANCE;
 
         double perpX = -sinAngle;
 
-        double tipX = baseX + cosAngle * TRIANGLE_SIZE;
-        double tipY = baseY + sinAngle * TRIANGLE_SIZE;
+        double tipX = baseX + cosAngle * INDICATOR_TRIANGLE_SIZE;
+        double tipY = baseY + sinAngle * INDICATOR_TRIANGLE_SIZE;
 
-        double leftX = baseX + perpX * TRIANGLE_SIZE;
-        double leftY = baseY + cosAngle * TRIANGLE_SIZE;
+        double leftX = baseX + perpX * INDICATOR_TRIANGLE_SIZE;
+        double leftY = baseY + cosAngle * INDICATOR_TRIANGLE_SIZE;
 
-        double rightX = baseX - perpX * TRIANGLE_SIZE;
-        double rightY = baseY - cosAngle * TRIANGLE_SIZE;
+        double rightX = baseX - perpX * INDICATOR_TRIANGLE_SIZE;
+        double rightY = baseY - cosAngle * INDICATOR_TRIANGLE_SIZE;
 
         triangle.getPoints().clear();
         triangle.getPoints().addAll(
@@ -118,4 +116,3 @@ public class Indicator extends GameObject {
         this.y = Math.min(tipY, Math.min(leftY, rightY));
     }
 }
-
