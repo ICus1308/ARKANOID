@@ -28,11 +28,7 @@ public class Indicator extends GameObject {
 
     public void setTopPaddle(boolean isTopPaddle) {
         this.isTopPaddle = isTopPaddle;
-        if (isTopPaddle) {
-            this.rotationAngle = Math.PI / 2; // Point straight down initially
-        } else {
-            this.rotationAngle = -Math.PI / 2; // Point straight up initially
-        }
+        this.rotationAngle = isTopPaddle ? Math.PI / 2 : -Math.PI / 2;
         updatePosition(ballCenterX, ballCenterY);
     }
 
@@ -78,20 +74,13 @@ public class Indicator extends GameObject {
     }
 
     private void clampRotationAngle() {
-        if (isTopPaddle) {
-            // Top paddle: restrict to downward hemisphere (0 to PI)
-            if (rotationAngle < MIN_ANGLE_TOP) {
-                rotationAngle = MIN_ANGLE_TOP;
-            } else if (rotationAngle > MAX_ANGLE_TOP) {
-                rotationAngle = MAX_ANGLE_TOP;
-            }
-        } else {
-            // Bottom paddle: restrict to upward hemisphere (-PI to 0)
-            if (rotationAngle < MIN_ANGLE_BOTTOM) {
-                rotationAngle = MIN_ANGLE_BOTTOM;
-            } else if (rotationAngle > MAX_ANGLE_BOTTOM) {
-                rotationAngle = MAX_ANGLE_BOTTOM;
-            }
+        double minAngle = isTopPaddle ? MIN_ANGLE_TOP : MIN_ANGLE_BOTTOM;
+        double maxAngle = isTopPaddle ? MAX_ANGLE_TOP : MAX_ANGLE_BOTTOM;
+
+        if (rotationAngle < minAngle) {
+            rotationAngle = minAngle;
+        } else if (rotationAngle > maxAngle) {
+            rotationAngle = maxAngle;
         }
     }
 

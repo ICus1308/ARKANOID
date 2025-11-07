@@ -175,67 +175,29 @@ public class LevelManager extends GamePlay {
 
     // ===== 1v1 Level Generation Methods =====
 
-    /**
-     * Loads a special level for 1v1 mode with 3 rows of indestructible bricks
-     * positioned in the middle of the screen with spacing between rows.
-     */
     public void loadOneVOneLevel(Pane root) {
-        // Clear existing bricks
         root.getChildren().removeAll(bricks.stream().map(Brick::getNode).toList());
         root.getChildren().removeAll(powerups.stream().map(Powerup::getNode).toList());
         bricks.clear();
         powerups.clear();
 
-        // Create the 1v1 level pattern: Brick -> 2 Empty -> Brick -> 2 Empty -> Brick
         List<String> levelPattern = new ArrayList<>();
-
-        // Pattern: 7 rows total positioned in the middle area
-        // Start from row 3 (leaving space for top paddle and some clearance)
         for (int i = 0; i < BRICK_ROWS; i++) {
-            if (i == 3) {
-                // First brick row - use indestructible bricks with 3-5 bricks
-                levelPattern.add(getRandomIndestructibleBrickRow());
-            } else if (i == 4 || i == 5) {
-                // Two empty rows
-                levelPattern.add("00000000000000");
-            } else if (i == 6) {
-                // Second brick row - use indestructible bricks with 3-5 bricks
-                levelPattern.add(getRandomIndestructibleBrickRow());
-            } else if (i == 7 || i == 8) {
-                // Two empty rows
-                levelPattern.add("00000000000000");
-            } else if (i == 9) {
-                // Third brick row - use indestructible bricks with 3-5 bricks
+            if (i == 3 || i == 6 || i == 9) {
                 levelPattern.add(getRandomIndestructibleBrickRow());
             } else {
-                // Empty rows for top and bottom clearance
                 levelPattern.add("00000000000000");
             }
         }
 
-        // Load the pattern with Y-offset of 150 (moved down by 100px)
         loadLevelFromPattern(levelPattern, root, 150);
     }
 
-    /**
-     * Generates a random row with 3-5 indestructible bricks placed at random positions.
-     * Used for 1v1 mode to create unpredictable obstacle patterns.
-     *
-     * @return A string pattern with 'U' (indestructible) bricks and '0' (empty) spaces
-     */
     private String getRandomIndestructibleBrickRow() {
-        // Generate a row with 3-5 indestructible bricks ('U') randomly placed
-        int numBricks = 3 + random.nextInt(3); // 3 to 5 bricks
-
-        // Create array to hold the row (14 columns for BRICK_COLS)
+        int numBricks = 3 + random.nextInt(3);
         char[] row = new char[14];
+        java.util.Arrays.fill(row, '0');
 
-        // Fill with empty spaces first
-        for (int i = 0; i < 14; i++) {
-            row[i] = '0';
-        }
-
-        // Randomly place the bricks
         java.util.Set<Integer> usedPositions = new java.util.HashSet<>();
         for (int i = 0; i < numBricks; i++) {
             int position;
@@ -244,20 +206,12 @@ public class LevelManager extends GamePlay {
             } while (usedPositions.contains(position));
 
             usedPositions.add(position);
-            row[position] = 'U'; // U = Indestructible brick
+            row[position] = 'U';
         }
 
         return new String(row);
     }
 
-    /**
-     * Loads a level from a pattern list with a custom Y-offset.
-     * This overloaded version allows positioning bricks at different vertical positions.
-     *
-     * @param lines The pattern lines defining brick layout
-     * @param root The pane to add bricks to
-     * @param yOffset The Y-offset for brick positioning (e.g., 50 for normal, 150 for 1v1)
-     */
     private void loadLevelFromPattern(List<String> lines, Pane root, int yOffset) {
         double brickWidth = (GAME_WIDTH - BRICK_COLS * 2) / BRICK_COLS;
         double brickHeight = 20;

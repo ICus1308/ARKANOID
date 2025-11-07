@@ -108,13 +108,7 @@ public class Ball extends GameObject {
     public void update(double tpf, Paddle paddle, boolean isTopPaddle) {
         if (stuck) {
             setX(paddle.getX() + paddle.getWidth() / 2 - radius);
-            if (isTopPaddle) {
-                // For top paddle, position ball below the paddle
-                setY(paddle.getY() + paddle.getHeight());
-            } else {
-                // For bottom paddle, position ball above the paddle
-                setY(paddle.getY() - height);
-            }
+            setY(isTopPaddle ? paddle.getY() + paddle.getHeight() : paddle.getY() - height);
         } else {
             setX(x + vx * tpf * 60);
             setY(y + vy * tpf * 60);

@@ -66,51 +66,22 @@ public class CollisionManager extends GamePlay {
         double overlapX = halfWidths - Math.abs(dx);
         double overlapY = halfHeights - Math.abs(dy);
 
-        if (overlapX <= 0 || overlapY <= 0) return; // no collision
+        if (overlapX <= 0 || overlapY <= 0) return;
 
-        // Determine collision side and respond
         if (overlapX < overlapY) {
-            // horizontal collision
-            if (dx > 0) {
-                ball.setX(ball.getX() + overlapX);
-                ball.setVx(Math.abs(ball.getVx()));
-            } else {
-                ball.setX(ball.getX() - overlapX);
-                ball.setVx(-Math.abs(ball.getVx()));
-            }
+            ball.setX(dx > 0 ? ball.getX() + overlapX : ball.getX() - overlapX);
+            ball.setVx(dx > 0 ? Math.abs(ball.getVx()) : -Math.abs(ball.getVx()));
         } else {
-            // vertical collision
-            // Determine if this is a top paddle (1v1 mode) or bottom paddle
-            boolean isTopPaddle = paddle.getY() < 100; // Top paddle is near top of screen
+            boolean isTopPaddle = paddle.getY() < 100;
 
-            if (dy > 0) {
-                ball.setY(ball.getY() + overlapY);
-                // Ball is below paddle center - bounce downward (for top paddle) or upward (for bottom paddle)
-                if (isTopPaddle) {
-                    ball.setVy(Math.abs(ball.getVy())); // Bounce downward
-                } else {
-                    ball.setVy(-Math.abs(ball.getVy())); // Bounce upward
-                }
-            } else {
-                ball.setY(ball.getY() - overlapY);
-                // Ball is above paddle center - bounce upward (for bottom paddle) or downward (for top paddle)
-                if (isTopPaddle) {
-                    ball.setVy(Math.abs(ball.getVy())); // Bounce downward
-                } else {
-                    ball.setVy(-Math.abs(ball.getVy())); // Bounce upward
-                }
-            }
+            ball.setY(dy > 0 ? ball.getY() + overlapY : ball.getY() - overlapY);
+            ball.setVy(isTopPaddle ? Math.abs(ball.getVy()) : -Math.abs(ball.getVy()));
 
-            // Tweak horizontal velocity based on where the ball hit the paddle
-            double relativeIntersectX = (paddle.getX() + (paddle.getWidth() / 2.0)) - (ball.getX() + ball.getRadius());
-            double normalizedRelativeIntersectionX = 0;
-            if (paddle.getWidth() != 0) {
-                normalizedRelativeIntersectionX = relativeIntersectX / (paddle.getWidth() / 2.0);
-            }
-            double angleAdjustment = normalizedRelativeIntersectionX * ball.speed * 1;
+            double relativeIntersectX = (paddle.getX() + paddle.getWidth() / 2.0) - (ball.getX() + ball.getRadius());
+            double normalizedRelativeIntersectionX = paddle.getWidth() != 0 ? relativeIntersectX / (paddle.getWidth() / 2.0) : 0;
+            double angleAdjustment = normalizedRelativeIntersectionX * ball.speed;
             ball.setVx(ball.getVx() - angleAdjustment);
 
-            // Normalize ball speed to maintain consistent speed after adjustment
             double currentSpeed = Math.sqrt(ball.getVx() * ball.getVx() + ball.getVy() * ball.getVy());
             if (currentSpeed != 0) {
                 double factor = ball.speed / currentSpeed;
@@ -182,7 +153,6 @@ public class CollisionManager extends GamePlay {
         }
     }
 
-    // Overloaded method for 1v1 mode - handles scoring for specific player
     public void handleBrickBallCollision(Ball ball, Brick brick, userinterface.OneVOneScreen ui, int player) {
         javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
 
@@ -201,26 +171,15 @@ public class CollisionManager extends GamePlay {
         double overlapY = halfHeights - Math.abs(dy);
 
         if (overlapX < overlapY) {
-            if (dx > 0) {
-                ball.setX(ball.getX() + overlapX);
-            } else {
-                ball.setX(ball.getX() - overlapX);
-            }
+            ball.setX(dx > 0 ? ball.getX() + overlapX : ball.getX() - overlapX);
             ball.bounce(GameConfig.WallSideType.EAST);
         } else {
-            if (dy > 0) {
-                ball.setY(ball.getY() + overlapY);
-            } else {
-                ball.setY(ball.getY() - overlapY);
-            }
+            ball.setY(dy > 0 ? ball.getY() + overlapY : ball.getY() - overlapY);
             ball.bounce(GameConfig.WallSideType.NORTH);
         }
 
-        // No scoring in 1v1 mode - bricks are indestructible obstacles
         brick.updateDraw();
         SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
-
-        // Don't remove brick or check for destruction - all 1v1 bricks are indestructible
     }
     // Check collision between ball and walls
     public GameConfig.WallSideType checkWallCollision(Ball ball, double gameWidth, double gameHeight) {

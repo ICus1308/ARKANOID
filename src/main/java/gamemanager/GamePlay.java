@@ -396,22 +396,18 @@ public class GamePlay extends Application {
 
         isOneVOneMode = true;
         isBotMode = false;
-        lastScoredPlayer = 1; // Player 1 starts with the ball
+        lastScoredPlayer = 1;
 
-        // Initialize both paddles
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
         paddle = new Paddle(paddleX, GAME_HEIGHT - 20, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle2 = new Paddle(paddleX, 30, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        paddle.applySkin("blue");
+        paddle2.applySkin("red");
 
-        // Apply different colors to distinguish paddles
-        paddle.applySkin("blue");  // Player 1 (bottom)
-        paddle2.applySkin("red");  // Player 2 (top)
-
-        // Initialize ball at bottom paddle (Player 1 serves first)
         double ballX = paddle.getX() + paddle.getWidth() / 2;
         double ballY = paddle.getY() - 8;
         Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
-        ball.setStuck(true); // Ball is stuck to paddle initially
+        ball.setStuck(true);
 
         if (coinManager != null) {
             String bSkin = coinManager.getSelectedBallSkin();
@@ -420,17 +416,15 @@ public class GamePlay extends Application {
         balls.add(ball);
 
         indicator = new Indicator(ballX, ballY);
-        indicator.setTopPaddle(false); // Player 1 serves first from bottom
+        indicator.setTopPaddle(false);
         indicator.pointAtBall(ball);
 
         root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getNode(), indicator.getNode());
 
-        // Initialize 1v1 screen
         oneVOneScreen = new OneVOneScreen(root, coinManager);
         oneVOneScreen.updatePlayer1Lives(3);
         oneVOneScreen.updatePlayer2Lives(3);
 
-        // Load 1v1 level with brick pattern
         levelManager.loadOneVOneLevel(root);
         changeGameState(GameState.START);
     }
@@ -596,51 +590,27 @@ public class GamePlay extends Application {
         if (isBotMode && aiManager != null) {
             aiManager.update(balls, levelManager.getPowerups(), tpf);
         } else if (isOneVOneMode) {
-            // In 1v1 mode, lock paddles until ball is served (START state)
             if (gameState == GameState.START) {
-                // Paddles are locked - only the serving player can aim with indicator
-                // No paddle movement allowed
             } else {
-                // Game is playing - control both paddles
-                // Player 1 (bottom paddle): A/D keys
-                if (isMovingLeft) {
-                    paddle.moveLeft(tpf);
-                }
-                if (isMovingRight) {
-                    paddle.moveRight(tpf);
-                }
-                // Player 2 (top paddle): Arrow keys
-                if (isMovingLeft2) {
-                    paddle2.moveLeft(tpf);
-                }
-                if (isMovingRight2) {
-                    paddle2.moveRight(tpf);
-                }
+                if (isMovingLeft) paddle.moveLeft(tpf);
+                if (isMovingRight) paddle.moveRight(tpf);
+                if (isMovingLeft2) paddle2.moveLeft(tpf);
+                if (isMovingRight2) paddle2.moveRight(tpf);
             }
         } else {
-            // Don't move paddle in START state when indicator is active
             if (gameState != GameState.START || indicator == null) {
-                if (isMovingLeft) {
-                    paddle.moveLeft(tpf);
-                }
-                if (isMovingRight) {
-                    paddle.moveRight(tpf);
-                }
+                if (isMovingLeft) paddle.moveLeft(tpf);
+                if (isMovingRight) paddle.moveRight(tpf);
             }
         }
     }
 
     private void updateGame(double tpf) {
         for (Ball b : new java.util.ArrayList<>(balls)) {
-            // In 1v1 mode, ball should follow the paddle of whoever is serving
             if (isOneVOneMode && gameState == GameState.START) {
-                if (lastScoredPlayer == 2) {
-                    b.update(tpf, paddle2, true); // Player 2 is serving from top - ball below paddle
-                } else {
-                    b.update(tpf, paddle, false); // Player 1 is serving from bottom - ball above paddle
-                }
+                b.update(tpf, lastScoredPlayer == 2 ? paddle2 : paddle, lastScoredPlayer == 2);
             } else {
-                b.update(tpf, paddle, false); // Normal mode - always follow bottom paddle with ball above
+                b.update(tpf, paddle, false);
             }
         }
 
@@ -662,54 +632,41 @@ public class GamePlay extends Application {
         for (Ball b : new java.util.ArrayList<>(balls)) {
             GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
 
-            // In 1v1 mode, handle top and bottom hits differently
             if (isOneVOneMode) {
                 if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
-                    // Player 1 (bottom) loses a life
                     toRemove.add(b);
-                    lastScoredPlayer = 1; // Player 1 will serve next
+                    lastScoredPlayer = 1;
                     continue;
                 } else if (wallHit == GameConfig.WallSideType.NORTH) {
-                    // Player 2 (top) loses a life - need to check if ball is actually past the paddle
                     if (b.getY() < paddle2.getY() + paddle2.getHeight()) {
                         toRemove.add(b);
-                        lastScoredPlayer = 2; // Player 2 will serve next
+                        lastScoredPlayer = 2;
                         continue;
                     }
                 }
             } else {
-                // Normal mode - only bottom hit causes ball loss
                 if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
                     toRemove.add(b);
                     continue;
                 }
             }
 
-            // Check paddle collisions
             if (collisionManager.checkPaddleBallCollision(paddle, b)) {
                 collisionManager.handlePaddleBallCollision(paddle, b);
             }
 
-            // In 1v1 mode, also check second paddle
             if (isOneVOneMode && paddle2 != null) {
                 if (collisionManager.checkPaddleBallCollision(paddle2, b)) {
                     collisionManager.handlePaddleBallCollision(paddle2, b);
                 }
             }
 
-            // Check brick collisions
             java.util.List<Brick> bricks = levelManager.getBricks();
             Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
             if (hitBrick != null) {
                 if (isOneVOneMode && oneVOneScreen != null) {
-                    // In 1v1 mode, award points based on which half of the screen the brick is in
-                    if (hitBrick.getY() < GAME_HEIGHT / 2) {
-                        // Top half - Player 1 scores
-                        collisionManager.handleBrickBallCollision(b, hitBrick, oneVOneScreen, 1);
-                    } else {
-                        // Bottom half - Player 2 scores
-                        collisionManager.handleBrickBallCollision(b, hitBrick, oneVOneScreen, 2);
-                    }
+                    int player = hitBrick.getY() < GAME_HEIGHT / 2 ? 1 : 2;
+                    collisionManager.handleBrickBallCollision(b, hitBrick, oneVOneScreen, player);
                 } else if (isBotMode && botScreen != null) {
                     collisionManager.handleBrickBallCollision(b, hitBrick, botScreen);
                 } else if (singleplayerScreen != null) {
@@ -726,18 +683,15 @@ public class GamePlay extends Application {
             balls.remove(dead);
         }
 
-        // Handle life loss
         if (!toRemove.isEmpty() && balls.isEmpty()) {
             if (isOneVOneMode && oneVOneScreen != null) {
                 if (lastScoredPlayer == 1) {
-                    // Player 1 lost the ball
                     oneVOneScreen.decreasePlayer1Lives();
                     if (oneVOneScreen.getPlayer1Lives() <= 0) {
                         changeGameState(GameConfig.GameState.GAME_OVER);
                         return;
                     }
                 } else {
-                    // Player 2 lost the ball
                     oneVOneScreen.decreasePlayer2Lives();
                     if (oneVOneScreen.getPlayer2Lives() <= 0) {
                         changeGameState(GameConfig.GameState.GAME_OVER);
@@ -760,7 +714,6 @@ public class GamePlay extends Application {
             }
         }
 
-        // Handle powerups (not in 1v1 mode)
         if (!isOneVOneMode) {
             for (Powerup p : new java.util.ArrayList<>(levelManager.getPowerups())) {
                 if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
@@ -820,23 +773,14 @@ public class GamePlay extends Application {
         }
         balls.clear();
 
-        // Reset both paddles to center
         paddle.reset();
         paddle2.reset();
-
-        // Reapply colors
         paddle.applySkin("blue");
         paddle2.applySkin("red");
 
-        // Ball spawns at the paddle of the player who lost the point (who will serve)
-        Ball ball;
-        if (lastScoredPlayer == 1) {
-            // Player 1 lost point, so Player 1 serves from bottom - ball above paddle
-            ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED);
-        } else {
-            // Player 2 lost point, so Player 2 serves from top - ball below paddle (toward center)
-            ball = new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
-        }
+        Ball ball = lastScoredPlayer == 1
+            ? new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED)
+            : new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
 
         ball.setStuck(true);
 
@@ -853,7 +797,7 @@ public class GamePlay extends Application {
             root.getChildren().remove(indicator.getNode());
         }
         indicator = new Indicator(ball.getX() + ball.getRadius(), ball.getY());
-        indicator.setTopPaddle(lastScoredPlayer == 2); // Set to true if Player 2 is serving
+        indicator.setTopPaddle(lastScoredPlayer == 2);
         indicator.pointAtBall(ball);
         root.getChildren().add(indicator.getNode());
 
@@ -907,9 +851,7 @@ public class GamePlay extends Application {
 
     private void handleGameOver() {
         if (isOneVOneMode && oneVOneScreen != null) {
-            // 1v1 mode - show winner message
             oneVOneScreen.hideGameMessage();
-            // Don't set score for game over screen - it's not relevant for 1v1
             gameOverScreen.refresh();
             gameOverScreen.show();
             System.out.println("1v1 Game Over");
@@ -917,16 +859,16 @@ public class GamePlay extends Application {
             botScreen.hideGameMessage();
             int finalScore = botScreen.getScore();
             gameOverScreen.setFinalScore(finalScore);
-            System.out.println("AI Final Score: " + finalScore);
             gameOverScreen.refresh();
             gameOverScreen.show();
+            System.out.println("AI Final Score: " + finalScore);
         } else if (singleplayerScreen != null) {
             singleplayerScreen.hideGameMessage();
             int finalScore = singleplayerScreen.getScore();
             gameOverScreen.setFinalScore(finalScore);
-            System.out.println("Final Score: " + finalScore);
             gameOverScreen.refresh();
             gameOverScreen.show();
+            System.out.println("Final Score: " + finalScore);
         }
 
         System.out.println("GameOverScreen showed");
