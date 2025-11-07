@@ -8,19 +8,32 @@ public class Indicator extends GameObject {
     private static final double TRIANGLE_SIZE = 20.0;
     private static final double OFFSET_DISTANCE = 50.0;
 
-    private static final double MIN_ANGLE = -Math.PI;
-    private static final double MAX_ANGLE = 0.0;
+    private static final double MIN_ANGLE_BOTTOM = -Math.PI;
+    private static final double MAX_ANGLE_BOTTOM = 0.0;
+    private static final double MIN_ANGLE_TOP = 0.0;
+    private static final double MAX_ANGLE_TOP = Math.PI;
 
     private final Polygon triangle;
     private double rotationAngle;
     private double ballCenterX;
     private double ballCenterY;
+    private boolean isTopPaddle = false;
 
     public Indicator(double x, double y) {
         super(x, y, TRIANGLE_SIZE * Math.sqrt(2), TRIANGLE_SIZE);
         this.rotationAngle = -Math.PI;
         this.triangle = createTriangle();
         updatePosition(x, y);
+    }
+
+    public void setTopPaddle(boolean isTopPaddle) {
+        this.isTopPaddle = isTopPaddle;
+        if (isTopPaddle) {
+            this.rotationAngle = Math.PI / 2; // Point straight down initially
+        } else {
+            this.rotationAngle = -Math.PI / 2; // Point straight up initially
+        }
+        updatePosition(ballCenterX, ballCenterY);
     }
 
     @Override
@@ -65,10 +78,20 @@ public class Indicator extends GameObject {
     }
 
     private void clampRotationAngle() {
-        if (rotationAngle < MIN_ANGLE) {
-            rotationAngle = MIN_ANGLE;
-        } else if (rotationAngle > MAX_ANGLE) {
-            rotationAngle = MAX_ANGLE;
+        if (isTopPaddle) {
+            // Top paddle: restrict to downward hemisphere (0 to PI)
+            if (rotationAngle < MIN_ANGLE_TOP) {
+                rotationAngle = MIN_ANGLE_TOP;
+            } else if (rotationAngle > MAX_ANGLE_TOP) {
+                rotationAngle = MAX_ANGLE_TOP;
+            }
+        } else {
+            // Bottom paddle: restrict to upward hemisphere (-PI to 0)
+            if (rotationAngle < MIN_ANGLE_BOTTOM) {
+                rotationAngle = MIN_ANGLE_BOTTOM;
+            } else if (rotationAngle > MAX_ANGLE_BOTTOM) {
+                rotationAngle = MAX_ANGLE_BOTTOM;
+            }
         }
     }
 

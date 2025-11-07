@@ -139,10 +139,126 @@ public class LevelManager extends GamePlay {
         powerups.clear();
 
         List<String> level = generateRandomLevel(density);
-        loadLevelFromPattern(level, root);
+        loadLevelFromPattern(level, root, 50); // Use default Y-offset of 50
     }
 
-    private void loadLevelFromPattern(List<String> lines, Pane root) {
+    public void removeBrick(Brick brick, Pane root) {
+        root.getChildren().remove(brick.getNode());
+        bricks.remove(brick);
+        if (new Random().nextDouble() < 0.1) {
+            PowerUpType type = PowerUpType.values()
+                    [new Random().nextInt(PowerUpType.values().length)];
+            Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
+            powerups.add(p);
+            root.getChildren().add(p.getNode());
+            SoundManager.getInstance().playSound(SoundManager.SoundType.POWERUP_SPAWN);
+        }
+    }
+    public boolean isLevelComplete() {
+        return bricks.isEmpty() || bricks.stream().allMatch(brick -> brick.getHitCount() < 0);
+    }
+
+    public void removePowerup(Powerup p, Pane root) {
+        root.getChildren().remove(p.getNode());
+        powerups.remove(p);
+    }
+
+    public void clearAllPowerups(Pane root) {
+        root.getChildren().removeAll(powerups.stream().map(Powerup::getNode).toList());
+        powerups.clear();
+    }
+
+    public void clearAllBricks(Pane root) {
+        root.getChildren().removeAll(bricks.stream().map(Brick::getNode).toList());
+        bricks.clear();
+    }
+
+    // ===== 1v1 Level Generation Methods =====
+
+    /**
+     * Loads a special level for 1v1 mode with 3 rows of indestructible bricks
+     * positioned in the middle of the screen with spacing between rows.
+     */
+    public void loadOneVOneLevel(Pane root) {
+        // Clear existing bricks
+        root.getChildren().removeAll(bricks.stream().map(Brick::getNode).toList());
+        root.getChildren().removeAll(powerups.stream().map(Powerup::getNode).toList());
+        bricks.clear();
+        powerups.clear();
+
+        // Create the 1v1 level pattern: Brick -> 2 Empty -> Brick -> 2 Empty -> Brick
+        List<String> levelPattern = new ArrayList<>();
+
+        // Pattern: 7 rows total positioned in the middle area
+        // Start from row 3 (leaving space for top paddle and some clearance)
+        for (int i = 0; i < BRICK_ROWS; i++) {
+            if (i == 3) {
+                // First brick row - use indestructible bricks with 3-5 bricks
+                levelPattern.add(getRandomIndestructibleBrickRow());
+            } else if (i == 4 || i == 5) {
+                // Two empty rows
+                levelPattern.add("00000000000000");
+            } else if (i == 6) {
+                // Second brick row - use indestructible bricks with 3-5 bricks
+                levelPattern.add(getRandomIndestructibleBrickRow());
+            } else if (i == 7 || i == 8) {
+                // Two empty rows
+                levelPattern.add("00000000000000");
+            } else if (i == 9) {
+                // Third brick row - use indestructible bricks with 3-5 bricks
+                levelPattern.add(getRandomIndestructibleBrickRow());
+            } else {
+                // Empty rows for top and bottom clearance
+                levelPattern.add("00000000000000");
+            }
+        }
+
+        // Load the pattern with Y-offset of 150 (moved down by 100px)
+        loadLevelFromPattern(levelPattern, root, 150);
+    }
+
+    /**
+     * Generates a random row with 3-5 indestructible bricks placed at random positions.
+     * Used for 1v1 mode to create unpredictable obstacle patterns.
+     *
+     * @return A string pattern with 'U' (indestructible) bricks and '0' (empty) spaces
+     */
+    private String getRandomIndestructibleBrickRow() {
+        // Generate a row with 3-5 indestructible bricks ('U') randomly placed
+        int numBricks = 3 + random.nextInt(3); // 3 to 5 bricks
+
+        // Create array to hold the row (14 columns for BRICK_COLS)
+        char[] row = new char[14];
+
+        // Fill with empty spaces first
+        for (int i = 0; i < 14; i++) {
+            row[i] = '0';
+        }
+
+        // Randomly place the bricks
+        java.util.Set<Integer> usedPositions = new java.util.HashSet<>();
+        for (int i = 0; i < numBricks; i++) {
+            int position;
+            do {
+                position = random.nextInt(14);
+            } while (usedPositions.contains(position));
+
+            usedPositions.add(position);
+            row[position] = 'U'; // U = Indestructible brick
+        }
+
+        return new String(row);
+    }
+
+    /**
+     * Loads a level from a pattern list with a custom Y-offset.
+     * This overloaded version allows positioning bricks at different vertical positions.
+     *
+     * @param lines The pattern lines defining brick layout
+     * @param root The pane to add bricks to
+     * @param yOffset The Y-offset for brick positioning (e.g., 50 for normal, 150 for 1v1)
+     */
+    private void loadLevelFromPattern(List<String> lines, Pane root, int yOffset) {
         double brickWidth = (GAME_WIDTH - BRICK_COLS * 2) / BRICK_COLS;
         double brickHeight = 20;
 
@@ -151,7 +267,7 @@ public class LevelManager extends GamePlay {
             for (int c = 0; c < BRICK_COLS && c < line.length(); c++) {
                 char typeChar = line.charAt(c);
                 double x = c * (brickWidth + 2) + 1;
-                double y = r * (brickHeight + 2) + 50;
+                double y = r * (brickHeight + 2) + yOffset;
 
                 Brick newBrick = null;
 
@@ -185,37 +301,5 @@ public class LevelManager extends GamePlay {
                 }
             }
         }
-    }
-
-
-    public void removeBrick(Brick brick, Pane root) {
-        root.getChildren().remove(brick.getNode());
-        bricks.remove(brick);
-        if (new Random().nextDouble() < 0.1) {
-            PowerUpType type = PowerUpType.values()
-                    [new Random().nextInt(PowerUpType.values().length)];
-            Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
-            powerups.add(p);
-            root.getChildren().add(p.getNode());
-            SoundManager.getInstance().playSound(SoundManager.SoundType.POWERUP_SPAWN);
-        }
-    }
-    public boolean isLevelComplete() {
-        return bricks.isEmpty() || bricks.stream().allMatch(brick -> brick.getHitCount() < 0);
-    }
-
-    public void removePowerup(Powerup p, Pane root) {
-        root.getChildren().remove(p.getNode());
-        powerups.remove(p);
-    }
-
-    public void clearAllPowerups(Pane root) {
-        root.getChildren().removeAll(powerups.stream().map(Powerup::getNode).toList());
-        powerups.clear();
-    }
-
-    public void clearAllBricks(Pane root) {
-        root.getChildren().removeAll(bricks.stream().map(Brick::getNode).toList());
-        bricks.clear();
     }
 }
