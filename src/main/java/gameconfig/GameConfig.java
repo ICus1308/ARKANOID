@@ -55,15 +55,17 @@ public final class GameConfig {
 
     public enum GameState {
         MENU,
+        GAME_MODE,
+        HIGH_SCORE,
+        SETTING,
+        SHOP,
         START,
         PLAYING,
         PAUSED,
         GAME_OVER,
         LEVEL_CLEARED,
-        TUTORIAL,
-        SHOP,
-        ENDLESS
     }
+
     public enum PaddleSkin {
         CLASSIC,
         FIRE,

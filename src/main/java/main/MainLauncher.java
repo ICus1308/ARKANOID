@@ -1,7 +1,7 @@
 package main;
 
 import javafx.application.Application;
-import gamemanager.GamePlay;
+import gamemanager.core.GamePlay;
 
 public class MainLauncher {
     public static void main(String[] args) {
