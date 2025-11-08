@@ -28,6 +28,9 @@ public class GamePlay extends Application {
     // Screen Manager - handles all screen transitions
     private ScreenManager screenManager;
 
+    // Input Handler - handles all keyboard input
+    private InputHandler inputHandler;
+
     // UI Screens
     private MenuScreen menuScreen;
     private GameModeScreen gameModeScreen;
@@ -62,6 +65,7 @@ public class GamePlay extends Application {
     private void initializeGameEngine() {
         gameEngine = new GameEngine(root);
         gameEngine.setOnGameOver(this::handleGameOver);
+        inputHandler = new InputHandler(gameEngine, this::pauseGame, this::resumeGame, this::returnToMenu);
     }
 
     private void initializeScreenManager() {
@@ -130,121 +134,8 @@ public class GamePlay extends Application {
 
     private void setupScene() {
         scene = new Scene(root);
-        scene.setOnKeyPressed(e -> {
-            switch (e.getCode()) {
-                case A:
-                    if ((gameEngine.isOneVOneMode() || gameEngine.isBotMode()) &&
-                        gameEngine.getGameState() == GameState.START &&
-                        gameEngine.getIndicator() != null &&
-                        gameEngine.getLastScoredPlayer() == 1) {
-                        gameEngine.handleIndicatorRotateLeft();
-                    } else if (gameEngine.getGameState() == GameState.START &&
-                               gameEngine.getIndicator() != null &&
-                               !gameEngine.isOneVOneMode() &&
-                               !gameEngine.isBotMode()) {
-                        gameEngine.handleIndicatorRotateLeft();
-                    } else {
-                        gameEngine.setMovingLeft(true);
-                    }
-                    break;
-                case D:
-                    if ((gameEngine.isOneVOneMode() || gameEngine.isBotMode()) &&
-                        gameEngine.getGameState() == GameState.START &&
-                        gameEngine.getIndicator() != null &&
-                        gameEngine.getLastScoredPlayer() == 1) {
-                        gameEngine.handleIndicatorRotateRight();
-                    } else if (gameEngine.getGameState() == GameState.START &&
-                               gameEngine.getIndicator() != null &&
-                               !gameEngine.isOneVOneMode() &&
-                               !gameEngine.isBotMode()) {
-                        gameEngine.handleIndicatorRotateRight();
-                    } else {
-                        gameEngine.setMovingRight(true);
-                    }
-                    break;
-                case LEFT:
-                    if (gameEngine.isOneVOneMode() &&
-                        gameEngine.getGameState() == GameState.START &&
-                        gameEngine.getIndicator() != null &&
-                        gameEngine.getLastScoredPlayer() == 2) {
-                        gameEngine.handleIndicatorRotateLeft();
-                    } else if (gameEngine.isOneVOneMode()) {
-                        gameEngine.setMovingLeft2(true);
-                    } else if (gameEngine.getGameState() == GameState.START &&
-                               gameEngine.getIndicator() != null) {
-                        gameEngine.handleIndicatorRotateLeft();
-                    } else {
-                        gameEngine.setMovingLeft(true);
-                    }
-                    break;
-                case RIGHT:
-                    if (gameEngine.isOneVOneMode() &&
-                        gameEngine.getGameState() == GameState.START &&
-                        gameEngine.getIndicator() != null &&
-                        gameEngine.getLastScoredPlayer() == 2) {
-                        gameEngine.handleIndicatorRotateRight();
-                    } else if (gameEngine.isOneVOneMode()) {
-                        gameEngine.setMovingRight2(true);
-                    } else if (gameEngine.getGameState() == GameState.START &&
-                               gameEngine.getIndicator() != null) {
-                        gameEngine.handleIndicatorRotateRight();
-                    } else {
-                        gameEngine.setMovingRight(true);
-                    }
-                    break;
-                case SPACE:
-                    if (gameEngine.getGameState() == GameState.START ||
-                        gameEngine.getGameState() == GameState.LEVEL_CLEARED) {
-                        gameEngine.startGame();
-                    }
-                    break;
-                case ESCAPE:
-                    if (gameEngine.getGameState() == GameState.PLAYING) {
-                        pauseGame();
-                    } else if (gameEngine.getGameState() == GameState.PAUSED) {
-                        resumeGame();
-                    } else if (gameEngine.getGameState() == GameState.START ||
-                               gameEngine.getGameState() == GameState.GAME_OVER) {
-                        returnToMenu();
-                    }
-                    break;
-                case T:
-                    gameEngine.clearAllBricks();
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        scene.setOnKeyReleased(e -> {
-            switch (e.getCode()) {
-                case A:
-                    gameEngine.setMovingLeft(false);
-                    break;
-                case D:
-                    gameEngine.setMovingRight(false);
-                    break;
-                case LEFT:
-                    if (gameEngine.isOneVOneMode()) {
-                        gameEngine.setMovingLeft2(false);
-                    } else {
-                        gameEngine.setMovingLeft(false);
-                    }
-                    break;
-                case RIGHT:
-                    if (gameEngine.isOneVOneMode()) {
-                        gameEngine.setMovingRight2(false);
-                    } else {
-                        gameEngine.setMovingRight(false);
-                    }
-                    break;
-                case R:
-                    gameEngine.spawnDebugBall();
-                    break;
-                default:
-                    break;
-            }
-        });
+        scene.setOnKeyPressed(e -> inputHandler.handleKeyPressed(e));
+        scene.setOnKeyReleased(e -> inputHandler.handleKeyReleased(e));
     }
 
     private void setupStage() {

@@ -49,7 +49,7 @@ public class HighScoreScreen extends UIManager {
         scoreTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         TableColumn<Score, String> nameColumn = new TableColumn<>("Player");
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("playerName"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("player"));
 
         TableColumn<Score, Integer> scoreColumn = new TableColumn<>("Score");
         scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
