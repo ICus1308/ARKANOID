@@ -64,6 +64,9 @@ public class GameEngine {
     private PauseTransition oneshotTimer;
     private AnimationTimer gameLoop;
 
+    // Callbacks
+    private Runnable onGameOver;
+
     public GameEngine(Pane root) {
         this.root = root;
         this.levelManager = new LevelManager();
@@ -223,7 +226,7 @@ public class GameEngine {
 
         root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getNode(), indicator.getNode());
 
-        oneVOneScreen = new OneVOneScreen(root, coinManager);
+        oneVOneScreen = new OneVOneScreen(root);
         oneVOneScreen.updatePlayer1Lives(3);
         oneVOneScreen.updatePlayer2Lives(3);
 
@@ -629,6 +632,9 @@ public class GameEngine {
                 break;
             case GAME_OVER:
                 soundManager.playSound(SoundManager.SoundType.GAME_OVER);
+                if (onGameOver != null) {
+                    onGameOver.run();
+                }
                 break;
             case PLAYING:
             case START:
@@ -697,6 +703,11 @@ public class GameEngine {
         if (oneVOneScreen != null) {
             oneVOneScreen.cleanup();
             oneVOneScreen = null;
+        }
+
+        if (endlessScreen != null) {
+            endlessScreen.cleanup();
+            endlessScreen = null;
         }
 
         isOneVOneMode = false;
@@ -853,14 +864,6 @@ public class GameEngine {
         return coinManager;
     }
 
-    public SingleplayerScreen getSingleplayerScreen() {
-        return singleplayerScreen;
-    }
-
-    public EndlessScreen getEndlessScreen() {
-        return endlessScreen;
-    }
-
     public int getFinalScore() {
         if (endlessScreen != null) {
             return endlessScreen.getScore();
@@ -871,6 +874,10 @@ public class GameEngine {
     }
 
     // ==================== Input Setters ====================
+
+    public void setOnGameOver(Runnable onGameOver) {
+        this.onGameOver = onGameOver;
+    }
 
     public void setMovingLeft(boolean moving) {
         this.isMovingLeft = moving;

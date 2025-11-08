@@ -10,26 +10,19 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ScoreManager {
+
     private static final String HIGH_SCORE_FILE = "highscores.dat";
+    private static final int MAX_HIGH_SCORES = 10;
+
     private final ObservableList<Score> highScores;
-    private int currentScore;
 
     public ScoreManager() {
         highScores = FXCollections.observableArrayList();
-        currentScore = 0;
         loadScores();
     }
 
     public ObservableList<Score> getScores() {
         return highScores;
-    }
-
-    public int getCurrentScore() {
-        return currentScore;
-    }
-
-    public void resetCurrentScore() {
-        currentScore = 0;
     }
 
     public int calculateBrickScore(Brick brick, boolean oneshotActive) {
@@ -44,28 +37,38 @@ public class ScoreManager {
         } else {
             score = brick.hit();
         }
-        currentScore += score;
         return score;
     }
 
     public void addScore(String playerName, int score) {
+        if (playerName == null || playerName.trim().isEmpty()) {
+            playerName = "Player";
+        }
         highScores.add(new Score(playerName, score));
         highScores.sort(Comparator.comparingInt(Score::getScore).reversed());
 
-        if (highScores.size() > 10) {
-            highScores.remove(10, highScores.size());
+        if (highScores.size() > MAX_HIGH_SCORES) {
+            highScores.remove(MAX_HIGH_SCORES, highScores.size());
         }
         saveScores();
     }
 
     @SuppressWarnings("unchecked")
     private void loadScores() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(HIGH_SCORE_FILE))) {
+        File scoreFile = new File(HIGH_SCORE_FILE);
+        if (!scoreFile.exists()) {
+            return;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(scoreFile))) {
             List<Score> loadedList = (List<Score>) ois.readObject();
             highScores.setAll(loadedList);
-        } catch (FileNotFoundException e) {
-            System.out.println("High score file not found. A new one will be created.");
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
+            System.err.println("Error loading scores (incompatible version): " + e.getMessage());
+            if (scoreFile.delete()) {
+                System.out.println("Deleted corrupted high score file.");
+            }
+        } catch (IOException e) {
             System.err.println("Error loading scores: " + e.getMessage());
         }
     }

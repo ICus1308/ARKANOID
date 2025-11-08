@@ -61,6 +61,7 @@ public class GamePlay extends Application {
 
     private void initializeGameEngine() {
         gameEngine = new GameEngine(root);
+        gameEngine.setOnGameOver(this::handleGameOver);
     }
 
     private void initializeScreenManager() {
@@ -276,10 +277,6 @@ public class GamePlay extends Application {
         screenManager.showScreen(GameState.SHOP);
     }
 
-    private void hideAllScreens() {
-        screenManager.hideAllScreens();
-    }
-
     private void refreshAllScreens() {
         screenManager.refreshAllScreens();
 
@@ -343,22 +340,17 @@ public class GamePlay extends Application {
     public void handleGameOver() {
         if (gameEngine.isOneVOneMode()) {
             gameOverScreen.refresh();
-            gameOverScreen.show();
-            System.out.println("1v1 Game Over");
+            screenManager.showScreen(GameState.GAME_OVER);
         } else if (gameEngine.isBotMode()) {
             gameOverScreen.refresh();
-            gameOverScreen.show();
-            System.out.println("Bot Mode Game Over");
+            screenManager.showScreen(GameState.GAME_OVER);
         } else {
             int finalScore = gameEngine.getFinalScore();
             gameOverScreen.setFinalScore(finalScore);
             gameOverScreen.refresh();
-            gameOverScreen.show();
-            System.out.println("Final Score: " + finalScore);
+            screenManager.showScreen(GameState.GAME_OVER);
             promptAndSaveScore();
         }
-
-        System.out.println("GameOverScreen showed");
     }
 
     private void promptAndSaveScore() {

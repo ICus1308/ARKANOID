@@ -10,9 +10,9 @@ import static gameconfig.GameConfig.PowerUpType;
 
 public class Paddle extends GameObject {
     private final Rectangle node;
-    private double speed;
+    private final double speed;
     private boolean expanded = false;
-    private double baseWidth;
+    private final double baseWidth;
 
     public Paddle(double x, double y, double width, double height, double speed) {
         super(x, y, width, height);

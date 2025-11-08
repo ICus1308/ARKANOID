@@ -65,6 +65,7 @@ public class PaddleSkinScreen extends UIManager {
 
             GameButton buyBtn = createButton("Buy", () -> {
                 if (price <= 0) return;
+                assert coinManager != null;
                 boolean ok = coinManager.buySkin("paddle", id, price);
                 if (ok) {
                     coinText.setText("Coins: " + coinManager.getCoins());
@@ -73,6 +74,7 @@ public class PaddleSkinScreen extends UIManager {
             buyBtn.setDisable(price <= 0);
 
             GameButton selectBtn = createButton("Select", () -> {
+                assert coinManager != null;
                 boolean ok = coinManager.setSelectedPaddleSkin(id);
                 if (ok && onApply != null) onApply.accept(id);
             });

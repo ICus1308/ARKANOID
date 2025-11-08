@@ -131,10 +131,6 @@ public class GameButton extends Button {
         applyStyle(newStyle);
     }
 
-    public ButtonStyle getCurrentStyle() {
-        return currentStyle;
-    }
-
     /**
      * Thêm hình ảnh vào button
      * @param imagePath Đường dẫn đến hình ảnh (ví dụ: "/images/buttons/replay.png")

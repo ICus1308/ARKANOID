@@ -2,7 +2,6 @@ package gameobject.brick;
 
 import gamemanager.core.LevelManager;
 import gamemanager.manager.SoundManager;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 
 import static gameconfig.GameConfig.*;
@@ -11,16 +10,9 @@ public class ExplodingBrick extends Brick {
 
     private LevelManager levelManager;
     private Pane root;
-    private Image explosionImage;
-    private boolean hasGlowEffect = true;
 
     public ExplodingBrick(double x, double y, double width, double height) {
         super(x, y, width, height, EXPLODING_HIT_COUNT, EXPLODING_COLOR);
-    }
-
-    public ExplodingBrick(double x, double y, double width, double height, LevelManager levelManager) {
-        super(x, y, width, height, EXPLODING_HIT_COUNT, EXPLODING_COLOR);
-        this.levelManager = levelManager;
     }
 
     /**
@@ -67,8 +59,6 @@ public class ExplodingBrick extends Brick {
 
             double brickX = brick.getX();
             double brickY = brick.getY();
-            double brickWidth = brick.getWidth();
-            double brickHeight = brick.getHeight();
 
             // Kiểm tra HÀNG NGANG: Y gần giống nhau (trong cùng 1 hàng)
             double deltaY = Math.abs(brickY - myY);
@@ -100,9 +90,4 @@ public class ExplodingBrick extends Brick {
             }
         }
     }
-
-    public static int getExplosionRange() {
-        return EXPLOSION_RANGE;
-    }
-
 }

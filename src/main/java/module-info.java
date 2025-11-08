@@ -7,11 +7,9 @@ module Arkanoid {
 
     opens main to javafx.fxml;
     opens gameconfig to javafx.fxml;
-    opens gamemanager to javafx.fxml;
 
     exports main;
     exports gameconfig;
-    exports gamemanager;
     exports userinterface.gamescreen;
     opens userinterface.gamescreen to javafx.fxml;
     exports userinterface.screen;
@@ -25,6 +23,7 @@ module Arkanoid {
     opens gameobject.paddle to javafx.fxml;
     exports gameobject.powerup;
     opens gameobject.powerup to javafx.fxml;
+
     exports gamemanager.core;
     opens gamemanager.core to javafx.fxml;
     exports gamemanager.ui;

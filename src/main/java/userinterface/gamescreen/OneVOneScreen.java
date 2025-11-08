@@ -1,6 +1,5 @@
 package userinterface.gamescreen;
 
-import gamemanager.manager.CoinManager;
 import gamemanager.ui.UIManager;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
@@ -15,7 +14,7 @@ public class OneVOneScreen extends UIManager implements GameScreen {
     private Text player1LivesText;
     private Text player2LivesText;
 
-    public OneVOneScreen(Pane root, CoinManager coinManager) {
+    public OneVOneScreen(Pane root) {
         super(root);
         this.player1Lives = INITIAL_LIVES;
         this.player2Lives = INITIAL_LIVES;

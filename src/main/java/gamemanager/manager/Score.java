@@ -1,19 +1,23 @@
 package gamemanager.manager;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class Score implements Serializable {
 
-    private final String playerName;
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private final String player;
     private final int score;
 
-    public Score(String playerName, int score) {
-        this.playerName = playerName;
+    public Score(String player, int score) {
+        this.player = player;
         this.score = score;
     }
 
-    public String getPlayerName() {
-        return playerName;
+    public String getPlayer() {
+        return player;
     }
 
     public int getScore() {

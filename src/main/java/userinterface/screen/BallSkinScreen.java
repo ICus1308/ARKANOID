@@ -65,6 +65,7 @@ public class BallSkinScreen extends UIManager {
 
             GameButton buyBtn = createButton("Buy", () -> {
                 if (price <= 0) return;
+                assert coinManager != null;
                 boolean ok = coinManager.buySkin("ball", id, price);
                 if (ok) {
                     coinText.setText("Coins: " + coinManager.getCoins());
@@ -73,6 +74,7 @@ public class BallSkinScreen extends UIManager {
             buyBtn.setDisable(price <= 0);
 
             GameButton selectBtn = createButton("Select", () -> {
+                assert coinManager != null;
                 boolean ok = coinManager.setSelectedBallSkin(id);
                 if (ok && onApply != null) onApply.accept(id);
             });
