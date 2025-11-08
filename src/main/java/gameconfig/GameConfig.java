@@ -22,7 +22,6 @@ public final class GameConfig {
     public static double BALL_RADIUS = BASE_BALL_RADIUS;
     public static double BALL_SPEED = BASE_BALL_SPEED;
 
-    public static final double BRICK_WIDTH = 40;
     public static final double BRICK_HEIGHT = 20;
 
     // Ball skin paths

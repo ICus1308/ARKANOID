@@ -33,11 +33,8 @@ public class GamePlay extends Application {
 
     // UI Screens
     private MenuScreen menuScreen;
-    private GameModeScreen gameModeScreen;
-    private HighScoreScreen highScoreScreen;
     private SettingScreen settingScreen;
     private GameOverScreen gameOverScreen;
-    private ShopScreen shopScreen;
     private PauseScreen pauseScreen;
 
 
@@ -81,19 +78,19 @@ public class GamePlay extends Application {
             this::showShopScreen
         );
 
-        gameModeScreen = new GameModeScreen(
-            root,
-            this::startSinglePlayerGame,
-            this::startOneVOneGame,
-            this::startBotGame,
-            this::startEndlessGame,
-            this::showMenuScreen
+        GameModeScreen gameModeScreen = new GameModeScreen(
+                root,
+                this::startSinglePlayerGame,
+                this::startOneVOneGame,
+                this::startBotGame,
+                this::startEndlessGame,
+                this::showMenuScreen
         );
 
-        highScoreScreen = new HighScoreScreen(
-            root,
-            this::showMenuScreen,
-            gameEngine.getScoreManager()
+        HighScoreScreen highScoreScreen = new HighScoreScreen(
+                root,
+                this::showMenuScreen,
+                gameEngine.getScoreManager()
         );
 
         settingScreen = new SettingScreen(
@@ -115,12 +112,12 @@ public class GamePlay extends Application {
             this::returnToMenu
         );
 
-        shopScreen = new ShopScreen(
-            root,
-            gameEngine.getCoinManager(),
-            gameEngine::applyPaddleSkin,
-            gameEngine::applyBallSkin,
-            this::showMenuScreen
+        ShopScreen shopScreen = new ShopScreen(
+                root,
+                gameEngine.getCoinManager(),
+                gameEngine::applyPaddleSkin,
+                gameEngine::applyBallSkin,
+                this::showMenuScreen
         );
 
         screenManager.registerScreen(GameState.MENU, menuScreen);
