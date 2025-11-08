@@ -3,8 +3,8 @@ package gameconfig;
 public final class GameConfig {
     private GameConfig() {}
 
-    public static double GAME_WIDTH = 800;
-    public static final double GAME_HEIGHT = 600;
+    public static double GAME_WIDTH = 1280;
+    public static double GAME_HEIGHT = 720;
     public static final int BRICK_ROWS = 14;
     public static final int BRICK_COLS = 14;
     public static final double PADDLE_SPEED = 12.0;
@@ -41,16 +41,16 @@ public final class GameConfig {
 
     // UI scaling factors based on resolution
     public static double UI_SCALE_X = 1.0;  // Width scale
-    public static double UI_SCALE_Y = 1.0;  // Height scale (always 1.0 since height is fixed)
+    public static double UI_SCALE_Y = 1.0;  // Height scale
 
     // For elements that should scale uniformly, use the smaller scale
     public static double UI_SCALE = 1.0;
 
-    // Calculate UI scale based on current width (800 is base width, height is fixed at 600)
+    // Calculate UI scale based on current dimensions (1280x720 is base resolution)
     public static void updateUIScale() {
-        UI_SCALE_X = GAME_WIDTH / 800.0;
-        UI_SCALE_Y = 1.0;  // Height is always 600, so no Y scaling
-        UI_SCALE = UI_SCALE_X;  // Use X scale for uniform elements
+        UI_SCALE_X = GAME_WIDTH / 1280.0;
+        UI_SCALE_Y = GAME_HEIGHT / 720.0;
+        UI_SCALE = Math.min(UI_SCALE_X, UI_SCALE_Y);  // Use minimum for uniform elements
     }
 
     public enum GameState {

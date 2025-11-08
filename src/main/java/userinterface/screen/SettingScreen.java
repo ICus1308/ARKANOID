@@ -32,7 +32,7 @@ public class SettingScreen extends UIManager {
     private double masterVolume = 100.0;
     private boolean muted = false;
 
-    private final String[] resolutions = {"800x600", "1000x600"};
+    private final String[] resolutions = {"1280x720", "1366x768", "1600x900", "1920x1080"};
     private final String[] displayModes = {"Windowed"};
 
     public SettingScreen(Pane root, Runnable onBack, Runnable onResolutionChange) {
@@ -81,9 +81,18 @@ public class SettingScreen extends UIManager {
 
         videoButton.switchStyle(ButtonStyle.CATEGORY_SELECTED);
 
-        videoButton.setOnAction(e -> selectCategory("VIDEO", videoButton));
-        audioButton.setOnAction(e -> selectCategory("AUDIO", audioButton));
-        debugButton.setOnAction(e -> selectCategory("DEBUG", debugButton));
+        videoButton.setOnAction(e -> {
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BUTTON_CLICK);
+            selectCategory("VIDEO", videoButton);
+        });
+        audioButton.setOnAction(e -> {
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BUTTON_CLICK);
+            selectCategory("AUDIO", audioButton);
+        });
+        debugButton.setOnAction(e -> {
+            SoundManager.getInstance().playSound(SoundManager.SoundType.BUTTON_CLICK);
+            selectCategory("DEBUG", debugButton);
+        });
     }
 
     private void selectCategory(String category, GameButton selectedButton) {
@@ -288,6 +297,7 @@ public class SettingScreen extends UIManager {
                 int height = Integer.parseInt(parts[1]);
 
                 GAME_WIDTH = width;
+                GAME_HEIGHT = height;
                 updateUIScale();
 
                 Stage stage = (Stage) root.getScene().getWindow();
@@ -305,7 +315,7 @@ public class SettingScreen extends UIManager {
                 refresh();
                 show();
 
-                System.out.println("Applied resolution: " + width + "x" + height + " (UI Scale: " + UI_SCALE + ")");
+                System.out.println("Applied resolution: " + width + "x" + height + " (UI Scale X: " + UI_SCALE_X + ", Y: " + UI_SCALE_Y + ")");
             } catch (NumberFormatException e) {
                 System.err.println("Invalid resolution format: " + resolution);
             }

@@ -39,7 +39,10 @@ public abstract class UIManager {
     protected GameButton createButton(String text, Runnable action) {
         GameButton button = new GameButton(text);
         if (action != null) {
-            button.setOnAction(e -> action.run());
+            button.setOnAction(e -> {
+                gamemanager.manager.SoundManager.getInstance().playSound(gamemanager.manager.SoundManager.SoundType.BUTTON_CLICK);
+                action.run();
+            });
         }
         return button;
     }
@@ -50,7 +53,10 @@ public abstract class UIManager {
     protected GameButton createButton(String text, ButtonStyle style, Runnable action) {
         GameButton button = new GameButton(text, style);
         if (action != null) {
-            button.setOnAction(e -> action.run());
+            button.setOnAction(e -> {
+                gamemanager.manager.SoundManager.getInstance().playSound(gamemanager.manager.SoundManager.SoundType.BUTTON_CLICK);
+                action.run();
+            });
         }
         return button;
     }

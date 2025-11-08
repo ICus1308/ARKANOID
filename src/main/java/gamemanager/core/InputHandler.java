@@ -121,7 +121,7 @@ public record InputHandler(GameEngine gameEngine, Runnable onPause, Runnable onR
     }
 
     private void handleEscapeKey(GameState state) {
-        if (state == GameState.PLAYING) {
+        if (state == GameState.PLAYING || state == GameState.START) {
             if (onPause != null) {
                 onPause.run();
             }
@@ -129,7 +129,7 @@ public record InputHandler(GameEngine gameEngine, Runnable onPause, Runnable onR
             if (onResume != null) {
                 onResume.run();
             }
-        } else if (state == GameState.START || state == GameState.GAME_OVER) {
+        } else if (state == GameState.GAME_OVER) {
             if (onReturnToMenu != null) {
                 onReturnToMenu.run();
             }

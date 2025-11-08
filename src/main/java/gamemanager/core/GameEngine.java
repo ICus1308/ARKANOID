@@ -28,6 +28,7 @@ import static gameconfig.GameConfig.*;
 public class GameEngine {
     private final Pane root;
     private GameConfig.GameState gameState = GameConfig.GameState.MENU;
+    private GameConfig.GameState previousGameState = GameConfig.GameState.MENU;
 
     // Managers
     private final LevelManager levelManager;
@@ -279,12 +280,13 @@ public class GameEngine {
     }
 
     public void pauseGame() {
+        previousGameState = gameState;
         gameState = GameState.PAUSED;
         gameLoop.stop();
     }
 
     public void resumeGame() {
-        gameState = GameState.PLAYING;
+        gameState = previousGameState;
         gameLoop.start();
     }
 
