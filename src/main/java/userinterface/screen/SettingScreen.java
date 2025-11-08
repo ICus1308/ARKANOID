@@ -25,6 +25,7 @@ public class SettingScreen extends UIManager {
     private GameButton debugButton;
 
     private ComboBox<String> resolutionCombo;
+    private ComboBox<String> displayModeCombo;
 
     private Slider masterVolumeSlider;
     private CheckBox muteCheckbox;
@@ -32,8 +33,8 @@ public class SettingScreen extends UIManager {
     private double masterVolume = 100.0;
     private boolean muted = false;
 
-    private final String[] resolutions = {"1280x720", "1366x768", "1600x900", "1920x1080"};
-    private final String[] displayModes = {"Windowed"};
+    private final String[] resolutions = {"1280x720", "1366x768", "1600x900"};
+    private final String[] displayModes = {"Windowed", "Fullscreen"};
 
     public SettingScreen(Pane root, Runnable onBack, Runnable onResolutionChange) {
         super(root);
@@ -145,9 +146,15 @@ public class SettingScreen extends UIManager {
     private VBox createVideoSettingsPanel() {
         VBox settingsPanel = createSettingsPanel();
 
-        ComboBox<String> displayModeCombo = new ComboBox<>();
+        displayModeCombo = new ComboBox<>();
         displayModeCombo.getItems().addAll(displayModes);
-        displayModeCombo.getSelectionModel().select("Windowed");
+
+        Stage stage = (Stage) root.getScene().getWindow();
+        if (stage != null && stage.isFullScreen()) {
+            displayModeCombo.getSelectionModel().select("Fullscreen");
+        } else {
+            displayModeCombo.getSelectionModel().select("Windowed");
+        }
         Label displayModeLabel = createSettingRow("Display Mode:", displayModeCombo);
 
         resolutionCombo = new ComboBox<>();
@@ -159,6 +166,14 @@ public class SettingScreen extends UIManager {
             resolutionCombo.getSelectionModel().select(0);
         }
         Label resolutionLabel = createSettingRow("Resolution:", resolutionCombo);
+
+        // Disable resolution when fullscreen is selected
+        displayModeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            resolutionCombo.setDisable("Fullscreen".equals(newVal));
+        });
+
+        // Set initial state
+        resolutionCombo.setDisable("Fullscreen".equals(displayModeCombo.getValue()));
 
         VBox displayModeRow = new VBox(5, displayModeLabel, displayModeCombo);
         VBox resolutionRow = new VBox(5, resolutionLabel, resolutionCombo);
@@ -288,36 +303,60 @@ public class SettingScreen extends UIManager {
     }
 
     private void applyVideoSettings() {
-        String resolution = resolutionCombo.getValue();
+        Stage stage = (Stage) root.getScene().getWindow();
+        if (stage == null) return;
 
-        if (resolution != null && resolution.contains("x")) {
-            String[] parts = resolution.split("x");
-            try {
-                int width = Integer.parseInt(parts[0]);
-                int height = Integer.parseInt(parts[1]);
+        String displayMode = displayModeCombo.getValue();
 
-                GAME_WIDTH = width;
-                GAME_HEIGHT = height;
-                updateUIScale();
+        if ("Fullscreen".equals(displayMode)) {
+            // Enter fullscreen mode
+            stage.setFullScreen(true);
 
-                Stage stage = (Stage) root.getScene().getWindow();
-                if (stage != null) {
+            // Get screen dimensions and update game dimensions
+            javafx.stage.Screen screen = javafx.stage.Screen.getPrimary();
+            javafx.geometry.Rectangle2D bounds = screen.getBounds();
+
+            GAME_WIDTH = bounds.getWidth();
+            GAME_HEIGHT = bounds.getHeight();
+            updateUIScale();
+
+            root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+
+            if (onResolutionChange != null) {
+                onResolutionChange.run();
+            }
+
+            refresh();
+            show();
+        } else {
+            // Windowed mode
+            stage.setFullScreen(false);
+
+            String resolution = resolutionCombo.getValue();
+            if (resolution != null && resolution.contains("x")) {
+                String[] parts = resolution.split("x");
+                try {
+                    int width = Integer.parseInt(parts[0]);
+                    int height = Integer.parseInt(parts[1]);
+
+                    GAME_WIDTH = width;
+                    GAME_HEIGHT = height;
+                    updateUIScale();
+
                     root.setPrefSize(width, height);
                     root.setMinSize(width, height);
                     root.setMaxSize(width, height);
                     stage.sizeToScene();
+
+                    if (onResolutionChange != null) {
+                        onResolutionChange.run();
+                    }
+
+                    refresh();
+                    show();
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid resolution format: " + resolution);
                 }
-
-                if (onResolutionChange != null) {
-                    onResolutionChange.run();
-                }
-
-                refresh();
-                show();
-
-                System.out.println("Applied resolution: " + width + "x" + height + " (UI Scale X: " + UI_SCALE_X + ", Y: " + UI_SCALE_Y + ")");
-            } catch (NumberFormatException e) {
-                System.err.println("Invalid resolution format: " + resolution);
             }
         }
     }
@@ -329,8 +368,6 @@ public class SettingScreen extends UIManager {
         SoundManager soundManager = SoundManager.getInstance();
         soundManager.setMasterVolume(masterVolume / 100.0);
         soundManager.setMuted(muted);
-
-        System.out.println("Applied audio settings - Volume: " + (int) masterVolume + "%, Muted: " + muted);
     }
 
     @Override

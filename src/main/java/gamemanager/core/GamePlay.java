@@ -142,6 +142,8 @@ public class GamePlay extends Application {
         primaryStage.setTitle("Arkanoid");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
+        primaryStage.setFullScreenExitHint("");
+        primaryStage.setFullScreenExitKeyCombination(javafx.scene.input.KeyCombination.NO_MATCH);  // Disable ESC to exit fullscreen
         primaryStage.show();
     }
 

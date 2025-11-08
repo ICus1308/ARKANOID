@@ -7,11 +7,21 @@ public final class GameConfig {
     public static double GAME_HEIGHT = 720;
     public static final int BRICK_ROWS = 14;
     public static final int BRICK_COLS = 14;
-    public static final double PADDLE_SPEED = 12.0;
-    public static final double PADDLE_WIDTH = 100.0;
-    public static final double PADDLE_HEIGHT = 15.0;
-    public static final double BALL_RADIUS = 8.0;
-    public static final double BALL_SPEED = 10.0;
+
+    // Base values for 1280x720 resolution
+    private static final double BASE_PADDLE_SPEED = 12.0;
+    private static final double BASE_PADDLE_WIDTH = 140.0;
+    private static final double BASE_PADDLE_HEIGHT = 15.0;
+    private static final double BASE_BALL_RADIUS = 12.0;
+    private static final double BASE_BALL_SPEED = 10.0;
+
+    // Scaled values (will be updated when resolution changes)
+    public static double PADDLE_SPEED = BASE_PADDLE_SPEED;
+    public static double PADDLE_WIDTH = BASE_PADDLE_WIDTH;
+    public static double PADDLE_HEIGHT = BASE_PADDLE_HEIGHT;
+    public static double BALL_RADIUS = BASE_BALL_RADIUS;
+    public static double BALL_SPEED = BASE_BALL_SPEED;
+
     public static final double BRICK_WIDTH = 40;
     public static final double BRICK_HEIGHT = 20;
 
@@ -51,6 +61,13 @@ public final class GameConfig {
         UI_SCALE_X = GAME_WIDTH / 1280.0;
         UI_SCALE_Y = GAME_HEIGHT / 720.0;
         UI_SCALE = Math.min(UI_SCALE_X, UI_SCALE_Y);  // Use minimum for uniform elements
+
+        // Update paddle and ball dimensions based on scale
+        PADDLE_WIDTH = BASE_PADDLE_WIDTH * UI_SCALE;
+        PADDLE_HEIGHT = BASE_PADDLE_HEIGHT * UI_SCALE;
+        PADDLE_SPEED = BASE_PADDLE_SPEED * UI_SCALE;
+        BALL_RADIUS = BASE_BALL_RADIUS * UI_SCALE;
+        BALL_SPEED = BASE_BALL_SPEED * UI_SCALE;
     }
 
     public enum GameState {

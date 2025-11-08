@@ -133,7 +133,7 @@ public class LevelManager {
         root.getChildren().remove(brick.getNode());
         bricks.remove(brick);
 
-        if (random.nextDouble() < 0.1) {
+        if (random.nextDouble() < 1) {
             PowerUpType type = PowerUpType.values()[random.nextInt(PowerUpType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
             powerups.add(p);

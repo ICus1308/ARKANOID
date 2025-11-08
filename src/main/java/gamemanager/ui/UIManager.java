@@ -130,6 +130,19 @@ public abstract class UIManager {
     public void refresh() {
     }
 
+    protected static Font getTitleFont() {
+        return Font.font("Inter", 48 * UI_SCALE);
+    }
+
+    protected static Font getUIFont() {
+        return Font.font("Inter", 20 * UI_SCALE);
+    }
+
+    protected static Font getMessageFont() {
+        return Font.font("Inter", 40 * UI_SCALE);
+    }
+
+    // Legacy constants for backward compatibility
     protected static final Font TITLE_FONT = Font.font("Inter", 48);
     protected static final Font UI_FONT = Font.font("Inter", 20);
     protected static final Font MESSAGE_FONT = Font.font("Inter", 40);
