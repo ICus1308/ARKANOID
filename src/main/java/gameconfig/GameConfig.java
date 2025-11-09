@@ -5,8 +5,8 @@ public final class GameConfig {
 
     public static double GAME_WIDTH = 1280;
     public static double GAME_HEIGHT = 720;
-    public static final int BRICK_ROWS = 14;
-    public static final int BRICK_COLS = 14;
+    public static final int BRICK_ROWS = 8;
+    public static final int BRICK_COLS = 8;
 
     // Base values for 1280x720 resolution
     private static final double BASE_PADDLE_SPEED = 12.0;
