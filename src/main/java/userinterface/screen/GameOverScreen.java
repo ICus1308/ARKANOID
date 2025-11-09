@@ -36,7 +36,7 @@ public class GameOverScreen extends UIManager {
         layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
         layout.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
 
-        Rectangle containerBg = new Rectangle(800 * UI_SCALE_X, 600);
+        Rectangle containerBg = new Rectangle(1000 * UI_SCALE_X, 600);
         containerBg.setFill(Color.WHITE);
         containerBg.setStroke(Color.BLACK);
         containerBg.setStrokeWidth(3);
