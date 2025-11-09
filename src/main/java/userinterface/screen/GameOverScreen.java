@@ -3,12 +3,13 @@ package userinterface.screen;
 import gamemanager.ui.GameButton;
 import gamemanager.ui.UIManager;
 import javafx.geometry.Pos;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -36,25 +37,33 @@ public class GameOverScreen extends UIManager {
         layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
         layout.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
 
-        Rectangle containerBg = new Rectangle(1000 * UI_SCALE_X, 600);
-        containerBg.setFill(Color.WHITE);
-        containerBg.setStroke(Color.BLACK);
-        containerBg.setStrokeWidth(3);
+        // Load khung viền từ file ảnh
+        ImageView frameImage = new ImageView();
+        try {
+            Image frame = new Image(getClass().getResourceAsStream("/background/framegameover.png"));
+            frameImage.setImage(frame);
+            frameImage.setFitWidth(1200 * UI_SCALE_X);
+            frameImage.setFitHeight(600);
+            frameImage.setPreserveRatio(true);
+        } catch (Exception e) {
+            System.err.println("Không load được khung: " + e.getMessage());
+        }
 
         VBox contentBox = new VBox(40);
         contentBox.setAlignment(Pos.CENTER);
-        contentBox.setPrefWidth(500 * UI_SCALE_X);
+        contentBox.setPrefWidth(800 * UI_SCALE_X);
         contentBox.setPrefHeight(400);
-        contentBox.setStyle("-fx-padding: 30;");
+        contentBox.setStyle("-fx-padding: 30; -fx-background-color: transparent;");
 
-        Text gameOverText = createStyledText("GAME OVER", 0, 0, TITLE_FONT, Color.BLACK);
-        scoreText = createStyledText("SCORE: " + currentScore, 0, 0, MESSAGE_FONT, Color.BLACK);
+        Text gameOverText = createStyledText("GAME OVER", 0, 0, TITLE_FONT, Color.WHITE);
+        scoreText = createStyledText("SCORE: " + currentScore, 0, 0, MESSAGE_FONT, Color.WHITE);
 
         HBox buttonBox = createButtonBox();
 
         contentBox.getChildren().addAll(gameOverText, scoreText, buttonBox);
 
-        StackPane container = new StackPane(containerBg, contentBox);
+        // Stack: khung viền + nội dung
+        StackPane container = new StackPane(frameImage, contentBox);
         layout.getChildren().add(container);
     }
 

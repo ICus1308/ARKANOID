@@ -16,6 +16,7 @@ import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import userinterface.gamescreen.*;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -716,6 +717,26 @@ public class GameEngine {
         isBotMode = false;
     }
 
+    public void hideAllGameObjects() {
+        // Ẩn paddle
+        if (paddle != null) {
+            paddle.getNode().setVisible(false);
+        }
+        if (paddle2 != null) {
+            paddle2.getNode().setVisible(false);
+        }
+
+        // Ẩn tất cả balls
+        for (Ball ball : balls) {
+            ball.getNode().setVisible(false);
+        }
+
+        // Ẩn tất cả bricks
+        for (Brick brick : levelManager.getBricks()) {
+            brick.getNode().setVisible(false);
+        }
+
+    }
     // ==================== Powerup Methods (called by Powerup.activate) ====================
 
     public void spawnExtraBall() {

@@ -1,7 +1,8 @@
 package gamemanager.core;
 
-import gamemanager.ui.ScreenManager;
 import gamemanager.manager.SoundManager;
+import gamemanager.ui.ScreenManager;
+import gamemanager.ui.VideoBackgroundManager;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.TextInputDialog;
@@ -36,22 +37,8 @@ public class GamePlay extends Application {
     private SettingScreen settingScreen;
     private GameOverScreen gameOverScreen;
     private PauseScreen pauseScreen;
+    private VideoBackgroundManager videoBackgroundManager;
 
-
-    @Override
-    public void start(Stage primaryStage) {
-        this.primaryStage = primaryStage;
-
-        initializeRoot();
-        initializeGameEngine();
-        initializeScreenManager();
-        initializeScreens();
-        setupScene();
-        setupStage();
-
-        showMenuScreen();
-        gameEngine.initGameLoop();
-    }
 
     private void initializeRoot() {
         root = new Pane();
@@ -167,14 +154,6 @@ public class GamePlay extends Application {
         screenManager.showScreen(GameState.SHOP);
     }
 
-    private void refreshAllScreens() {
-        screenManager.refreshAllScreens();
-
-        root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
-
-        settingScreen.refresh();
-        settingScreen.show();
-    }
 
     private void startSinglePlayerGame() {
         screenManager.hideAllScreens();
@@ -228,6 +207,9 @@ public class GamePlay extends Application {
     }
 
     public void handleGameOver() {
+        // Ẩn tất cả game objects
+        gameEngine.hideAllGameObjects();
+
         if (gameEngine.isOneVOneMode()) {
             gameOverScreen.refresh();
             screenManager.showScreen(GameState.GAME_OVER);
@@ -254,5 +236,36 @@ public class GamePlay extends Application {
             int finalScore = gameEngine.getFinalScore();
             gameEngine.getScoreManager().addScore(name, finalScore);
         });
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+
+        initializeRoot();
+
+        new VideoBackgroundManager(root, "/background/Video Project.mp4");
+
+        initializeGameEngine();
+        initializeScreenManager();
+        initializeScreens();
+        setupScene();
+        setupStage();
+
+        showMenuScreen();
+        gameEngine.initGameLoop();
+    }
+
+    private void refreshAllScreens() {
+        screenManager.refreshAllScreens();
+        root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+
+        // Update video size khi đổi resolution
+        if (videoBackgroundManager != null) {
+            videoBackgroundManager.updateSize();
+        }
+
+        settingScreen.refresh();
+        settingScreen.show();
     }
 }
