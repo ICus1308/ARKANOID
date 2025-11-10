@@ -14,6 +14,7 @@
     -fx-cursor: hand;
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
+    -fx-font-family: 'Simple Sunrise';
 }
 
 /* Make the button region transparent so image shows cleanly */
@@ -36,6 +37,7 @@
     -fx-border-color: transparent;
     -fx-background-color: transparent;
     -fx-font-weight: bold;
+    -fx-font-family: 'Simple Sunrise';
     -fx-padding: 6px 18px; /* adjust text padding so it sits nicely on image */
 }
 

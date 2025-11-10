@@ -60,7 +60,7 @@ public class BallSkinScreen extends UIManager {
             row.setAlignment(Pos.CENTER_LEFT);
 
             Label name = new Label(id.toUpperCase() + (price > 0 ? " (" + price + " coins)" : " (free)"));
-            name.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+            name.setStyle("-fx-text-fill: white; -fx-font-size: 17px; -fx-font-family: 'Simple Sunrise';");
             name.setMinWidth(220);
 
             GameButton buyBtn = createButton("Buy", () -> {
@@ -112,4 +112,3 @@ public class BallSkinScreen extends UIManager {
         layout = null;
     }
 }
-

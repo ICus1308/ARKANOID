@@ -24,6 +24,17 @@ public class GameButton extends Button {
     private final ScaleTransition hoverGrow;
     private final ScaleTransition hoverShrink;
 
+    // Load Simple Sunrise font
+    private static final Font SIMPLE_SUNRISE_FONT;
+
+    static {
+        Font loadedFont = Font.loadFont(
+            GameButton.class.getResourceAsStream("/fontword/Simple Sunrise.otf"),
+            20
+        );
+        SIMPLE_SUNRISE_FONT = loadedFont != null ? loadedFont : Font.font("Arial", 20);
+    }
+
     public GameButton(String text) {
         this(text, ButtonStyle.PRIMARY);
     }
@@ -77,8 +88,9 @@ public class GameButton extends Button {
             // Make button background transparent so only image shows
             this.setStyle("-fx-background-color: transparent; " +
                     "-fx-text-fill: white; " +
-                    "-fx-font-size: " + (24 * UI_SCALE) + "px; " +
+                    "-fx-font-size: " + (28 * UI_SCALE) + "px; " +
                     "-fx-font-weight: bold; " +
+                    "-fx-font-family: 'Simple Sunrise'; " +
                     "-fx-cursor: hand;");
 
             System.out.println("Button image loaded: /imagebutton/button.png");
@@ -125,18 +137,18 @@ public class GameButton extends Button {
     private void setupButton(ButtonStyle style) {
         switch (style) {
             case PRIMARY:
-                setFont(Font.font("Inter", 24 * UI_SCALE));
+                setFont(Font.font(SIMPLE_SUNRISE_FONT.getFamily(), 28 * UI_SCALE));
                 setPrefWidth(200 * UI_SCALE_X);
                 setPrefHeight(50);
                 break;
             case CATEGORY_UNSELECTED:
             case CATEGORY_SELECTED:
-                setFont(Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 16 * UI_SCALE));
+                setFont(Font.font(SIMPLE_SUNRISE_FONT.getFamily(), javafx.scene.text.FontWeight.BOLD, 19 * UI_SCALE));
                 setPrefWidth(240 * UI_SCALE_X);
                 setPrefHeight(50);
                 break;
             case APPLY:
-                setFont(Font.font("Inter", 14 * UI_SCALE));
+                setFont(Font.font(SIMPLE_SUNRISE_FONT.getFamily(), 17 * UI_SCALE));
                 setPrefWidth(200 * UI_SCALE_X);
                 setPrefHeight(50);
                 break;

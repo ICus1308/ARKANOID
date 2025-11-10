@@ -13,7 +13,18 @@ import static gameconfig.GameConfig.*;
 public abstract class UIManager {
     protected Pane root;
     protected Text gameMessage;
-    
+
+    // Load Simple Sunrise font
+    private static final Font SIMPLE_SUNRISE_FONT;
+
+    static {
+        Font loadedFont = Font.loadFont(
+            UIManager.class.getResourceAsStream("/fontword/Simple Sunrise.otf"),
+            20
+        );
+        SIMPLE_SUNRISE_FONT = loadedFont != null ? loadedFont : Font.font("Arial", 20);
+    }
+
     public UIManager(Pane root) {
         this.root = root;
     }
@@ -66,7 +77,7 @@ public abstract class UIManager {
      */
     protected Label createLabel(String text, Color color) {
         Label label = new Label(text);
-        label.setFont(Font.font("Arial", FontWeight.NORMAL, (double) 18 * UI_SCALE));
+        label.setFont(Font.font(SIMPLE_SUNRISE_FONT.getFamily(), FontWeight.NORMAL, (double) 22 * UI_SCALE));
         label.setStyle("-fx-text-fill: " + toRgbString(color) + ";");
         return label;
     }
@@ -76,7 +87,7 @@ public abstract class UIManager {
      */
     protected Label createTitleLabel(String text) {
         Label label = new Label(text);
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 32 * UI_SCALE));
+        label.setFont(Font.font(SIMPLE_SUNRISE_FONT.getFamily(), FontWeight.BOLD, 38 * UI_SCALE));
         label.setStyle("-fx-text-fill: white;");
         return label;
     }
@@ -131,9 +142,9 @@ public abstract class UIManager {
     }
 
     // Legacy constants for backward compatibility
-    protected static final Font TITLE_FONT = Font.font("Inter", 48);
-    protected static final Font UI_FONT = Font.font("Inter", 20);
-    protected static final Font MESSAGE_FONT = Font.font("Inter", 40);
+    protected static final Font TITLE_FONT = Font.font(SIMPLE_SUNRISE_FONT.getFamily(), 56);
+    protected static final Font UI_FONT = Font.font(SIMPLE_SUNRISE_FONT.getFamily(), 24);
+    protected static final Font MESSAGE_FONT = Font.font(SIMPLE_SUNRISE_FONT.getFamily(), 48);
 
     protected static final Color TEXT_COLOR = Color.WHITE;
     protected static final Color GOLD_COLOR = Color.GOLD;

@@ -271,8 +271,8 @@ public class SettingScreen extends UIManager {
         comboBox.setPrefHeight(35);
 
         comboBox.setStyle("-fx-background-color: #2c3e50; " +
-                "-fx-font-size: " + (16 * UI_SCALE) + "px;");
-
+                "-fx-font-size: " + (19 * UI_SCALE) + "px; " +
+                "-fx-font-family: 'Simple Sunrise';");
         comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {

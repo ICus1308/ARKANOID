@@ -45,7 +45,7 @@ public class HighScoreScreen extends UIManager {
         TableView<Score> scoreTable = new TableView<>();
         scoreTable.setPrefWidth(450 * UI_SCALE_X);
         scoreTable.setPrefHeight(400);
-        scoreTable.setStyle("-fx-font-size: " + (18 * UI_SCALE) + "px; -fx-background-color: #34495e; -fx-alternative-row-fill-visible: true;");
+        scoreTable.setStyle("-fx-font-size: " + (22 * UI_SCALE) + "px; -fx-background-color: #34495e; -fx-alternative-row-fill-visible: true; -fx-font-family: 'Simple Sunrise';");
         scoreTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         TableColumn<Score, String> nameColumn = new TableColumn<>("Player");
