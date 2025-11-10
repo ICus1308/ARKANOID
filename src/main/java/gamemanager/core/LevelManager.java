@@ -25,19 +25,14 @@ public class LevelManager {
         "22222222222222",
         "U1U1U1U1U1U1U1",
         "U2U2U2U2U2U2U2",
-        "55555555555555",
         "12121212121212",
         "UUU11111111UUU",
         "00011111110000",
-        "U555555555555U",
-        "UU5222222225UU",
-        "UUUU521125UUUU",
         "UBBBBBBBBBBBBU",
         "B1B1B1B1B1B1B1",
         "00000000000000",
         "1111BB11BB1111",
         "2U2U2U2U2U2U2U",
-        "5555U2U2U25555",
     };
 
     private static final double BRICK_SPACING = 4;
@@ -80,9 +75,6 @@ public class LevelManager {
                 break;
             case 'U':
                 newBrick = new IndestructibleBrick(x, y, brickWidth, BRICK_HEIGHT);
-                break;
-            case '5':
-                newBrick = new MultiHitBrick(x, y, brickWidth, BRICK_HEIGHT, 5);
                 break;
             case 'B':
                 ExplodingBrick explodingBrick = new ExplodingBrick(x, y, brickWidth, BRICK_HEIGHT);
@@ -133,7 +125,7 @@ public class LevelManager {
         root.getChildren().remove(brick.getNode());
         bricks.remove(brick);
 
-        if (random.nextDouble() < 1) {
+        if (random.nextDouble() < 0.3) {
             PowerUpType type = PowerUpType.values()[random.nextInt(PowerUpType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
             powerups.add(p);

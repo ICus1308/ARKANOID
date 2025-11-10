@@ -7,10 +7,6 @@ public class MultiHitBrick extends Brick {
         super(x, y, width, height, 3, "#c0392b");
         applySkin(BRICK_MULTIHIT_3_SKIN);
     }
-    public MultiHitBrick(double x, double y, double width, double height, int initialHitCount) {
-        super(x, y, width, height, initialHitCount, "#c0392b");
-        updateDraw();
-    }
 
     @Override
     public int hit() {
@@ -21,7 +17,7 @@ public class MultiHitBrick extends Brick {
 
     @Override
     public void updateDraw() {
-        if (hitCount >= 3) applySkin(BRICK_MULTIHIT_3_SKIN);
+        if (hitCount == 3) applySkin(BRICK_MULTIHIT_3_SKIN);
         else if (hitCount == 2) applySkin(BRICK_MULTIHIT_2_SKIN);
         else if (hitCount == 1) applySkin(BRICK_MULTIHIT_1_SKIN);
     }

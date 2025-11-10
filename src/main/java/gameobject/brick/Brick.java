@@ -33,7 +33,9 @@ public abstract class Brick extends GameObject {
 
     public void updateDraw() {
         if (this instanceof MultiHitBrick multi) {
-            if (multi.getHitCount() == 2) {
+            if (multi.getHitCount() == 3) {
+                node.setFill(Color.web("#c0392b"));
+            } else if (multi.getHitCount() == 2) {
                 node.setFill(Color.web("#e67e22"));
             } else if (multi.getHitCount() == 1) {
                 node.setFill(Color.web("#f39c12"));
@@ -45,4 +47,3 @@ public abstract class Brick extends GameObject {
         this.hitCount = 0;
     }
 }
-
