@@ -4,36 +4,51 @@ import gamemanager.manager.GameObject;
 import gamemanager.core.GameEngine;
 import gamemanager.manager.SoundManager;
 import gameobject.paddle.Paddle;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import gameconfig.GameConfig;
+
+import java.util.Objects;
 
 import static gameconfig.GameConfig.*;
 
 public class Powerup extends GameObject {
     private final GameConfig.PowerUpType powerupType;
-    private final Rectangle node;
+    private final ImageView imageView;
 
     public Powerup(double x, double y, GameConfig.PowerUpType type) {
         super(x, y, POWERUP_WIDTH, POWERUP_HEIGHT);
         this.powerupType = type;
-        this.node = new Rectangle(width, height);
-        this.node.setArcWidth(5);
-        this.node.setArcHeight(5);
 
-        Color color = switch (type) {
-            case EXPAND -> Color.GOLD;
-            case MULTIPLY -> Color.PURPLE;
-            case ONESHOT -> Color.CRIMSON;
+        // Load image based on powerup type
+        String imagePath = switch (type) {
+            case MULTIPLY -> "/iamgepowerup/doubleup.png";
+            case ONESHOT -> "/iamgepowerup/onehit.png";
+            case EXPAND -> "/iamgepowerup/shield.png";
         };
-        this.node.setFill(color);
-        this.node.setStroke(Color.WHITE);
+
+        try {
+            Image image = new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream(imagePath)));
+            this.imageView = new ImageView(image);
+            this.imageView.setFitWidth(width);
+            this.imageView.setFitHeight(height);
+            this.imageView.setPreserveRatio(true);
+
+            System.out.println("Powerup image loaded: " + imagePath);
+        } catch (Exception e) {
+            System.err.println("Error loading powerup image: " + imagePath);
+            e.printStackTrace();
+            throw new RuntimeException("Failed to load powerup image: " + imagePath);
+        }
+
         setX(x);
         setY(y);
+
     }
 
     @Override
-    public javafx.scene.Node getNode() { return node; }
+    public javafx.scene.Node getNode() { return imageView; }
 
     public void update() {
         setY(y + POWERUP_FALL_SPEED);

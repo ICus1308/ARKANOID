@@ -1,82 +1,59 @@
-/* Override default JavaFX button styling */
+/* Main app background */
+.root {
+    -fx-background-image: url("background/background.png");
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+    -fx-background-color: transparent;
+}
+
+/* General overrides */
 .button {
     -fx-background-insets: 0;
-    -fx-padding: 0.5em 1em;
-}
-
-/* Base game button styles */
-.button.game-button {
-    -fx-background-color: #3498db;
-    -fx-text-fill: white;
-    -fx-border-color: #2980b9;
-    -fx-border-width: 2px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    -fx-font-weight: bold;
+    -fx-padding: 0.25em 0.75em;
     -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
-.button.game-button:hover {
-    -fx-background-color: derive(#3498db, 20%);
-    -fx-border-color: #2980b9;
-}
-
-.button.game-button:pressed {
-    -fx-background-color: derive(#3498db, -10%);
-}
-
-/* Category button styles (for settings screen) */
-.button.game-button-category-unselected {
-    -fx-background-color: #2c3e50;
-    -fx-text-fill: #95a5a6;
-    -fx-border-color: #34495e;
-    -fx-border-width: 2px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    -fx-font-weight: bold;
-    -fx-cursor: hand;
-}
-
-.button.game-button-category-unselected:hover {
-    -fx-background-color: #34495e;
-    -fx-text-fill: #ecf0f1;
-    -fx-border-color: #4a5f7f;
-}
-
-.button.game-button-category-selected {
+/* Make the button region transparent so image shows cleanly */
+.button, .button > .background, .button .background {
     -fx-background-color: transparent;
-    -fx-text-fill: #00d9ff;
-    -fx-border-color: #00d9ff;
-    -fx-border-width: 2px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    -fx-font-weight: bold;
-    -fx-cursor: hand;
+    -fx-background-insets: 0;
 }
 
-.button.game-button-category-selected:hover {
-    -fx-background-color: rgba(0, 217, 255, 0.1);
-    -fx-text-fill: #00d9ff;
-    -fx-border-color: #00d9ff;
-}
-
-/* Apply button styles (for settings screen) */
+/* Base game button: use the image as the visible button skin */
+.button.game-button,
+.button.game-button-category-unselected,
+.button.game-button-category-selected,
 .button.game-button-apply {
-    -fx-background-color: #27ae60;
+    -fx-background-image: url("imagebutton/button.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center center;
+    -fx-background-size: 100% 100%; /* cover the button area */
+
     -fx-text-fill: white;
-    -fx-border-color: #229954;
-    -fx-border-width: 2px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
     -fx-font-weight: bold;
-    -fx-cursor: hand;
+    -fx-padding: 6px 18px; /* adjust text padding so it sits nicely on image */
 }
 
-.button.game-button-apply:hover {
-    -fx-background-color: #2ecc71;
-    -fx-border-color: #27ae60;
+/* Remove scale rules here: Java handles smooth scale transitions to avoid conflict */
+
+/* Remove any default focus visuals */
+.button:focused, .button:focused .text {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-effect: none;
+    -fx-border-color: transparent;
 }
 
-.button.game-button-apply:pressed {
-    -fx-background-color: #229954;
-}
+/* Specific visual tweaks for categories (colors used for text only) */
+.button.game-button-category-unselected { -fx-text-fill: #95a5a6; }
+.button.game-button-category-selected   { -fx-text-fill: #00d9ff; }
+.button.game-button-apply               { -fx-text-fill: white; }
+
+/* Keep other styles (overlays, dialogs) intact */
+.overlay-pane { -fx-background-color: rgba(44,62,80,0.9); }
+.dim-overlay { -fx-background-color: rgba(0,0,0,0.5); }

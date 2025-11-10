@@ -63,21 +63,43 @@ public class PaddleSkinScreen extends UIManager {
             name.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
             name.setMinWidth(220);
 
-            GameButton buyBtn = createButton("Buy", () -> {
+            boolean owned = coinManager != null && coinManager.isSkinOwned("paddle", id);
+            boolean selected = coinManager != null && id.equals(coinManager.getSelectedPaddleSkin());
+
+            // create buttons first (no action) to allow lambdas to reference them safely
+            GameButton selectBtn = createButton("Select", null);
+            GameButton buyBtn = createButton("Buy", null);
+
+            // configure select button action
+            selectBtn.setOnAction(evt -> {
+                assert coinManager != null;
+                boolean ok = coinManager.setSelectedPaddleSkin(id);
+                if (ok) {
+                    if (onApply != null) onApply.accept(id);
+                    // refresh UI so selected state updates across the list
+                    refresh();
+                    show();
+                }
+            });
+            // select is disabled if not owned (unless default) or already selected
+            selectBtn.setDisable(!(owned || "default".equals(id)) || selected);
+            if (selected) {
+                name.setText(id.toUpperCase() + (price > 0 ? " (" + price + " coins)" : " (free)") + " - SELECTED");
+            }
+
+            // configure buy button action
+            buyBtn.setOnAction(evt -> {
                 if (price <= 0) return;
                 assert coinManager != null;
                 boolean ok = coinManager.buySkin("paddle", id, price);
                 if (ok) {
-                    coinText.setText("Coins: " + coinManager.getCoins());
+                    // After purchase, rebuild UI so ownership/select buttons update
+                    refresh();
+                    show();
                 }
             });
-            buyBtn.setDisable(price <= 0);
-
-            GameButton selectBtn = createButton("Select", () -> {
-                assert coinManager != null;
-                boolean ok = coinManager.setSelectedPaddleSkin(id);
-                if (ok && onApply != null) onApply.accept(id);
-            });
+            // disable buy if free or already owned
+            buyBtn.setDisable(price <= 0 || owned);
 
             row.getChildren().addAll(name, buyBtn, selectBtn);
             itemsBox.getChildren().add(row);
@@ -112,4 +134,3 @@ public class PaddleSkinScreen extends UIManager {
         layout = null;
     }
 }
-
