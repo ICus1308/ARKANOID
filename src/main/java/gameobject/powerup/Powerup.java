@@ -44,7 +44,6 @@ public class Powerup extends GameObject {
 
         setX(x);
         setY(y);
-
     }
 
     @Override
