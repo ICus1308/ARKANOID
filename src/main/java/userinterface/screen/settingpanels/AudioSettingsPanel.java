@@ -1,6 +1,7 @@
 package userinterface.screen.settingpanels;
 
 import gamemanager.manager.SoundManager;
+import gamemanager.ui.UIManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -8,21 +9,19 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 
 import static gameconfig.GameConfig.*;
 
-/**
- * Audio settings panel for the SettingScreen.
- * Handles volume controls and mute functionality.
- */
+
 public class AudioSettingsPanel extends VBox {
+    private final UIManager uiManager;
     private Slider masterVolumeSlider;
     private Slider sfxVolumeSlider;
     private Slider musicVolumeSlider;
     private CheckBox muteCheckbox;
 
-    public AudioSettingsPanel() {
+    public AudioSettingsPanel(UIManager uiManager) {
+        this.uiManager = uiManager;
         initializePanel();
     }
 
@@ -30,7 +29,6 @@ public class AudioSettingsPanel extends VBox {
         this.setSpacing(25);
         this.setPadding(new Insets(40, 40, 40, 40));
 
-        // Panel styling matching UIManager conventions
         String panelStyle = "-fx-border-color: #00d9ff; " +
                           "-fx-border-width: 2px; " +
                           "-fx-border-radius: 5px; " +
@@ -44,7 +42,6 @@ public class AudioSettingsPanel extends VBox {
 
         SoundManager soundManager = SoundManager.getInstance();
 
-        // Create volume control sections
         VBox masterVolumeSection = createVolumeSliderSection(
             "Master Volume:",
             soundManager.getMasterVolume() * 100
@@ -84,10 +81,10 @@ public class AudioSettingsPanel extends VBox {
 
 
     private VBox createVolumeSliderSection(String labelText, double initialValue) {
-        Label label = createLabel(labelText);
+        Label label = uiManager.createLabel(labelText);
 
-        Slider slider = createSlider(0, 100, initialValue);
-        Label valueLabel = createValueLabel((int) initialValue + "%");
+        Slider slider = uiManager.createSlider(0, 100, initialValue);
+        Label valueLabel = uiManager.createValueLabel((int) initialValue + "%");
 
         slider.valueProperty().addListener((observable, oldValue, newValue) -> {
             int val = (int) Math.round(newValue.doubleValue());
@@ -108,31 +105,6 @@ public class AudioSettingsPanel extends VBox {
         soundManager.setMasterVolume(masterVolumeSlider.getValue() / 100.0);
         soundManager.setSfxVolume(sfxVolumeSlider.getValue() / 100.0);
         soundManager.setMusicVolume(musicVolumeSlider.getValue() / 100.0);
-    }
-
-    private Label createLabel(String text) {
-        Label label = new Label(text);
-        label.setTextFill(Color.WHITE);
-        label.setStyle("-fx-font-size: " + (18 * UI_SCALE) + "px; -fx-font-weight: bold;");
-        return label;
-    }
-
-    private Slider createSlider(double min, double max, double value) {
-        Slider slider = new Slider(min, max, value);
-        slider.setShowTickLabels(false);
-        slider.setShowTickMarks(false);
-        slider.setPrefWidth(300 * UI_SCALE_X);
-        slider.setStyle("-fx-font-size: " + (12 * UI_SCALE) + "px;");
-        return slider;
-    }
-
-    private Label createValueLabel(String text) {
-        Label label = new Label(text);
-        label.setTextFill(Color.WHITE);
-        label.setStyle("-fx-font-size: " + (16 * UI_SCALE) + "px; -fx-font-weight: bold;");
-        label.setMinWidth(50 * UI_SCALE_X);
-        label.setAlignment(Pos.CENTER_RIGHT);
-        return label;
     }
 }
 

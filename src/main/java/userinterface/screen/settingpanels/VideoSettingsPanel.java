@@ -1,17 +1,19 @@
 package userinterface.screen.settingpanels;
 
+import gamemanager.ui.UIManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import static gameconfig.GameConfig.*;
 
+
 public class VideoSettingsPanel extends VBox {
+    private final UIManager uiManager;
     private final Pane root;
     private final Runnable onResolutionChange;
 
@@ -21,7 +23,8 @@ public class VideoSettingsPanel extends VBox {
     private final String[] resolutions = {"1280x720", "1366x768", "1600x900"};
     private final String[] displayModes = {"Windowed", "Fullscreen"};
 
-    public VideoSettingsPanel(Pane root, Runnable onResolutionChange) {
+    public VideoSettingsPanel(UIManager uiManager, Pane root, Runnable onResolutionChange) {
+        this.uiManager = uiManager;
         this.root = root;
         this.onResolutionChange = onResolutionChange;
         initializePanel();
@@ -54,9 +57,9 @@ public class VideoSettingsPanel extends VBox {
     }
 
     private void createDisplayModeControl() {
-        Label label = createLabel("Display Mode:");
+        Label label = uiManager.createLabel("Display Mode:");
 
-        displayModeCombo = createComboBox(displayModes);
+        displayModeCombo = uiManager.createComboBox(displayModes);
 
         Stage stage = (Stage) root.getScene().getWindow();
         if (stage != null && stage.isFullScreen()) {
@@ -70,9 +73,9 @@ public class VideoSettingsPanel extends VBox {
     }
 
     private void createResolutionControl() {
-        Label label = createLabel("Resolution:");
+        Label label = uiManager.createLabel("Resolution:");
 
-        resolutionCombo = createComboBox(resolutions);
+        resolutionCombo = uiManager.createComboBox(resolutions);
 
         String currentResolution = ((int)GAME_WIDTH) + "x" + ((int)GAME_HEIGHT);
         if (resolutionCombo.getItems().contains(currentResolution)) {
@@ -100,8 +103,6 @@ public class VideoSettingsPanel extends VBox {
 
     private void applyFullscreenMode(Stage stage) {
         stage.setFullScreen(true);
-
-        // Get screen dimensions and update game dimensions
         Screen screen = Screen.getPrimary();
         Rectangle2D bounds = screen.getBounds();
 
@@ -142,48 +143,6 @@ public class VideoSettingsPanel extends VBox {
                 System.err.println("Invalid resolution format: " + resolution);
             }
         }
-    }
-
-    private Label createLabel(String text) {
-        Label label = new Label(text);
-        label.setTextFill(Color.WHITE);
-        label.setStyle("-fx-font-size: " + (18 * UI_SCALE) + "px; -fx-font-weight: bold;");
-        return label;
-    }
-
-    private ComboBox<String> createComboBox(String... items) {
-        ComboBox<String> comboBox = new ComboBox<>();
-        comboBox.getItems().addAll(items);
-        comboBox.setPrefWidth(300 * UI_SCALE_X);
-        comboBox.setStyle("-fx-font-size: " + (14 * UI_SCALE) + "px;");
-
-        comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                    setStyle("-fx-text-fill: white; -fx-background-color: #2c3e50;");
-                }
-            }
-        });
-
-        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                    setStyle("-fx-text-fill: white; -fx-background-color: #34495e;");
-                }
-            }
-        });
-
-        return comboBox;
     }
 }
 

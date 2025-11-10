@@ -121,7 +121,7 @@ public class SettingScreen extends UIManager {
     private void showVideoSettings() {
         Label titleLabel = createTitleLabel("VIDEO SETTINGS");
 
-        videoSettingsPanel = new VideoSettingsPanel(root, onResolutionChange);
+        videoSettingsPanel = new VideoSettingsPanel(this, root, onResolutionChange);
 
         GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyVideoSettings);
 
@@ -138,7 +138,7 @@ public class SettingScreen extends UIManager {
     private void showAudioSettings() {
         Label titleLabel = createTitleLabel("AUDIO SETTINGS");
 
-        audioSettingsPanel = new AudioSettingsPanel();
+        audioSettingsPanel = new AudioSettingsPanel(this);
 
         GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyAudioSettings);
         HBox applyButtonBox = new HBox(applyButton);
@@ -154,7 +154,7 @@ public class SettingScreen extends UIManager {
     private void showDebugSettings() {
         Label titleLabel = createTitleLabel("DEBUG SETTINGS");
 
-        debugSettingsPanel = new DebugSettingsPanel();
+        debugSettingsPanel = new DebugSettingsPanel(this);
 
         GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyDebugSettings);
         HBox applyButtonBox = new HBox(applyButton);

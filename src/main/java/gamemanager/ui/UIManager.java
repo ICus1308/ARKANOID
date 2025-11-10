@@ -61,17 +61,17 @@ public abstract class UIManager {
     /**
      * Creates a styled label for settings
      */
-    protected Label createLabel(String text, Color color) {
+    public Label createLabel(String text) {
         Label label = new Label(text);
         label.setFont(Font.font("Arial", FontWeight.NORMAL, (double) 18 * UI_SCALE));
-        label.setStyle("-fx-text-fill: " + toRgbString(color) + ";");
+        label.setStyle("-fx-text-fill: " + toRgbString(UIManager.TEXT_COLOR) + ";");
         return label;
     }
 
     /**
      * Creates a styled title label
      */
-    protected Label createTitleLabel(String text) {
+    public Label createTitleLabel(String text) {
         Label label = new Label(text);
         label.setFont(Font.font("Arial", FontWeight.BOLD, 32 * UI_SCALE));
         label.setStyle("-fx-text-fill: white;");
@@ -81,7 +81,7 @@ public abstract class UIManager {
     /**
      * Creates a styled slider for settings
      */
-    protected Slider createSlider(double min, double max, double value) {
+    public Slider createSlider(double min, double max, double value) {
         Slider slider = new Slider(min, max, value);
         slider.setPrefWidth(360 * UI_SCALE_X);
         slider.setPrefHeight(35);
@@ -94,7 +94,7 @@ public abstract class UIManager {
     /**
      * Creates a styled ComboBox for settings
      */
-    protected ComboBox<String> createComboBox(String... items) {
+    public ComboBox<String> createComboBox(String... items) {
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.getItems().addAll(items);
         comboBox.setPrefWidth(400 * UI_SCALE_X);
@@ -135,8 +135,8 @@ public abstract class UIManager {
     /**
      * Creates a styled value label with padding
      */
-    protected Label createValueLabel(String text) {
-        Label label = createLabel(text, TEXT_COLOR);
+    public Label createValueLabel(String text) {
+        Label label = createLabel(text);
         label.setPadding(new Insets(0, 0, 0, 10));
         return label;
     }

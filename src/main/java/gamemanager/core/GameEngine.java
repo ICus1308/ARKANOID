@@ -828,7 +828,6 @@ public class GameEngine {
             case "skin1" -> "/imageball/skin1.png";
             case "skin2" -> "/imageball/skin2.png";
             case "oneshot" -> "/imageball/oneshot.png";
-            case "default" -> "/imageball/default.png";
             default -> "/imageball/default.png";
         };
     }
@@ -899,18 +898,6 @@ public class GameEngine {
             return singleplayerScreen.getScore();
         }
         return 0;
-    }
-
-    /**
-     * Update paddle widths based on debug multiplier
-     */
-    public void updatePaddleDebugWidth() {
-        if (paddle != null) {
-            paddle.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
-        }
-        if (paddle2 != null) {
-            paddle2.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
-        }
     }
 
     // ==================== Input Setters ====================
