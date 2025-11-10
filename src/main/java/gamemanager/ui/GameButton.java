@@ -92,10 +92,7 @@ public class GameButton extends Button {
                     "-fx-font-weight: bold; " +
                     "-fx-font-family: 'Simple Sunrise'; " +
                     "-fx-cursor: hand;");
-
-            System.out.println("Button image loaded: /imagebutton/button.png");
         } catch (Exception e) {
-            System.err.println("Error loading button image: " + e.getMessage());
             e.printStackTrace();
         }
     }

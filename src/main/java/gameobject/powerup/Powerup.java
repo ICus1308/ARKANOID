@@ -35,9 +35,8 @@ public class Powerup extends GameObject {
             this.imageView.setFitHeight(height);
             this.imageView.setPreserveRatio(true);
 
-            System.out.println("Powerup image loaded: " + imagePath);
+
         } catch (Exception e) {
-            System.err.println("Error loading powerup image: " + imagePath);
             e.printStackTrace();
             throw new RuntimeException("Failed to load powerup image: " + imagePath);
         }
