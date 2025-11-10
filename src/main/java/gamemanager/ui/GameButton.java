@@ -1,11 +1,14 @@
 package gamemanager.ui;
 
 import gamemanager.manager.SoundManager;
+import javafx.animation.Interpolator;
+import javafx.animation.ScaleTransition;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.scene.control.ContentDisplay;
+import javafx.util.Duration;
 
 import java.util.Objects;
 
@@ -14,6 +17,12 @@ import static gameconfig.GameConfig.*;
 public class GameButton extends Button {
 
     private ButtonStyle currentStyle;
+    private ImageView buttonImageView;
+
+    // hover scale configuration
+    private static final double HOVER_SCALE = 1.12;
+    private final ScaleTransition hoverGrow;
+    private final ScaleTransition hoverShrink;
 
     public GameButton(String text) {
         this(text, ButtonStyle.PRIMARY);
@@ -22,11 +31,61 @@ public class GameButton extends Button {
     public GameButton(String text, ButtonStyle style) {
         super(text);
         this.currentStyle = style;
-        applyStyle(style);
         setupButton(style);
-        setOnMouseClicked(e -> {
-            SoundManager.getInstance().playSound(SoundManager.SoundType.BUTTON_CLICK);
-        });
+
+        // Load button image first
+        loadButtonImage();
+
+        applyStyle(style);
+
+        this.setContentDisplay(ContentDisplay.CENTER);
+        this.setFocusTraversable(false);
+
+        // initialize scale transitions for smooth hover scale
+        this.setScaleX(1.0);
+        this.setScaleY(1.0);
+        hoverGrow = new ScaleTransition(Duration.millis(120), this);
+        hoverGrow.setToX(HOVER_SCALE);
+        hoverGrow.setToY(HOVER_SCALE);
+        hoverGrow.setInterpolator(Interpolator.EASE_OUT);
+
+        hoverShrink = new ScaleTransition(Duration.millis(100), this);
+        hoverShrink.setToX(1.0);
+        hoverShrink.setToY(1.0);
+        hoverShrink.setInterpolator(Interpolator.EASE_IN);
+
+        setupHoverEffect();
+
+        setOnMouseClicked(e -> SoundManager.getInstance().playSound(SoundManager.SoundType.BUTTON_CLICK));
+    }
+
+    private void loadButtonImage() {
+        try {
+            // Load button.png as background image
+            Image buttonImage = new Image(Objects.requireNonNull(
+                    getClass().getResourceAsStream("/imagebutton/button.png")));
+
+            buttonImageView = new ImageView(buttonImage);
+            buttonImageView.setPreserveRatio(false);
+            buttonImageView.setFitWidth(getPrefWidth());
+            buttonImageView.setFitHeight(getPrefHeight());
+
+            // Set image as graphic behind text
+            this.setGraphic(buttonImageView);
+            this.setContentDisplay(ContentDisplay.CENTER);
+
+            // Make button background transparent so only image shows
+            this.setStyle("-fx-background-color: transparent; " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-size: " + (24 * UI_SCALE) + "px; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-cursor: hand;");
+
+            System.out.println("Button image loaded: /imagebutton/button.png");
+        } catch (Exception e) {
+            System.err.println("Error loading button image: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void applyStyle(ButtonStyle style) {
@@ -36,73 +95,31 @@ public class GameButton extends Button {
         switch (style) {
             case PRIMARY:
                 getStyleClass().add("game-button");
-                setStyle("-fx-background-color: #3498db; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-border-color: #2980b9; " +
-                        "-fx-border-width: 2px; " +
-                        "-fx-border-radius: 5px; " +
-                        "-fx-background-radius: 5px; " +
-                        "-fx-font-size: " + (24 * UI_SCALE) + "px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-cursor: hand;");
-                setupHoverEffect("#5dade2", "white");
                 break;
             case CATEGORY_UNSELECTED:
                 getStyleClass().add("game-button-category-unselected");
-                setStyle("-fx-background-color: #2c3e50; " +
-                        "-fx-text-fill: #95a5a6; " +
-                        "-fx-border-color: #34495e; " +
-                        "-fx-border-width: 2px; " +
-                        "-fx-border-radius: 5px; " +
-                        "-fx-background-radius: 5px; " +
-                        "-fx-font-size: " + (16 * UI_SCALE) + "px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-cursor: hand;");
-                setupHoverEffect("#34495e", "#ecf0f1");
                 break;
             case CATEGORY_SELECTED:
                 getStyleClass().add("game-button-category-selected");
-                setStyle("-fx-background-color: transparent; " +
-                        "-fx-text-fill: #00d9ff; " +
-                        "-fx-border-color: #00d9ff; " +
-                        "-fx-border-width: 2px; " +
-                        "-fx-border-radius: 5px; " +
-                        "-fx-background-radius: 5px; " +
-                        "-fx-font-size: " + (16 * UI_SCALE) + "px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-cursor: hand;");
-                setupHoverEffect("rgba(0, 217, 255, 0.1)", "#00d9ff");
                 break;
             case APPLY:
                 getStyleClass().add("game-button-apply");
-                setStyle("-fx-background-color: #27ae60; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-border-color: #229954; " +
-                        "-fx-border-width: 2px; " +
-                        "-fx-border-radius: 5px; " +
-                        "-fx-background-radius: 5px; " +
-                        "-fx-font-size: " + (14 * UI_SCALE) + "px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-cursor: hand;");
-                setupHoverEffect("#2ecc71", "white");
                 break;
         }
     }
 
-    private void setupHoverEffect(String hoverBg, String textColor) {
-        final String normalStyle = getStyle();
-
+    private void setupHoverEffect() {
         setOnMouseEntered(e -> {
-            String hoverStyle = normalStyle.replaceAll("-fx-background-color: [^;]+;",
-                    "-fx-background-color: " + hoverBg + ";");
-            if (!textColor.equals("white") && textColor.contains("#")) {
-                hoverStyle = hoverStyle.replaceAll("-fx-text-fill: [^;]+;",
-                        "-fx-text-fill: " + textColor + ";");
-            }
-            setStyle(hoverStyle);
+            // play grow animation (phóng to khi hover)
+            hoverShrink.stop();
+            hoverGrow.playFromStart();
         });
 
-        setOnMouseExited(e -> setStyle(normalStyle));
+        setOnMouseExited(e -> {
+            // play shrink animation (trở lại kích thước ban đầu)
+            hoverGrow.stop();
+            hoverShrink.playFromStart();
+        });
     }
 
     private void setupButton(ButtonStyle style) {
@@ -128,26 +145,36 @@ public class GameButton extends Button {
 
     public void switchStyle(ButtonStyle newStyle) {
         this.currentStyle = newStyle;
+        setupButton(newStyle);
         applyStyle(newStyle);
+        // Reload image with new size
+        if (buttonImageView != null) {
+            buttonImageView.setFitWidth(getPrefWidth());
+            buttonImageView.setFitHeight(getPrefHeight());
+        }
+    }
+
+    public ButtonStyle getCurrentStyle() {
+        return currentStyle;
     }
 
     /**
      * Thêm hình ảnh vào button
-     * @param imagePath Đường dẫn đến hình ảnh (ví dụ: "/images/buttons/replay.png")
-     * @param width Chiều rộng hình ảnh (pixel)
-     * @param height Chiều cao hình ảnh (pixel)
+     *
+     * @param imagePath Đường dẫn đến hình ảnh (ví dụ: "/imagebutton/button.png")
+     * @param width     Chiều rộng hình ảnh (pixel)
+     * @param height    Chiều cao hình ảnh (pixel)
      */
     public void setImage(String imagePath, double width, double height) {
         try {
             Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath)));
-            ImageView imageView = new ImageView(image);
-            imageView.setFitWidth(width);
-            imageView.setFitHeight(height);
-            imageView.setPreserveRatio(true);
+            buttonImageView = new ImageView(image);
+            buttonImageView.setFitWidth(width);
+            buttonImageView.setFitHeight(height);
+            buttonImageView.setPreserveRatio(false);
 
-            this.setGraphic(imageView);
-            this.setContentDisplay(ContentDisplay.LEFT);
-            this.setStyle(getStyle() + "-fx-graphic-text-gap: 10px;");
+            this.setGraphic(buttonImageView);
+            this.setContentDisplay(ContentDisplay.CENTER);
 
             System.out.println("Hình ảnh được thêm: " + imagePath);
         } catch (NullPointerException e) {
@@ -156,11 +183,12 @@ public class GameButton extends Button {
     }
 
     /**
-     * Thêm hình ảnh vào button (kích thước mặc định 24x24)
+     * Thêm hình ảnh vào button với kích thước của button
+     *
      * @param imagePath Đường dẫn đến hình ảnh
      */
     public void setImage(String imagePath) {
-        setImage(imagePath, 24, 24);
+        setImage(imagePath, getPrefWidth(), getPrefHeight());
     }
 
     /**
@@ -168,5 +196,6 @@ public class GameButton extends Button {
      */
     public void clearImage() {
         this.setGraphic(null);
+        buttonImageView = null;
     }
 }
