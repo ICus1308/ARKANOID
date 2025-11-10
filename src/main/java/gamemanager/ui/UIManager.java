@@ -6,7 +6,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.control.ComboBox;
 import javafx.scene.text.FontWeight;
+import javafx.geometry.Insets;
 
 import static gameconfig.GameConfig.*;
 
@@ -25,18 +28,13 @@ public abstract class UIManager {
         SIMPLE_SUNRISE_FONT = loadedFont != null ? loadedFont : Font.font("Arial", 20);
     }
 
+
     public UIManager(Pane root) {
         this.root = root;
     }
 
-    /**
-     * Initializes the UI components
-     */
     protected abstract void initializeUI();
 
-    /**
-     * Creates a styled text element
-     */
     protected Text createStyledText(String text, double x, double y, Font font, Color color) {
         Text textElement = new Text(x, y, text);
         textElement.setFont(font);
@@ -75,20 +73,83 @@ public abstract class UIManager {
     /**
      * Creates a styled label for settings
      */
-    protected Label createLabel(String text, Color color) {
+    public Label createLabel(String text) {
         Label label = new Label(text);
         label.setFont(Font.font(SIMPLE_SUNRISE_FONT.getFamily(), FontWeight.NORMAL, (double) 22 * UI_SCALE));
-        label.setStyle("-fx-text-fill: " + toRgbString(color) + ";");
+        label.setStyle("-fx-text-fill: " + toRgbString(TEXT_COLOR) + ";");
         return label;
     }
 
     /**
      * Creates a styled title label
      */
-    protected Label createTitleLabel(String text) {
+    public Label createTitleLabel(String text) {
         Label label = new Label(text);
         label.setFont(Font.font(SIMPLE_SUNRISE_FONT.getFamily(), FontWeight.BOLD, 38 * UI_SCALE));
         label.setStyle("-fx-text-fill: white;");
+        return label;
+    }
+
+    /**
+     * Creates a styled slider for settings
+     */
+    public Slider createSlider(double min, double max, double value) {
+        Slider slider = new Slider(min, max, value);
+        slider.setPrefWidth(360 * UI_SCALE_X);
+        slider.setPrefHeight(35);
+        slider.setMajorTickUnit((max - min) / 10);
+        slider.setShowTickMarks(false);
+        slider.setShowTickLabels(false);
+        return slider;
+    }
+
+    /**
+     * Creates a styled ComboBox for settings
+     */
+    public ComboBox<String> createComboBox(String... items) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.getItems().addAll(items);
+        comboBox.setPrefWidth(400 * UI_SCALE_X);
+        comboBox.setPrefHeight(35);
+
+        comboBox.setStyle("-fx-background-color: #2c3e50; " +
+                "-fx-font-size: " + (16 * UI_SCALE) + "px;");
+
+        comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #2c3e50;");
+                }
+            }
+        });
+
+        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #34495e;");
+                }
+            }
+        });
+
+        return comboBox;
+    }
+
+    /**
+     * Creates a styled value label with padding
+     */
+    public Label createValueLabel(String text) {
+        Label label = createLabel(text);
+        label.setPadding(new Insets(0, 0, 0, 10));
         return label;
     }
 

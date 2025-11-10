@@ -98,6 +98,15 @@ public class Paddle extends GameObject {
         }
     }
 
+    public void updateDebugWidth(double multiplier) {
+        double newWidth = baseWidth * multiplier;
+        if (expanded) {
+            newWidth *= 1.25;
+        }
+        this.width = newWidth;
+        imageView.setFitHeight(newWidth);
+    }
+
     /**
      * Apply a visual skin to the paddle. Skins map to images under /imagepaddle.
      * skinId: "default", "skin1", "skin2" (others fallback to default)
@@ -105,17 +114,11 @@ public class Paddle extends GameObject {
     public void applySkin(String skinId) {
         String res = "/imagepaddle/default.png";
         if (skinId != null) {
-            switch (skinId) {
-                case "skin1":
-                    res = "/imagepaddle/skin1.png";
-                    break;
-                case "skin2":
-                    res = "/imagepaddle/skin2.png";
-                    break;
-                case "default":
-                default:
-                    res = "/imagepaddle/default.png";
-            }
+            res = switch (skinId) {
+                case "skin1" -> "/imagepaddle/skin1.png";
+                case "skin2" -> "/imagepaddle/skin2.png";
+                default -> "/imagepaddle/default.png";
+            };
         }
 
         // try load image
@@ -139,8 +142,7 @@ public class Paddle extends GameObject {
                     // For safety, if rectFallback has a parent, replace it with imageView
                     if (rectFallback != null && rectFallback.getParent() != null) {
                         javafx.scene.Parent p = rectFallback.getParent();
-                        if (p instanceof javafx.scene.layout.Pane) {
-                            javafx.scene.layout.Pane pane = (javafx.scene.layout.Pane) p;
+                        if (p instanceof javafx.scene.layout.Pane pane) {
                             int idx = pane.getChildren().indexOf(rectFallback);
                             if (idx >= 0) pane.getChildren().set(idx, imageView);
                         }
