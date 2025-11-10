@@ -8,10 +8,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Region;
 
 import java.util.Objects;
-import javafx.scene.text.Text;
-import javafx.scene.layout.Region;
 
 import static gameconfig.GameConfig.*;
 
@@ -80,10 +79,11 @@ public class MenuScreen extends UIManager {
         backgroundOverlay.setMouseTransparent(true);
         backgroundOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        StackPane.setAlignment(title, Pos.TOP_CENTER);
         StackPane.setAlignment(titleImage, Pos.TOP_CENTER);
         StackPane.setAlignment(buttonBox, Pos.CENTER);
-        stackPane.getChildren().addAll(titleImage, buttonBox);
+
+        // Add overlay first so it's behind title and buttons
+        stackPane.getChildren().addAll(backgroundOverlay, titleImage, buttonBox);
     }
 
     private ImageView createTitleImage() {
@@ -120,8 +120,6 @@ public class MenuScreen extends UIManager {
                 return null;
             }
         }
-        // Add overlay first so it's behind title and buttons
-        stackPane.getChildren().addAll(backgroundOverlay, title, buttonBox);
     }
 
     public StackPane getStackPane() {
