@@ -1,6 +1,7 @@
 package gameobject.brick;
 
 import gamemanager.manager.GameObject;
+import gamemanager.ui.ImageManager;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -25,6 +26,10 @@ public abstract class Brick extends GameObject {
     public javafx.scene.Node getNode() { return node; }
 
     public abstract int hit();
+
+    public void applySkin(String skinPath) {
+        if (skinPath != null) ImageManager.applyImage(node, skinPath);
+    }
 
     public void updateDraw() {
         if (this instanceof MultiHitBrick multi) {

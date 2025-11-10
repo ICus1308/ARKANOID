@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/src/main/java/gameobject/brick/MultiHitBrick.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/src/main/java/gameobject/brick/MultiHitBrick.java" />
+              <option name="originalContent" value="package gameobject.brick;&#10;&#10;import static gameconfig.GameConfig.*;&#10;&#10;public class MultiHitBrick extends Brick {&#10;    public MultiHitBrick(double x, double y, double width, double height) {&#10;        super(x, y, width, height, 3, &quot;#c0392b&quot;);&#10;    }&#10;    public MultiHitBrick(double x, double y, double width, double height, int initialHitCount) {&#10;        super(x, y, width, height, initialHitCount, &quot;#c0392b&quot;);&#10;    }&#10;&#10;    @Override&#10;    public int hit() {&#10;        hitCount--;&#10;        updateDraw();&#10;        return 20;&#10;    }&#10;&#10;    @Override&#10;    public void updateDraw() {&#10;        if (hitCount &gt;= 3) applySkin(BRICK_MULTIHIT_3_SKIN);&#10;        else if (hitCount == 2) applySkin(BRICK_MULTIHIT_2_SKIN);&#10;        else if (hitCount == 1) applySkin(BRICK_MULTIHIT_1_SKIN);&#10;    }&#10;}&#10;" />
+              <option name="updatedContent" value="package gameobject.brick;&#10;&#10;import static gameconfig.GameConfig.*;&#10;&#10;public class MultiHitBrick extends Brick {&#10;    public MultiHitBrick(double x, double y, double width, double height) {&#10;        super(x, y, width, height, 3, &quot;#c0392b&quot;);&#10;        applySkin(BRICK_MULTIHIT_3_SKIN);&#10;    }&#10;    public MultiHitBrick(double x, double y, double width, double height, int initialHitCount) {&#10;        super(x, y, width, height, initialHitCount, &quot;#c0392b&quot;);&#10;        updateDraw();&#10;    }&#10;&#10;    @Override&#10;    public int hit() {&#10;        hitCount--;&#10;        updateDraw();&#10;        return 20;&#10;    }&#10;&#10;    @Override&#10;    public void updateDraw() {&#10;        if (hitCount &gt;= 3) applySkin(BRICK_MULTIHIT_3_SKIN);&#10;        else if (hitCount == 2) applySkin(BRICK_MULTIHIT_2_SKIN);&#10;        else if (hitCount == 1) applySkin(BRICK_MULTIHIT_1_SKIN);&#10;    }&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

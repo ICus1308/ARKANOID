@@ -5,8 +5,8 @@ public final class GameConfig {
 
     public static double GAME_WIDTH = 1280;
     public static double GAME_HEIGHT = 720;
-    public static final int BRICK_ROWS = 8;
-    public static final int BRICK_COLS = 8;
+    public static final int BRICK_ROWS = 6;
+    public static final int BRICK_COLS = 14;
 
     // Base values for 1280x720 resolution
     private static final double BASE_PADDLE_SPEED = 12.0;
@@ -22,7 +22,7 @@ public final class GameConfig {
     public static double BALL_RADIUS = BASE_BALL_RADIUS;
     public static double BALL_SPEED = BASE_BALL_SPEED;
 
-    public static final double BRICK_HEIGHT = 20;
+    public static final double BRICK_HEIGHT = 30;
 
     // Ball skin paths
     public static final String BALL_DEFAULT_SKIN = "/imageball/default.png";
@@ -34,6 +34,14 @@ public final class GameConfig {
     public static final int EXPLODING_HIT_COUNT = 1;
     public static final String EXPLODING_COLOR = "#e67e22";
     public static final int EXPLOSION_RANGE = 1;
+
+    // Brick skin paths
+    public static final String BRICK_STANDARD_SKIN = "/imagebrick/brick1hit.png";
+    public static final String BRICK_MULTIHIT_3_SKIN = "/imagebrick/brick2-1.png";
+    public static final String BRICK_MULTIHIT_2_SKIN = "/imagebrick/brick2-2.png";
+    public static final String BRICK_MULTIHIT_1_SKIN = "/imagebrick/brick2-3.png";
+    public static final String BRICK_INDESTRUCTIBLE_SKIN = "/imagebrick/wall.png";
+    public static final String BRICK_EXPLODING_SKIN1 = "/imagebrick/brickboom1.png";
 
     // Indicator properties
     public static final double INDICATOR_TRIANGLE_SIZE = 20.0;

@@ -13,6 +13,8 @@ public class ExplodingBrick extends Brick {
 
     public ExplodingBrick(double x, double y, double width, double height) {
         super(x, y, width, height, EXPLODING_HIT_COUNT, EXPLODING_COLOR);
+        applySkin(BRICK_EXPLODING_SKIN1);
+
     }
 
     /**

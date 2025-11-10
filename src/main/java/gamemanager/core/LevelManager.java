@@ -40,7 +40,7 @@ public class LevelManager {
         "5555U2U2U25555",
     };
 
-    private static final double BRICK_SPACING = 2;
+    private static final double BRICK_SPACING = 4;
     // BRICK_HEIGHT is already defined in GameConfig (= 20)
 
     private final Random random = new Random();
@@ -232,4 +232,3 @@ public class LevelManager {
         loadLevelFromPattern(levelPattern, root, 50);
     }
 }
-
