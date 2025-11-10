@@ -11,7 +11,7 @@ public final class GameConfig {
     // Base values for 1280x720 resolution
     private static final double BASE_PADDLE_SPEED = 12.0;
     private static final double BASE_PADDLE_WIDTH = 140.0;
-    private static final double BASE_PADDLE_HEIGHT = 15.0;
+    private static final double BASE_PADDLE_HEIGHT = 25.0;
     private static final double BASE_BALL_RADIUS = 12.0;
     private static final double BASE_BALL_SPEED = 10.0;
 

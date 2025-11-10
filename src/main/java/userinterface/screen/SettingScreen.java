@@ -251,9 +251,7 @@ public class SettingScreen extends UIManager {
         VBox settingsPanel = new VBox(25);
         settingsPanel.setPadding(new Insets(40, 40, 40, 40));
 
-        String panelStyle = "-fx-border-color: #00d9ff; " +
-                "-fx-border-width: 2px; " +
-                "-fx-background-color: rgba(22, 33, 62, 0.8); " +
+        String panelStyle = "-fx-background-color: rgba(22, 33, 62, 0.8); " +
                 "-fx-border-radius: 5px; " +
                 "-fx-background-radius: 5px;";
         settingsPanel.setStyle(panelStyle);
@@ -273,6 +271,7 @@ public class SettingScreen extends UIManager {
         comboBox.setStyle("-fx-background-color: #2c3e50; " +
                 "-fx-font-size: " + (19 * UI_SCALE) + "px; " +
                 "-fx-font-family: 'Simple Sunrise';");
+
         comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {

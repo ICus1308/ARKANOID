@@ -3,6 +3,12 @@ package userinterface.gamescreen;
 import gamemanager.ui.UIManager;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
+
+import java.util.Objects;
 
 import static gameconfig.GameConfig.*;
 
@@ -13,6 +19,10 @@ public class BotScreen extends UIManager implements GameScreen {
     private int botLives;
     private Text playerLivesText;
     private Text botLivesText;
+    private ImageView playerLivesIcon;
+    private ImageView botLivesIcon;
+    private HBox playerLivesBox;
+    private HBox botLivesBox;
 
     public BotScreen(Pane root) {
         super(root);
@@ -23,10 +33,46 @@ public class BotScreen extends UIManager implements GameScreen {
 
     @Override
     protected void initializeUI() {
-        playerLivesText = createStyledText("Player Lives: " + INITIAL_LIVES, 10, GAME_HEIGHT - 25, UI_FONT, TEXT_COLOR);
-        botLivesText = createStyledText("Bot Lives: " + INITIAL_LIVES, GAME_WIDTH - 150, 25, UI_FONT, TEXT_COLOR);
+        // Create player lives display with icon
+        try {
+            Image livesImage = new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("/imagelive/imagelive.png")));
+            playerLivesIcon = new ImageView(livesImage);
+            playerLivesIcon.setFitWidth(25);
+            playerLivesIcon.setFitHeight(25);
+            playerLivesIcon.setPreserveRatio(true);
+        } catch (Exception e) {
+            System.err.println("Error loading player lives icon");
+        }
+
+        playerLivesText = createStyledText(INITIAL_LIVES + "", 0, 0, UI_FONT, TEXT_COLOR);
+        playerLivesBox = new HBox(5);
+        playerLivesBox.setAlignment(Pos.CENTER_LEFT);
+        playerLivesBox.getChildren().addAll(playerLivesIcon, playerLivesText);
+        playerLivesBox.setLayoutX(10);
+        playerLivesBox.setLayoutY(GAME_HEIGHT - 40);
+
+        // Create bot lives display with icon
+        try {
+            Image livesImage = new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("/imagelive/imagelive.png")));
+            botLivesIcon = new ImageView(livesImage);
+            botLivesIcon.setFitWidth(25);
+            botLivesIcon.setFitHeight(25);
+            botLivesIcon.setPreserveRatio(true);
+        } catch (Exception e) {
+            System.err.println("Error loading bot lives icon");
+        }
+
+        botLivesText = createStyledText(INITIAL_LIVES + "", 0, 0, UI_FONT, TEXT_COLOR);
+        botLivesBox = new HBox(5);
+        botLivesBox.setAlignment(Pos.CENTER_LEFT);
+        botLivesBox.getChildren().addAll(botLivesIcon, botLivesText);
+        botLivesBox.setLayoutX(GAME_WIDTH - 80);
+        botLivesBox.setLayoutY(10);
+
         gameMessage = createStyledText("PRESS SPACE TO START", GAME_WIDTH / 2 - 200, GAME_HEIGHT / 2, MESSAGE_FONT, GOLD_COLOR);
-        root.getChildren().addAll(playerLivesText, botLivesText, gameMessage);
+        root.getChildren().addAll(playerLivesBox, botLivesBox, gameMessage);
     }
 
     public int getPlayerLives() {
@@ -35,7 +81,7 @@ public class BotScreen extends UIManager implements GameScreen {
 
     public void updatePlayerLives(int newLives) {
         this.playerLives = newLives;
-        playerLivesText.setText("Player Lives: " + playerLives);
+        playerLivesText.setText(playerLives + "");
     }
 
     public void decreasePlayerLives() {
@@ -48,7 +94,7 @@ public class BotScreen extends UIManager implements GameScreen {
 
     public void updateBotLives(int newLives) {
         this.botLives = newLives;
-        botLivesText.setText("Bot Lives: " + botLives);
+        botLivesText.setText(botLives + "");
     }
 
     public void decreaseBotLives() {
@@ -97,8 +143,7 @@ public class BotScreen extends UIManager implements GameScreen {
 
     public void cleanup() {
         if (root != null) {
-            root.getChildren().removeAll(playerLivesText, botLivesText, gameMessage);
+            root.getChildren().removeAll(playerLivesBox, botLivesBox, gameMessage);
         }
     }
 }
-

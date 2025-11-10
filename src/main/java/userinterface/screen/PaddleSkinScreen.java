@@ -3,28 +3,31 @@ package userinterface.screen;
 import gamemanager.manager.CoinManager;
 import gamemanager.ui.GameButton;
 import gamemanager.ui.UIManager;
+import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-import static gameconfig.GameConfig.GAME_WIDTH;
+import static gameconfig.GameConfig.*;
 
 public class PaddleSkinScreen extends UIManager {
     private StackPane layout;
     private final CoinManager coinManager;
     private final Consumer<String> onApply;
     private final Runnable onBack;
-
     private final Map<String, Integer> items = new LinkedHashMap<>();
+
+    private VBox actionButtonsBox;
+    private Text coinText;
 
     public PaddleSkinScreen(Pane root, CoinManager coinManager, Consumer<String> onApply, Runnable onBack) {
         super(root);
@@ -39,82 +42,165 @@ public class PaddleSkinScreen extends UIManager {
     @Override
     protected void initializeUI() {
         layout = new StackPane();
-        layout.setPrefSize(GAME_WIDTH, 600);
+        layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
         layout.setStyle("-fx-background-color: rgba(44,62,80,0.95);");
 
         Text title = createStyledText("PADDLE SKINS", 0, 0, TITLE_FONT, TEXT_COLOR);
 
-        Text coinText = createStyledText("Coins: " + (coinManager == null ? 0 : coinManager.getCoins()), 0, 0, UI_FONT, GOLD_COLOR);
+        // Coin display at top-right
+        coinText = createStyledText("Coins: " + (coinManager == null ? 0 : coinManager.getCoins()), 0, 0, UI_FONT, GOLD_COLOR);
         StackPane.setAlignment(coinText, Pos.TOP_RIGHT);
         StackPane.setMargin(coinText, new Insets(20, 20, 0, 0));
 
-        VBox itemsBox = new VBox(12);
-        itemsBox.setPadding(new Insets(20));
-        itemsBox.setAlignment(Pos.CENTER_LEFT);
+        // Items grid
+        HBox itemsGrid = new HBox(20);
+        itemsGrid.setAlignment(Pos.CENTER);
+        itemsGrid.setPadding(new Insets(20));
 
         for (Map.Entry<String, Integer> e : items.entrySet()) {
             String id = e.getKey();
             int price = e.getValue();
 
-            HBox row = new HBox(12);
-            row.setAlignment(Pos.CENTER_LEFT);
-
-            Label name = new Label(id.toUpperCase() + (price > 0 ? " (" + price + " coins)" : " (free)"));
-            name.setStyle("-fx-text-fill: white; -fx-font-size: 17px; -fx-font-family: 'Simple Sunrise';");
-            name.setMinWidth(220);
-
-            boolean owned = coinManager != null && coinManager.isSkinOwned("paddle", id);
-            boolean selected = coinManager != null && id.equals(coinManager.getSelectedPaddleSkin());
-
-            // create buttons first (no action) to allow lambdas to reference them safely
-            GameButton selectBtn = createButton("Select", null);
-            GameButton buyBtn = createButton("Buy", null);
-
-            // configure select button action
-            selectBtn.setOnAction(evt -> {
-                assert coinManager != null;
-                boolean ok = coinManager.setSelectedPaddleSkin(id);
-                if (ok) {
-                    if (onApply != null) onApply.accept(id);
-                    // refresh UI so selected state updates across the list
-                    refresh();
-                    show();
-                }
-            });
-            // select is disabled if not owned (unless default) or already selected
-            selectBtn.setDisable(!(owned || "default".equals(id)) || selected);
-            if (selected) {
-                name.setText(id.toUpperCase() + (price > 0 ? " (" + price + " coins)" : " (free)") + " - SELECTED");
-            }
-
-            // configure buy button action
-            buyBtn.setOnAction(evt -> {
-                if (price <= 0) return;
-                assert coinManager != null;
-                boolean ok = coinManager.buySkin("paddle", id, price);
-                if (ok) {
-                    // After purchase, rebuild UI so ownership/select buttons update
-                    refresh();
-                    show();
-                }
-            });
-            // disable buy if free or already owned
-            buyBtn.setDisable(price <= 0 || owned);
-
-            row.getChildren().addAll(name, buyBtn, selectBtn);
-            itemsBox.getChildren().add(row);
+            VBox itemBox = createItemBox(id, price);
+            itemsGrid.getChildren().add(itemBox);
         }
+
+        // Action buttons container (initially empty)
+        actionButtonsBox = new VBox(10);
+        actionButtonsBox.setAlignment(Pos.CENTER);
+        actionButtonsBox.setPrefHeight(100);
 
         GameButton backBtn = createButton("Back", () -> {
             hide();
             onBack.run();
         });
 
-        VBox main = new VBox(18, title, itemsBox, backBtn);
+        VBox main = new VBox(20, title, itemsGrid, actionButtonsBox, backBtn);
         main.setAlignment(Pos.TOP_CENTER);
-        main.setPadding(new Insets(30));
+        main.setPadding(new Insets(40));
 
         layout.getChildren().addAll(main, coinText);
+    }
+
+    private VBox createItemBox(String id, int price) {
+        VBox box = new VBox(10);
+        box.setAlignment(Pos.CENTER);
+        box.setPrefSize(180, 220);
+        box.setPadding(new Insets(15));
+
+        // White rounded border
+        box.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);");
+
+        // Load preview image
+        try {
+            String imagePath = "/imagepaddle/" + id + ".png";
+            Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath)));
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(140);
+            imageView.setFitHeight(80);
+            imageView.setPreserveRatio(true);
+
+            box.getChildren().add(imageView);
+        } catch (Exception e) {
+            System.err.println("Error loading paddle image: " + id);
+            Text placeholder = new Text("No Preview");
+            placeholder.setStyle("-fx-fill: gray;");
+            box.getChildren().add(placeholder);
+        }
+
+        // Item name and price
+        Text nameText = new Text(id.toUpperCase());
+        nameText.setStyle("-fx-fill: #2c3e50; -fx-font-size: 16px; -fx-font-weight: bold;");
+
+        Text priceText = new Text(price > 0 ? price + " coins" : "FREE");
+        priceText.setStyle("-fx-fill: " + (price > 0 ? "#e67e22" : "#27ae60") + "; -fx-font-size: 14px; -fx-font-weight: bold;");
+
+        box.getChildren().addAll(nameText, priceText);
+
+        // Check if owned or equipped
+        boolean owned = coinManager != null && coinManager.isSkinOwned("paddle", id);
+        boolean equipped = coinManager != null && id.equals(coinManager.getSelectedPaddleSkin());
+
+        if (equipped) {
+            Text equippedLabel = new Text("✓ EQUIPPED");
+            equippedLabel.setStyle("-fx-fill: #27ae60; -fx-font-size: 12px; -fx-font-weight: bold;");
+            box.getChildren().add(equippedLabel);
+        }
+
+        // Hover effect - scale up
+        ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), box);
+        scaleUp.setToX(1.1);
+        scaleUp.setToY(1.1);
+
+        ScaleTransition scaleDown = new ScaleTransition(Duration.millis(200), box);
+        scaleDown.setToX(1.0);
+        scaleDown.setToY(1.0);
+
+        box.setOnMouseEntered(e -> {
+            scaleDown.stop();
+            scaleUp.play();
+        });
+
+        box.setOnMouseExited(e -> {
+            scaleUp.stop();
+            scaleDown.play();
+        });
+
+        // Click to select
+        box.setOnMouseClicked(e -> {
+            updateActionButtons(id, price, owned, equipped);
+        });
+
+        return box;
+    }
+
+    private void updateActionButtons(String id, int price, boolean owned, boolean equipped) {
+        actionButtonsBox.getChildren().clear();
+
+        Text selectedText = new Text("Selected: " + id.toUpperCase());
+        selectedText.setStyle("-fx-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        actionButtonsBox.getChildren().add(selectedText);
+
+        if (equipped) {
+            // Already equipped - don't show any button
+            // The item box already shows "✓ EQUIPPED" label
+        } else if (owned || "default".equals(id)) {
+            // Owned but not equipped - show equip button
+            GameButton equipBtn = createButton("EQUIP", () -> {
+                if (coinManager != null) {
+                    coinManager.setSelectedPaddleSkin(id);
+                    if (onApply != null) onApply.accept(id);
+                    refresh();
+                    show();
+                }
+            });
+            actionButtonsBox.getChildren().add(equipBtn);
+        } else {
+            // Not owned - show buy button
+            GameButton buyBtn = createButton("BUY (" + price + " coins)", () -> {
+                if (coinManager != null && coinManager.buySkin("paddle", id, price)) {
+                    // Auto-equip after purchase
+                    coinManager.setSelectedPaddleSkin(id);
+                    if (onApply != null) onApply.accept(id);
+                    updateCoinDisplay();
+                    refresh();
+                    show();
+                }
+            });
+
+            // Disable if not enough coins
+            if (coinManager != null && coinManager.getCoins() < price) {
+                buyBtn.setDisable(true);
+            }
+
+            actionButtonsBox.getChildren().add(buyBtn);
+        }
+    }
+
+    private void updateCoinDisplay() {
+        if (coinText != null && coinManager != null) {
+            coinText.setText("Coins: " + coinManager.getCoins());
+        }
     }
 
     @Override

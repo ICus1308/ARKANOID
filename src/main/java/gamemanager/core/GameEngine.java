@@ -114,7 +114,7 @@ public class GameEngine {
 
     public void initializeGameElements() {
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
-        double paddleY = GAME_HEIGHT - 20;
+        double paddleY = GAME_HEIGHT - 50;
         paddle = new Paddle(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
 
         double ballX = GAME_WIDTH / 2;
@@ -165,7 +165,7 @@ public class GameEngine {
         lastScoredPlayer = 1;
 
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
-        paddle = new Paddle(paddleX, GAME_HEIGHT - 20, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        paddle = new Paddle(paddleX, GAME_HEIGHT - 50, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle2 = new Paddle(paddleX, 30, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle.applySkin("blue");
         paddle2.applySkin("red");
@@ -206,7 +206,7 @@ public class GameEngine {
         lastScoredPlayer = 1;
 
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
-        paddle = new Paddle(paddleX, GAME_HEIGHT - 20, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        paddle = new Paddle(paddleX, GAME_HEIGHT - 50, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle2 = new Paddle(paddleX, 30, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle.applySkin("blue");
         paddle2.applySkin("red");

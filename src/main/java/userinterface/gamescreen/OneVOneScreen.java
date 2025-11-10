@@ -3,6 +3,12 @@ package userinterface.gamescreen;
 import gamemanager.ui.UIManager;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
+
+import java.util.Objects;
 
 import static gameconfig.GameConfig.*;
 
@@ -13,6 +19,10 @@ public class OneVOneScreen extends UIManager implements GameScreen {
     private int player2Lives;
     private Text player1LivesText;
     private Text player2LivesText;
+    private ImageView player1LivesIcon;
+    private ImageView player2LivesIcon;
+    private HBox player1LivesBox;
+    private HBox player2LivesBox;
 
     public OneVOneScreen(Pane root) {
         super(root);
@@ -23,10 +33,46 @@ public class OneVOneScreen extends UIManager implements GameScreen {
 
     @Override
     protected void initializeUI() {
-        player1LivesText = createStyledText("P1 Lives: " + INITIAL_LIVES, 10, GAME_HEIGHT - 25, UI_FONT, TEXT_COLOR);
-        player2LivesText = createStyledText("P2 Lives: " + INITIAL_LIVES, GAME_WIDTH - 150, 25, UI_FONT, TEXT_COLOR);
+        // Create player 1 lives display with icon
+        try {
+            Image livesImage = new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("/imagelive/imagelive.png")));
+            player1LivesIcon = new ImageView(livesImage);
+            player1LivesIcon.setFitWidth(25);
+            player1LivesIcon.setFitHeight(25);
+            player1LivesIcon.setPreserveRatio(true);
+        } catch (Exception e) {
+            System.err.println("Error loading player 1 lives icon");
+        }
+
+        player1LivesText = createStyledText(INITIAL_LIVES + "", 0, 0, UI_FONT, TEXT_COLOR);
+        player1LivesBox = new HBox(5);
+        player1LivesBox.setAlignment(Pos.CENTER_LEFT);
+        player1LivesBox.getChildren().addAll(player1LivesIcon, player1LivesText);
+        player1LivesBox.setLayoutX(10);
+        player1LivesBox.setLayoutY(GAME_HEIGHT - 40);
+
+        // Create player 2 lives display with icon
+        try {
+            Image livesImage = new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("/imagelive/imagelive.png")));
+            player2LivesIcon = new ImageView(livesImage);
+            player2LivesIcon.setFitWidth(25);
+            player2LivesIcon.setFitHeight(25);
+            player2LivesIcon.setPreserveRatio(true);
+        } catch (Exception e) {
+            System.err.println("Error loading player 2 lives icon");
+        }
+
+        player2LivesText = createStyledText(INITIAL_LIVES + "", 0, 0, UI_FONT, TEXT_COLOR);
+        player2LivesBox = new HBox(5);
+        player2LivesBox.setAlignment(Pos.CENTER_LEFT);
+        player2LivesBox.getChildren().addAll(player2LivesIcon, player2LivesText);
+        player2LivesBox.setLayoutX(GAME_WIDTH - 80);
+        player2LivesBox.setLayoutY(10);
+
         gameMessage = createStyledText("PRESS SPACE TO START", GAME_WIDTH / 2 - 200, GAME_HEIGHT / 2, MESSAGE_FONT, GOLD_COLOR);
-        root.getChildren().addAll(player1LivesText, player2LivesText, gameMessage);
+        root.getChildren().addAll(player1LivesBox, player2LivesBox, gameMessage);
     }
 
     public int getPlayer1Lives() {
@@ -35,7 +81,7 @@ public class OneVOneScreen extends UIManager implements GameScreen {
 
     public void updatePlayer1Lives(int newLives) {
         this.player1Lives = newLives;
-        player1LivesText.setText("P1 Lives: " + player1Lives);
+        player1LivesText.setText(player1Lives + "");
     }
 
     public void decreasePlayer1Lives() {
@@ -48,7 +94,7 @@ public class OneVOneScreen extends UIManager implements GameScreen {
 
     public void updatePlayer2Lives(int newLives) {
         this.player2Lives = newLives;
-        player2LivesText.setText("P2 Lives: " + player2Lives);
+        player2LivesText.setText(player2Lives + "");
     }
 
     public void decreasePlayer2Lives() {
@@ -97,9 +143,7 @@ public class OneVOneScreen extends UIManager implements GameScreen {
 
     public void cleanup() {
         if (root != null) {
-            root.getChildren().removeAll(player1LivesText, player2LivesText, gameMessage);
+            root.getChildren().removeAll(player1LivesBox, player2LivesBox, gameMessage);
         }
     }
 }
-
-
