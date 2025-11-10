@@ -5,12 +5,9 @@ import gamemanager.ui.UIManager;
 import gamemanager.manager.SoundManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
+import userinterface.screen.settingpanels.*;
 
 import static gameconfig.GameConfig.*;
 
@@ -24,16 +21,10 @@ public class SettingScreen extends UIManager {
     private GameButton audioButton;
     private GameButton debugButton;
 
-    private ComboBox<String> resolutionCombo;
-    private ComboBox<String> displayModeCombo;
-
-    private Slider masterVolumeSlider;
-    private Slider sfxVolumeSlider;
-    private Slider musicVolumeSlider;
-    private CheckBox muteCheckbox;
-
-    private final String[] resolutions = {"1280x720", "1366x768", "1600x900"};
-    private final String[] displayModes = {"Windowed", "Fullscreen"};
+    // Settings panels
+    private VideoSettingsPanel videoSettingsPanel;
+    private AudioSettingsPanel audioSettingsPanel;
+    private DebugSettingsPanel debugSettingsPanel;
 
     public SettingScreen(Pane root, Runnable onBack, Runnable onResolutionChange) {
         super(root);
@@ -129,7 +120,9 @@ public class SettingScreen extends UIManager {
 
     private void showVideoSettings() {
         Label titleLabel = createTitleLabel("VIDEO SETTINGS");
-        VBox settingsPanel = createVideoSettingsPanel();
+
+        videoSettingsPanel = new VideoSettingsPanel(root, onResolutionChange);
+
         GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyVideoSettings);
 
         HBox applyButtonBox = new HBox(applyButton);
@@ -139,88 +132,13 @@ public class SettingScreen extends UIManager {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        contentArea.getChildren().addAll(titleLabel, settingsPanel, spacer, applyButtonBox);
-    }
-
-    private VBox createVideoSettingsPanel() {
-        VBox settingsPanel = createSettingsPanel();
-
-        // Display Mode
-        displayModeCombo = createComboBox(displayModes);
-        Stage stage = (Stage) root.getScene().getWindow();
-        if (stage != null && stage.isFullScreen()) {
-            displayModeCombo.getSelectionModel().select("Fullscreen");
-        } else {
-            displayModeCombo.getSelectionModel().select("Windowed");
-        }
-
-        VBox displayModeRow = createComboBoxRow("Display Mode:", displayModeCombo);
-
-        // Resolution
-        resolutionCombo = createComboBox(resolutions);
-        String currentResolution = ((int)GAME_WIDTH) + "x" + ((int)GAME_HEIGHT);
-        if (resolutionCombo.getItems().contains(currentResolution)) {
-            resolutionCombo.getSelectionModel().select(currentResolution);
-        } else {
-            resolutionCombo.getSelectionModel().select(0);
-        }
-
-        VBox resolutionRow = createComboBoxRow("Resolution:", resolutionCombo);
-
-        // Disable resolution when fullscreen is selected
-        displayModeCombo.valueProperty().addListener((obs, oldVal, newVal) ->
-            resolutionCombo.setDisable("Fullscreen".equals(newVal))
-        );
-        resolutionCombo.setDisable("Fullscreen".equals(displayModeCombo.getValue()));
-
-
-        settingsPanel.getChildren().addAll(displayModeRow, resolutionRow);
-        return settingsPanel;
+        contentArea.getChildren().addAll(titleLabel, videoSettingsPanel, spacer, applyButtonBox);
     }
 
     private void showAudioSettings() {
-        SoundManager soundManager = SoundManager.getInstance();
-
         Label titleLabel = createTitleLabel("AUDIO SETTINGS");
-        VBox settingsPanel = createSettingsPanel();
 
-        // Master Volume
-        VBox masterVolumeSection = createVolumeSliderSection(
-            "Master Volume:",
-            soundManager.getMasterVolume() * 100,
-            (slider, valueLabel) -> masterVolumeSlider = slider
-        );
-
-        // SFX Volume
-        VBox sfxVolumeSection = createVolumeSliderSection(
-            "Sound Effects Volume:",
-            soundManager.getSfxVolume() * 100,
-            (slider, valueLabel) -> sfxVolumeSlider = slider
-        );
-
-        // Music Volume
-        VBox musicVolumeSection = createVolumeSliderSection(
-            "Music Volume:",
-            soundManager.getMusicVolume() * 100,
-            (slider, valueLabel) -> musicVolumeSlider = slider
-        );
-
-        // Mute Checkbox
-        muteCheckbox = new CheckBox("Mute All");
-        muteCheckbox.setStyle("-fx-text-fill: white; -fx-font-size: " + (16 * UI_SCALE) + "px;");
-        muteCheckbox.setSelected(soundManager.isMuted());
-        muteCheckbox.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-            masterVolumeSlider.setDisable(isSelected);
-            sfxVolumeSlider.setDisable(isSelected);
-            musicVolumeSlider.setDisable(isSelected);
-        });
-
-        settingsPanel.getChildren().addAll(
-            masterVolumeSection,
-            sfxVolumeSection,
-            musicVolumeSection,
-            muteCheckbox
-        );
+        audioSettingsPanel = new AudioSettingsPanel();
 
         GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyAudioSettings);
         HBox applyButtonBox = new HBox(applyButton);
@@ -230,137 +148,29 @@ public class SettingScreen extends UIManager {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        contentArea.getChildren().addAll(titleLabel, settingsPanel, spacer, applyButtonBox);
+        contentArea.getChildren().addAll(titleLabel, audioSettingsPanel, spacer, applyButtonBox);
     }
 
     private void showDebugSettings() {
         Label titleLabel = createTitleLabel("DEBUG SETTINGS");
-        VBox settingsPanel = createSettingsPanel();
 
-        Label placeholderLabel = createLabel("Debug settings coming soon...", TEXT_COLOR.darker());
+        debugSettingsPanel = new DebugSettingsPanel();
 
-        settingsPanel.getChildren().add(placeholderLabel);
-        contentArea.getChildren().addAll(titleLabel, settingsPanel);
-    }
-
-    private VBox createSettingsPanel() {
-        VBox settingsPanel = new VBox(25);
-        settingsPanel.setPadding(new Insets(40, 40, 40, 40));
-
-        String panelStyle = "-fx-border-color: #00d9ff; " +
-                "-fx-border-width: 2px; " +
-                "-fx-background-color: rgba(22, 33, 62, 0.8); " +
-                "-fx-border-radius: 5px; " +
-                "-fx-background-radius: 5px;";
-        settingsPanel.setStyle(panelStyle);
-        settingsPanel.setPrefWidth(500 * UI_SCALE_X);
-        settingsPanel.setPrefHeight(300);
-        settingsPanel.setMaxWidth(500 * UI_SCALE_X);
-        settingsPanel.setMaxHeight(300);
-        return settingsPanel;
-    }
-
-    /**
-     * Creates a combo box row with label
-     */
-    private VBox createComboBoxRow(String labelText, ComboBox<String> comboBox) {
-        Label label = createLabel(labelText, TEXT_COLOR);
-        return new VBox(5, label, comboBox);
-    }
-
-    /**
-     * Creates a volume slider section with label, slider, and value label
-     */
-    private VBox createVolumeSliderSection(String labelText, double initialValue,
-                                          java.util.function.BiConsumer<Slider, Label> consumer) {
-        Label label = createLabel(labelText, TEXT_COLOR);
-
-        Slider slider = createSlider(0, 100, initialValue);
-        Label valueLabel = createValueLabel((int) initialValue + "%");
-
-        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            int val = (int) Math.round(newValue.doubleValue());
-            valueLabel.setText(val + "%");
-        });
-
-        HBox sliderRow = new HBox(10, slider, valueLabel);
-        sliderRow.setAlignment(Pos.CENTER_LEFT);
-
-        VBox section = new VBox(5, label, sliderRow);
-
-        // Pass the slider and value label back to caller
-        if (consumer != null) {
-            consumer.accept(slider, valueLabel);
-        }
-
-        return section;
+        contentArea.getChildren().addAll(titleLabel, debugSettingsPanel);
     }
 
     private void applyVideoSettings() {
-        Stage stage = (Stage) root.getScene().getWindow();
-        if (stage == null) return;
-
-        String displayMode = displayModeCombo.getValue();
-
-        if ("Fullscreen".equals(displayMode)) {
-            // Enter fullscreen mode
-            stage.setFullScreen(true);
-
-            // Get screen dimensions and update game dimensions
-            javafx.stage.Screen screen = javafx.stage.Screen.getPrimary();
-            javafx.geometry.Rectangle2D bounds = screen.getBounds();
-
-            GAME_WIDTH = bounds.getWidth();
-            GAME_HEIGHT = bounds.getHeight();
-            updateUIScale();
-
-            root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
-
-            if (onResolutionChange != null) {
-                onResolutionChange.run();
-            }
-
+        if (videoSettingsPanel != null) {
+            videoSettingsPanel.applySettings();
             refresh();
             show();
-        } else {
-            // Windowed mode
-            stage.setFullScreen(false);
-
-            String resolution = resolutionCombo.getValue();
-            if (resolution != null && resolution.contains("x")) {
-                String[] parts = resolution.split("x");
-                try {
-                    int width = Integer.parseInt(parts[0]);
-                    int height = Integer.parseInt(parts[1]);
-
-                    GAME_WIDTH = width;
-                    GAME_HEIGHT = height;
-                    updateUIScale();
-
-                    root.setPrefSize(width, height);
-                    root.setMinSize(width, height);
-                    root.setMaxSize(width, height);
-                    stage.sizeToScene();
-
-                    if (onResolutionChange != null) {
-                        onResolutionChange.run();
-                    }
-
-                    refresh();
-                    show();
-                } catch (NumberFormatException e) {
-                    System.err.println("Invalid resolution format: " + resolution);
-                }
-            }
         }
     }
 
     private void applyAudioSettings() {
-        SoundManager soundManager = SoundManager.getInstance();
-
-        // Apply all volume settings
-        soundManager.setMasterVolume(masterVolumeSlider.getValue() / 100.0);
-        soundManager.setSfxVolume(sfxVolumeSlider.getValue() / 100.0);
+        if (audioSettingsPanel != null) {
+            audioSettingsPanel.applySettings();
+        }
     }
 
     @Override
