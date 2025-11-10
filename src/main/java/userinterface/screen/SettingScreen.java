@@ -28,10 +28,9 @@ public class SettingScreen extends UIManager {
     private ComboBox<String> displayModeCombo;
 
     private Slider masterVolumeSlider;
+    private Slider sfxVolumeSlider;
+    private Slider musicVolumeSlider;
     private CheckBox muteCheckbox;
-    private Label volumeValueLabel;
-    private double masterVolume = 100.0;
-    private boolean muted = false;
 
     private final String[] resolutions = {"1280x720", "1366x768", "1600x900"};
     private final String[] displayModes = {"Windowed", "Fullscreen"};
@@ -146,37 +145,34 @@ public class SettingScreen extends UIManager {
     private VBox createVideoSettingsPanel() {
         VBox settingsPanel = createSettingsPanel();
 
-        displayModeCombo = new ComboBox<>();
-        displayModeCombo.getItems().addAll(displayModes);
-
+        // Display Mode
+        displayModeCombo = createComboBox(displayModes);
         Stage stage = (Stage) root.getScene().getWindow();
         if (stage != null && stage.isFullScreen()) {
             displayModeCombo.getSelectionModel().select("Fullscreen");
         } else {
             displayModeCombo.getSelectionModel().select("Windowed");
         }
-        Label displayModeLabel = createSettingRow("Display Mode:", displayModeCombo);
 
-        resolutionCombo = new ComboBox<>();
-        resolutionCombo.getItems().addAll(resolutions);
+        VBox displayModeRow = createComboBoxRow("Display Mode:", displayModeCombo);
+
+        // Resolution
+        resolutionCombo = createComboBox(resolutions);
         String currentResolution = ((int)GAME_WIDTH) + "x" + ((int)GAME_HEIGHT);
         if (resolutionCombo.getItems().contains(currentResolution)) {
             resolutionCombo.getSelectionModel().select(currentResolution);
         } else {
             resolutionCombo.getSelectionModel().select(0);
         }
-        Label resolutionLabel = createSettingRow("Resolution:", resolutionCombo);
+
+        VBox resolutionRow = createComboBoxRow("Resolution:", resolutionCombo);
 
         // Disable resolution when fullscreen is selected
-        displayModeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            resolutionCombo.setDisable("Fullscreen".equals(newVal));
-        });
-
-        // Set initial state
+        displayModeCombo.valueProperty().addListener((obs, oldVal, newVal) ->
+            resolutionCombo.setDisable("Fullscreen".equals(newVal))
+        );
         resolutionCombo.setDisable("Fullscreen".equals(displayModeCombo.getValue()));
 
-        VBox displayModeRow = new VBox(5, displayModeLabel, displayModeCombo);
-        VBox resolutionRow = new VBox(5, resolutionLabel, resolutionCombo);
 
         settingsPanel.getChildren().addAll(displayModeRow, resolutionRow);
         return settingsPanel;
@@ -184,47 +180,47 @@ public class SettingScreen extends UIManager {
 
     private void showAudioSettings() {
         SoundManager soundManager = SoundManager.getInstance();
-        masterVolume = soundManager.getMasterVolume() * 100;
-        muted = soundManager.isMuted();
 
         Label titleLabel = createTitleLabel("AUDIO SETTINGS");
         VBox settingsPanel = createSettingsPanel();
 
-        Label volumeLabel = createLabel("Master Volume:", TEXT_COLOR);
-        masterVolumeSlider = new Slider(0, 100, masterVolume);
-        masterVolumeSlider.setPrefWidth(360 * UI_SCALE_X);
-        masterVolumeSlider.setPrefHeight(35);
-        masterVolumeSlider.setMajorTickUnit(10);
-        masterVolumeSlider.setShowTickMarks(false);
-        masterVolumeSlider.setShowTickLabels(false);
+        // Master Volume
+        VBox masterVolumeSection = createVolumeSliderSection(
+            "Master Volume:",
+            soundManager.getMasterVolume() * 100,
+            (slider, valueLabel) -> masterVolumeSlider = slider
+        );
 
-        volumeValueLabel = createLabel((int) masterVolume + "%", TEXT_COLOR);
-        volumeValueLabel.setPadding(new Insets(0, 0, 0, 10));
+        // SFX Volume
+        VBox sfxVolumeSection = createVolumeSliderSection(
+            "Sound Effects Volume:",
+            soundManager.getSfxVolume() * 100,
+            (slider, valueLabel) -> sfxVolumeSlider = slider
+        );
 
-        masterVolumeSlider.valueProperty().addListener((
-                observable,
-                oldValue,
-                newValue) -> {
-            int val = (int) Math.round(newValue.doubleValue());
-            volumeValueLabel.setText(val + "%");
-        });
+        // Music Volume
+        VBox musicVolumeSection = createVolumeSliderSection(
+            "Music Volume:",
+            soundManager.getMusicVolume() * 100,
+            (slider, valueLabel) -> musicVolumeSlider = slider
+        );
 
-        HBox volumeRow = new HBox(10, masterVolumeSlider, volumeValueLabel);
-        volumeRow.setAlignment(Pos.CENTER_LEFT);
-
-        muteCheckbox = new CheckBox("Mute");
-        muteCheckbox.setStyle("-fx-text-fill: white;");
-        muteCheckbox.setSelected(muted);
-        muteCheckbox.selectedProperty().addListener((
-                obs,
-                wasSelected,
-                isSelected) -> {
+        // Mute Checkbox
+        muteCheckbox = new CheckBox("Mute All");
+        muteCheckbox.setStyle("-fx-text-fill: white; -fx-font-size: " + (16 * UI_SCALE) + "px;");
+        muteCheckbox.setSelected(soundManager.isMuted());
+        muteCheckbox.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
             masterVolumeSlider.setDisable(isSelected);
+            sfxVolumeSlider.setDisable(isSelected);
+            musicVolumeSlider.setDisable(isSelected);
         });
 
-        VBox volumeSection = new VBox(5, volumeLabel, volumeRow, muteCheckbox);
-
-        settingsPanel.getChildren().addAll(volumeSection);
+        settingsPanel.getChildren().addAll(
+            masterVolumeSection,
+            sfxVolumeSection,
+            musicVolumeSection,
+            muteCheckbox
+        );
 
         GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyAudioSettings);
         HBox applyButtonBox = new HBox(applyButton);
@@ -264,42 +260,40 @@ public class SettingScreen extends UIManager {
         return settingsPanel;
     }
 
-    private Label createSettingRow(String labelText, ComboBox<String> comboBox) {
+    /**
+     * Creates a combo box row with label
+     */
+    private VBox createComboBoxRow(String labelText, ComboBox<String> comboBox) {
+        Label label = createLabel(labelText, TEXT_COLOR);
+        return new VBox(5, label, comboBox);
+    }
+
+    /**
+     * Creates a volume slider section with label, slider, and value label
+     */
+    private VBox createVolumeSliderSection(String labelText, double initialValue,
+                                          java.util.function.BiConsumer<Slider, Label> consumer) {
         Label label = createLabel(labelText, TEXT_COLOR);
 
-        comboBox.setPrefWidth(400 * UI_SCALE_X);
-        comboBox.setPrefHeight(35);
+        Slider slider = createSlider(0, 100, initialValue);
+        Label valueLabel = createValueLabel((int) initialValue + "%");
 
-        comboBox.setStyle("-fx-background-color: #2c3e50; " +
-                "-fx-font-size: " + (16 * UI_SCALE) + "px;");
-
-        comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                    setStyle("-fx-text-fill: white; -fx-background-color: #2c3e50;");
-                }
-            }
+        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int val = (int) Math.round(newValue.doubleValue());
+            valueLabel.setText(val + "%");
         });
 
-        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                    setStyle("-fx-text-fill: white; -fx-background-color: #34495e;");
-                }
-            }
-        });
+        HBox sliderRow = new HBox(10, slider, valueLabel);
+        sliderRow.setAlignment(Pos.CENTER_LEFT);
 
-        return label;
+        VBox section = new VBox(5, label, sliderRow);
+
+        // Pass the slider and value label back to caller
+        if (consumer != null) {
+            consumer.accept(slider, valueLabel);
+        }
+
+        return section;
     }
 
     private void applyVideoSettings() {
@@ -362,12 +356,11 @@ public class SettingScreen extends UIManager {
     }
 
     private void applyAudioSettings() {
-        masterVolume = masterVolumeSlider.getValue();
-        muted = muteCheckbox.isSelected();
-
         SoundManager soundManager = SoundManager.getInstance();
-        soundManager.setMasterVolume(masterVolume / 100.0);
-        soundManager.setMuted(muted);
+
+        // Apply all volume settings
+        soundManager.setMasterVolume(masterVolumeSlider.getValue() / 100.0);
+        soundManager.setSfxVolume(sfxVolumeSlider.getValue() / 100.0);
     }
 
     @Override

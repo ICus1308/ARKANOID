@@ -6,14 +6,17 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.control.ComboBox;
 import javafx.scene.text.FontWeight;
+import javafx.geometry.Insets;
 
 import static gameconfig.GameConfig.*;
 
 public abstract class UIManager {
     protected Pane root;
     protected Text gameMessage;
-    
+
     public UIManager(Pane root) {
         this.root = root;
     }
@@ -78,6 +81,69 @@ public abstract class UIManager {
         Label label = new Label(text);
         label.setFont(Font.font("Arial", FontWeight.BOLD, 32 * UI_SCALE));
         label.setStyle("-fx-text-fill: white;");
+        return label;
+    }
+
+    /**
+     * Creates a styled slider for settings
+     */
+    protected Slider createSlider(double min, double max, double value) {
+        Slider slider = new Slider(min, max, value);
+        slider.setPrefWidth(360 * UI_SCALE_X);
+        slider.setPrefHeight(35);
+        slider.setMajorTickUnit((max - min) / 10);
+        slider.setShowTickMarks(false);
+        slider.setShowTickLabels(false);
+        return slider;
+    }
+
+    /**
+     * Creates a styled ComboBox for settings
+     */
+    protected ComboBox<String> createComboBox(String... items) {
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.getItems().addAll(items);
+        comboBox.setPrefWidth(400 * UI_SCALE_X);
+        comboBox.setPrefHeight(35);
+
+        comboBox.setStyle("-fx-background-color: #2c3e50; " +
+                "-fx-font-size: " + (16 * UI_SCALE) + "px;");
+
+        comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #2c3e50;");
+                }
+            }
+        });
+
+        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #34495e;");
+                }
+            }
+        });
+
+        return comboBox;
+    }
+
+    /**
+     * Creates a styled value label with padding
+     */
+    protected Label createValueLabel(String text) {
+        Label label = createLabel(text, TEXT_COLOR);
+        label.setPadding(new Insets(0, 0, 0, 10));
         return label;
     }
 
