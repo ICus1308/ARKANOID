@@ -44,8 +44,8 @@ public final class GameConfig {
     public static final double INDICATOR_MAX_ANGLE_TOP = Math.PI;
 
     // Powerup dimensions
-    public static final double POWERUP_WIDTH = 20;
-    public static final double POWERUP_HEIGHT = 15;
+    public static final double POWERUP_WIDTH = 40;
+    public static final double POWERUP_HEIGHT = 30;
     public static final double POWERUP_FALL_SPEED = 1.0;
 
     // UI scaling factors based on resolution

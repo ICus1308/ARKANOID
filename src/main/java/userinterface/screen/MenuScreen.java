@@ -6,7 +6,10 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
+import java.util.Objects;
 
 import static gameconfig.GameConfig.*;
 
@@ -33,22 +36,74 @@ public class MenuScreen extends UIManager {
         }
         stackPane.getChildren().clear();
 
-        Text title = createStyledText("ARKANOID", 0, 0, TITLE_FONT, TEXT_COLOR);
+        // Load title image instead of text
+        ImageView titleImage = createTitleImage();
 
         GameButton startButton = createButton("Start", onStart);
         GameButton highScoreButton = createButton("High Score", onHighScore);
         GameButton settingButton = createButton("Settings", onSetting);
         GameButton shopButton = createButton("Shop", onShop);
 
-        VBox buttonBox = new VBox(20);
+        // Increase button sizes for a fuller look
+        double buttonWidth = 280 * UI_SCALE_X;
+        double buttonHeight = 65;
+        startButton.setPrefWidth(buttonWidth);
+        startButton.setPrefHeight(buttonHeight);
+        highScoreButton.setPrefWidth(buttonWidth);
+        highScoreButton.setPrefHeight(buttonHeight);
+        settingButton.setPrefWidth(buttonWidth);
+        settingButton.setPrefHeight(buttonHeight);
+        shopButton.setPrefWidth(buttonWidth);
+        shopButton.setPrefHeight(buttonHeight);
+
+        // Reduce spacing between buttons for a denser layout
+        VBox buttonBox = new VBox(15);
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.getChildren().addAll(startButton, highScoreButton, settingButton, shopButton);
+        // Move button box down more to avoid overlapping with title
+        buttonBox.setTranslateY(100 * UI_SCALE);
 
         stackPane.setStyle("-fx-background-color: rgba(44,62,80,0.9);");
         stackPane.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
-        StackPane.setAlignment(title, Pos.TOP_CENTER);
+        StackPane.setAlignment(titleImage, Pos.TOP_CENTER);
         StackPane.setAlignment(buttonBox, Pos.CENTER);
-        stackPane.getChildren().addAll(title, buttonBox);
+        stackPane.getChildren().addAll(titleImage, buttonBox);
+    }
+
+    private ImageView createTitleImage() {
+        try {
+            // Try to load title.png first, fallback to Arkanoid.png if not found
+            Image titleImage = new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("/imagelogo/title.png")));
+            ImageView imageView = new ImageView(titleImage);
+
+            // Increase image size for better visual impact
+            imageView.setFitWidth(500 * UI_SCALE);
+            imageView.setPreserveRatio(true);
+            imageView.setTranslateY(30 * UI_SCALE); // Move title up (reduced from 60)
+
+            System.out.println("Title image loaded: /imagelogo/title.png");
+            return imageView;
+        } catch (Exception e) {
+            System.err.println("Error loading title image, trying fallback...");
+            try {
+                Image titleImage = new Image(Objects.requireNonNull(
+                    getClass().getResourceAsStream("/imagelogo/Arkanoid.png")));
+                ImageView imageView = new ImageView(titleImage);
+
+                imageView.setFitWidth(500 * UI_SCALE);
+                imageView.setPreserveRatio(true);
+                imageView.setTranslateY(30 * UI_SCALE); // Move title up (reduced from 60)
+
+                System.out.println("Title image loaded: /imagelogo/Arkanoid.png");
+                return imageView;
+            } catch (Exception ex) {
+                System.err.println("Error loading both title images, using text fallback");
+                ex.printStackTrace();
+                // Fallback to text if images fail
+                return null;
+            }
+        }
     }
 
     public StackPane getStackPane() {
