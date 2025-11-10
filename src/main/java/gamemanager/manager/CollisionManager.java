@@ -235,7 +235,13 @@ public class CollisionManager {
             SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_WALL_HIT);
             return GameConfig.WallSideType.EAST;
         }
-        if (ball.getY() >= gameHeight) {
+        if (ball.getY() >= (gameHeight - 20)) {
+            if (GameConfig.DEBUG_INVINCIBLE_MODE) {
+                ball.setY(gameHeight - ball.getHeight());
+                ball.bounce(GameConfig.WallSideType.SOUTH);
+                SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_WALL_HIT);
+                return GameConfig.WallSideType.SOUTH;
+            }
             return GameConfig.WallSideType.BOTTOM_HIT;
         }
         return null;

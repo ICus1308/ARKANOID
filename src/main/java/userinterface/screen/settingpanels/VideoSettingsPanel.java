@@ -1,6 +1,7 @@
 package userinterface.screen.settingpanels;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
@@ -10,10 +11,6 @@ import javafx.stage.Stage;
 
 import static gameconfig.GameConfig.*;
 
-/**
- * Video settings panel for the SettingScreen.
- * Handles display mode and resolution configuration.
- */
 public class VideoSettingsPanel extends VBox {
     private final Pane root;
     private final Runnable onResolutionChange;
@@ -48,17 +45,19 @@ public class VideoSettingsPanel extends VBox {
         createDisplayModeControl();
         createResolutionControl();
 
-        // Disable resolution when fullscreen is selected
-        displayModeCombo.valueProperty().addListener((obs, oldVal, newVal) ->
-            resolutionCombo.setDisable("Fullscreen".equals(newVal))
-        );
-        resolutionCombo.setDisable("Fullscreen".equals(displayModeCombo.getValue()));
+        if (displayModeCombo != null && resolutionCombo != null) {
+            displayModeCombo.valueProperty().addListener((obs, oldVal, newVal) ->
+                resolutionCombo.setDisable("Fullscreen".equals(newVal))
+            );
+            resolutionCombo.setDisable("Fullscreen".equals(displayModeCombo.getValue()));
+        }
     }
 
     private void createDisplayModeControl() {
         Label label = createLabel("Display Mode:");
 
         displayModeCombo = createComboBox(displayModes);
+
         Stage stage = (Stage) root.getScene().getWindow();
         if (stage != null && stage.isFullScreen()) {
             displayModeCombo.getSelectionModel().select("Fullscreen");
@@ -74,6 +73,7 @@ public class VideoSettingsPanel extends VBox {
         Label label = createLabel("Resolution:");
 
         resolutionCombo = createComboBox(resolutions);
+
         String currentResolution = ((int)GAME_WIDTH) + "x" + ((int)GAME_HEIGHT);
         if (resolutionCombo.getItems().contains(currentResolution)) {
             resolutionCombo.getSelectionModel().select(currentResolution);
@@ -85,9 +85,6 @@ public class VideoSettingsPanel extends VBox {
         this.getChildren().add(resolutionRow);
     }
 
-    /**
-     * Apply the video settings changes
-     */
     public void applySettings() {
         Stage stage = (Stage) root.getScene().getWindow();
         if (stage == null) return;
@@ -106,7 +103,7 @@ public class VideoSettingsPanel extends VBox {
 
         // Get screen dimensions and update game dimensions
         Screen screen = Screen.getPrimary();
-        javafx.geometry.Rectangle2D bounds = screen.getBounds();
+        Rectangle2D bounds = screen.getBounds();
 
         GAME_WIDTH = bounds.getWidth();
         GAME_HEIGHT = bounds.getHeight();
@@ -147,7 +144,6 @@ public class VideoSettingsPanel extends VBox {
         }
     }
 
-    // Helper methods matching UIManager style
     private Label createLabel(String text) {
         Label label = new Label(text);
         label.setTextFill(Color.WHITE);
@@ -160,6 +156,33 @@ public class VideoSettingsPanel extends VBox {
         comboBox.getItems().addAll(items);
         comboBox.setPrefWidth(300 * UI_SCALE_X);
         comboBox.setStyle("-fx-font-size: " + (14 * UI_SCALE) + "px;");
+
+        comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #2c3e50;");
+                }
+            }
+        });
+
+        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #34495e;");
+                }
+            }
+        });
+
         return comboBox;
     }
 }

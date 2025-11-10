@@ -116,6 +116,7 @@ public class GameEngine {
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
         double paddleY = GAME_HEIGHT - 20;
         paddle = new Paddle(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        paddle.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
 
         double ballX = GAME_WIDTH / 2;
         double ballY = GAME_HEIGHT - 35;
@@ -167,6 +168,8 @@ public class GameEngine {
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
         paddle = new Paddle(paddleX, GAME_HEIGHT - 20, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle2 = new Paddle(paddleX, 30, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        paddle.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
+        paddle2.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
         paddle.applySkin("blue");
         paddle2.applySkin("red");
 
@@ -208,6 +211,8 @@ public class GameEngine {
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
         paddle = new Paddle(paddleX, GAME_HEIGHT - 20, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle2 = new Paddle(paddleX, 30, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
+        paddle.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
+        paddle2.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
         paddle.applySkin("blue");
         paddle2.applySkin("red");
 
@@ -894,6 +899,18 @@ public class GameEngine {
             return singleplayerScreen.getScore();
         }
         return 0;
+    }
+
+    /**
+     * Update paddle widths based on debug multiplier
+     */
+    public void updatePaddleDebugWidth() {
+        if (paddle != null) {
+            paddle.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
+        }
+        if (paddle2 != null) {
+            paddle2.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
+        }
     }
 
     // ==================== Input Setters ====================

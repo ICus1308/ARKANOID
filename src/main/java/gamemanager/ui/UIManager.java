@@ -21,14 +21,8 @@ public abstract class UIManager {
         this.root = root;
     }
 
-    /**
-     * Initializes the UI components
-     */
     protected abstract void initializeUI();
 
-    /**
-     * Creates a styled text element
-     */
     protected Text createStyledText(String text, double x, double y, Font font, Color color) {
         Text textElement = new Text(x, y, text);
         textElement.setFont(font);

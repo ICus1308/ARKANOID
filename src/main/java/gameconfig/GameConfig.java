@@ -55,6 +55,10 @@ public final class GameConfig {
     // For elements that should scale uniformly, use the smaller scale
     public static double UI_SCALE = 1.0;
 
+    // Debug settings
+    public static double DEBUG_PADDLE_LENGTH_MULTIPLIER = 1.0;
+    public static boolean DEBUG_INVINCIBLE_MODE = false;
+
     // Calculate UI scale based on current dimensions (1280x720 is base resolution)
     public static void updateUIScale() {
         UI_SCALE_X = GAME_WIDTH / 1280.0;

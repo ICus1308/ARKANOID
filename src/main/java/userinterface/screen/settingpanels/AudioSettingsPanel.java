@@ -30,6 +30,7 @@ public class AudioSettingsPanel extends VBox {
         this.setSpacing(25);
         this.setPadding(new Insets(40, 40, 40, 40));
 
+        // Panel styling matching UIManager conventions
         String panelStyle = "-fx-border-color: #00d9ff; " +
                           "-fx-border-width: 2px; " +
                           "-fx-border-radius: 5px; " +
@@ -43,31 +44,29 @@ public class AudioSettingsPanel extends VBox {
 
         SoundManager soundManager = SoundManager.getInstance();
 
-        // Master Volume
+        // Create volume control sections
         VBox masterVolumeSection = createVolumeSliderSection(
             "Master Volume:",
             soundManager.getMasterVolume() * 100
         );
         masterVolumeSlider = (Slider) ((HBox) masterVolumeSection.getChildren().get(1)).getChildren().get(0);
 
-        // SFX Volume
         VBox sfxVolumeSection = createVolumeSliderSection(
             "Sound Effects Volume:",
             soundManager.getSfxVolume() * 100
         );
         sfxVolumeSlider = (Slider) ((HBox) sfxVolumeSection.getChildren().get(1)).getChildren().get(0);
 
-        // Music Volume
         VBox musicVolumeSection = createVolumeSliderSection(
             "Music Volume:",
             soundManager.getMusicVolume() * 100
         );
         musicVolumeSlider = (Slider) ((HBox) musicVolumeSection.getChildren().get(1)).getChildren().get(0);
 
-        // Mute Checkbox
         muteCheckbox = new CheckBox("Mute All");
         muteCheckbox.setStyle("-fx-text-fill: white; -fx-font-size: " + (16 * UI_SCALE) + "px;");
         muteCheckbox.setSelected(soundManager.isMuted());
+
         muteCheckbox.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
             masterVolumeSlider.setDisable(isSelected);
             sfxVolumeSlider.setDisable(isSelected);
@@ -82,9 +81,8 @@ public class AudioSettingsPanel extends VBox {
         );
     }
 
-    /**
-     * Creates a volume slider section with label, slider, and value label
-     */
+
+
     private VBox createVolumeSliderSection(String labelText, double initialValue) {
         Label label = createLabel(labelText);
 
@@ -102,22 +100,16 @@ public class AudioSettingsPanel extends VBox {
         return new VBox(5, label, sliderRow);
     }
 
-    /**
-     * Apply the audio settings changes
-     */
     public void applySettings() {
         SoundManager soundManager = SoundManager.getInstance();
 
-        // Apply mute setting first
         soundManager.setMuted(muteCheckbox.isSelected());
 
-        // Apply all volume settings
         soundManager.setMasterVolume(masterVolumeSlider.getValue() / 100.0);
         soundManager.setSfxVolume(sfxVolumeSlider.getValue() / 100.0);
         soundManager.setMusicVolume(musicVolumeSlider.getValue() / 100.0);
     }
 
-    // Helper methods matching UIManager style
     private Label createLabel(String text) {
         Label label = new Label(text);
         label.setTextFill(Color.WHITE);

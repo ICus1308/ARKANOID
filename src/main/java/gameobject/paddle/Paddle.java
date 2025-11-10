@@ -62,9 +62,15 @@ public class Paddle extends GameObject {
         }
     }
 
-    /**
-     * Apply a visual skin to the paddle. Skin is a simple id; currently maps to color.
-     */
+    public void updateDebugWidth(double multiplier) {
+        double newWidth = baseWidth * multiplier;
+        if (expanded) {
+            newWidth *= 1.25;
+        }
+        this.width = newWidth;
+        node.setWidth(newWidth);
+    }
+
     public void applySkin(String skinId) {
         if (skinId == null) return;
         switch (skinId) {

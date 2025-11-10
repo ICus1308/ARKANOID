@@ -156,7 +156,15 @@ public class SettingScreen extends UIManager {
 
         debugSettingsPanel = new DebugSettingsPanel();
 
-        contentArea.getChildren().addAll(titleLabel, debugSettingsPanel);
+        GameButton applyButton = createButton("✓ APPLY CHANGES", ButtonStyle.APPLY, this::applyDebugSettings);
+        HBox applyButtonBox = new HBox(applyButton);
+        applyButtonBox.setAlignment(Pos.BOTTOM_RIGHT);
+        applyButtonBox.setPadding(new Insets(30, 0, 0, 0));
+
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+
+        contentArea.getChildren().addAll(titleLabel, debugSettingsPanel, spacer, applyButtonBox);
     }
 
     private void applyVideoSettings() {
@@ -170,6 +178,12 @@ public class SettingScreen extends UIManager {
     private void applyAudioSettings() {
         if (audioSettingsPanel != null) {
             audioSettingsPanel.applySettings();
+        }
+    }
+
+    private void applyDebugSettings() {
+        if (debugSettingsPanel != null) {
+            debugSettingsPanel.applySettings();
         }
     }
 
