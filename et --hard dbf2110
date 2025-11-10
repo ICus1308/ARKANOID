@@ -1,0 +1,131 @@
+[33mbbf2675[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge remote-tracking branch 'origin/master'
+[33mdb52110[m [add] add image brick
+[33ma2ec6be[m Merge pull request #32 from ICus1308/thai
+[33m9c4293a[m[33m ([m[1;31morigin/thai[m[33m)[m [feat]: add new powerup skin
+[33m354d6e7[m [feat]: add new paddle skin and button UI
+[33mc498645[m Merge pull request #31 from ICus1308/sound-2
+[33m494761f[m[33m ([m[1;31morigin/sound-2[m[33m)[m [fix] change game_music and paddle_hit
+[33maa5deed[m Merge pull request #30 from ICus1308/thai
+[33meb26e97[m [add] add image background and gameover
+[33m19cbdda[m [feat]: add new button skin and tilte
+[33mf419233[m[33m ([m[1;31morigin/thuc6[m[33m, [m[1;32mthuc6[m[33m)[m [add] add framegameover
+[33mc8dc875[m [fix] fix map and logic brick boom
+[33m56fff93[m [Fix] minor bugs
+[33md270f35[m [Feat] Ball and paddle will now scale with resolution
+[33m6dfcc51[m [Refactor] The game scale will now be 16:9
+[33m7ec9ca6[m [Merge] Merge reconstructed game files into master
+[33m573cd23[m [Refactor] Separate input handling into another file.
+[33m81b4989[m [Fix] Minor warnings
+[33m55a1fdf[m [Refactor] create subpackage for maintenance.
+[33m284ef34[m [add] add image background
+[33mcb50ed5[m Merge pull request #28 from ICus1308/sound-2
+[33m48db16c[m [feat] add sound resources
+[33mea1554e[m Merge pull request #27 from ICus1308/GamemodeBranch
+[33m327a5aa[m Merge branch 'master' into GamemodeBranch
+[33m654d45a[m [feat]: add new paddle skin
+[33m010d7d8[m [add] add image button ang fontword
+[33m68e66b7[m [Feat} add playable Endless gamemode.
+[33m533fc7a[m [Feat} add playable versus bot game mode.
+[33m69a332c[m [Refactor] Remove duplicate methods.
+[33m7250dbf[m [Feat] add One vs One gamemode.
+[33mefcaab2[m Merge remote-tracking branch 'origin/master'
+[33mf3c5470[m [feat]: add new background and powerup skin
+[33m2c655bf[m Merge pull request #26 from ICus1308/thai2
+[33mfa4a1f7[m [feat]: add new ball's skin and new menu
+[33m1753bb9[m Merge pull request #25 from ICus1308/SoundEffect1
+[33m6453945[m[33m ([m[1;31morigin/SoundEffect1[m[33m)[m [Feat] Add Sound Effect to project(without sound resources)
+[33m0bf788a[m Merge pull request #24 from ICus1308/thuc5
+[33m23de4cc[m[33m ([m[1;32mthuc5[m[33m)[m [add] add esc can pause
+[33m61fa066[m [fix] fix image
+[33m13e5f90[m [Refactor] Revert back monitor rr changes
+[33m30c29ff[m[33m ([m[1;32mGamemode[m[33m)[m [Refactor] Game now works properly with your monitor refresh rate
+[33med068da[m [Feat] adding randomly generated level.
+[33mfacb02b[m Merge pull request #23 from ICus1308/thuc4
+[33m89fbba1[m [add] add image
+[33m2c00489[m Merge remote-tracking branch 'origin/master'
+[33m800e975[m [Refactor] Adding parental relationship.
+[33m91f5497[m Update README with more UML images and previews
+[33mf9bbaf2[m [Refactor] making Indicator more readable.
+[33md2453dd[m [Feat] Making a more dynamic AI
+[33m6355362[m [Feat] Add Indicator. You can now change ball launching direction.
+[33m3de09db[m Merge AI-Manager into master
+[33m83c3e85[m [Feat] Add AI-Manager
+[33m1a2258c[m Merge pull request #21 from ICus1308/thuc3
+[33mc0941b1[m[33m ([m[1;32mthuc3[m[33m)[m [FIX]FIX MAP
+[33md421383[m [FIX]FIX MAP
+[33m333a9fd[m [FIX]FIX MAP
+[33mbfe17ba[m Merge pull request #20 from ICus1308/thuc3
+[33mc4cec52[m [refactor] create brick boom
+[33m64d49a4[m Adding preview gameplay
+[33m4786b40[m Replace class diagram with UML image update uml
+[33m35adfd4[m [fix]: make lvl2 beatable
+[33m982f141[m Merge pull request #19 from ICus1308/binh
+[33mac5bd70[m[33m ([m[1;31morigin/binh[m[33m)[m [fix]: add audio setting
+[33m2769291[m [Fix] Fixing coins not updating properly
+[33m9118e4c[m [Refactor] Making ShopScreen more readable.
+[33mc14c006[m Merge remote-tracking branch 'origin/master'
+[33mfcc9b57[m [Refactor] Making files more readable.
+[33m6c8d650[m [fix] fix next level
+[33mf268f5c[m Merge branch 'refs/heads/Refactoring'
+[33mc87f7b2[m [Refactor] Making files more readable.
+[33md6e10bd[m Merge pull request #18 from ICus1308/thuc1
+[33m69d7f3d[m[33m ([m[1;32mthuc1[m[33m)[m [fix] fix next level
+[33mb16a31c[m[33m ([m[1;32mthai[m[33m)[m [feat]: add coin system and screen shop
+[33ma5a95ff[m Merge pull request #17 from ICus1308/thuc1
+[33m79b1602[m [type] update screne game over
+[33m0232b1c[m [fix]: add more constants to GameConfig
+[33m9c77c33[m [Merge] Merge Setting into master
+[33m7ef97d9[m [Fix] Make font change color properly
+[33m8efbbb3[m [Fix] fix minor warnings
+[33m65f58e3[m [Feat] Add Setting and make game resolution changable
+[33m098ccc2[m [Refactor] Remodel game file.
+[33m83770b2[m [Feat] add multiple gamemode
+[33m9401009[m [Fix] fix minor warnings.
+[33m329b2de[m [Feat] Now you can save your Name&Score
+[33m79b5256[m Merge pull request #15 from ICus1308/binh
+[33m27e264d[m [fix] Fixing "remove all entities before go to next level"
+[33m74f17a0[m [Fix] Fixing minor warnings from "Code Analysis".
+[33mc05bf4e[m [Refactor] Make Handle in GamePlay and Collision check more readable
+[33mde92f45[m Merge branch 'Tri'
+[33m8e83748[m [fix] fix logic game
+[33m1f61170[m[33m ([m[1;32mthuc[m[33m)[m Fix merge conflict
+[33md42b132[m Merge remote-tracking branch 'origin/thuc' into Tri
+[33m27eb2a0[m [Type] update brick and level
+[33mccefcaa[m [Fix] Cannot return to menu when gameover
+[33m92668fb[m[33m ([m[1;32mTri[m[33m)[m [Feat] Adding HighScoreScreen
+[33m5597407[m [Fix] After returning to Menu game not working properly.
+[33maf93641[m [Feat] Add return to menu.
+[33m22012c4[m [Feat] Adding module-info.java.
+[33m96cb3b5[m [Fix] Fix Button not hovering properly
+[33mb8ee4ca[m [Fix] Fix minor warning from "Code Analysis".
+[33mb43d48d[m [Feat] Add UI Manager, add Button component.
+[33m406a20b[m [Type] update brick and level
+[33m7883779[m [fix]: add menu problem
+[33mcd2d50d[m [feat]: add menu screen
+[33m966932a[m [Fix] Ball not multiplying properly.
+[33m716b3c5[m [Fix] Clear powerup when lose life.
+[33m01e85e6[m Merge remote-tracking branch 'origin/Tri' into Tri
+[33ma2ef090[m [fix]: fix paddle, ball reset and calculate score
+[33mcbb6057[m Merge branch 'master' into Tri
+[33m4bb7d93[m [Feat] Adding powerup type
+[33m0b84a86[m [feat]: add Powerup
+[33mc353ead[m Merge pull request #5
+[33m62669db[m [Fix] Repairing gameobject and collision, remaking gameconfig.
+[33md163301[m [Fix]: fix brick and level
+[33meb5b4a9[m [fix]: repair Ball and Paddle logic
+[33meca1e8f[m [fix]: fix UI and main app
+[33meaae72d[m Merge pull request #3 from ICus1308/Tri
+[33m09f017b[m [Fix] Make Paddle and Brick inherits from GameObject
+[33m73ecb5d[m [Fix] Make Paddle and Brick inherits from GameObject
+[33m13eae55[m [Fix] Make Paddle and Brick inherits from GameObject
+[33mcd6ac39[m [Fix] Make Paddle and Brick inherits from GameObject
+[33m4b3defe[m [Fix]: update code brick
+[33m4814290[m [Fix]Merge branch 'brick' into master
+[33m01fe009[m[33m ([m[1;32mbrick[m[33m)[m [feat]: create brick and map
+[33m97967de[m Merge remote-tracking branch 'origin/master'
+[33m1e8edd6[m [feat]: add first version paddle
+[33m1b270ba[m Merge pull request #1 from ICus1308/menu
+[33md9bd963[m [feat]: first version menu and gameplay
+[33m80a29b9[m Add code for check menu
+[33m2f4ba55[m[33m ([m[1;32mmain[m[33m)[m Tim hieu
+[33m133d4c9[m First commit

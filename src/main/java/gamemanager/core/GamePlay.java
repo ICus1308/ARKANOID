@@ -244,7 +244,8 @@ public class GamePlay extends Application {
 
         initializeRoot();
 
-        new VideoBackgroundManager(root, "/background/Video Project.mp4");
+        // Initialize video background and keep reference so we can update size later
+        this.videoBackgroundManager = new VideoBackgroundManager(root, "/background/videobackground.mp4");
 
         initializeGameEngine();
         initializeScreenManager();
