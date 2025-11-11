@@ -9,6 +9,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.image.Image;
 
 import static gameconfig.GameConfig.*;
 
@@ -28,13 +30,23 @@ public class AudioSettingsPanel extends VBox {
     private void initializePanel() {
         this.setSpacing(25);
         this.setPadding(new Insets(40, 40, 40, 40));
+        this.setAlignment(Pos.CENTER);
 
-        String panelStyle = "-fx-border-color: #00d9ff; " +
-                          "-fx-border-width: 2px; " +
-                          "-fx-border-radius: 5px; " +
-                          "-fx-background-color: rgba(44, 62, 80, 0.6); " +
-                          "-fx-background-radius: 5px;";
-        this.setStyle(panelStyle);
+        // Load frame image
+        try {
+            Image frameImage = new Image(getClass().getResourceAsStream("/background/setting.png"));
+            BackgroundImage backgroundImage = new BackgroundImage(
+                    frameImage,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundPosition.CENTER,
+                    new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true)
+            );
+            this.setBackground(new Background(backgroundImage));
+        } catch (Exception e) {
+            System.err.println("Could not load setting frame image: " + e.getMessage());
+        }
+
         this.setPrefWidth(500 * UI_SCALE_X);
         this.setPrefHeight(300);
         this.setMaxWidth(500 * UI_SCALE_X);
@@ -70,11 +82,14 @@ public class AudioSettingsPanel extends VBox {
             musicVolumeSlider.setDisable(isSelected);
         });
 
+        VBox muteBox = new VBox(muteCheckbox);
+        muteBox.setAlignment(Pos.CENTER);
+
         this.getChildren().addAll(
             masterVolumeSection,
             sfxVolumeSection,
             musicVolumeSection,
-            muteCheckbox
+            muteBox
         );
     }
 
@@ -92,9 +107,11 @@ public class AudioSettingsPanel extends VBox {
         });
 
         HBox sliderRow = new HBox(10, slider, valueLabel);
-        sliderRow.setAlignment(Pos.CENTER_LEFT);
+        sliderRow.setAlignment(Pos.CENTER);
 
-        return new VBox(5, label, sliderRow);
+        VBox section = new VBox(5, label, sliderRow);
+        section.setAlignment(Pos.CENTER);
+        return section;
     }
 
     public void applySettings() {
@@ -107,4 +124,3 @@ public class AudioSettingsPanel extends VBox {
         soundManager.setMusicVolume(musicVolumeSlider.getValue() / 100.0);
     }
 }
-

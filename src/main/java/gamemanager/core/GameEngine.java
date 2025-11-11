@@ -138,7 +138,7 @@ public class GameEngine {
         indicator.pointAtBall(ball);
         indicator.setRotation(-90);
 
-        root.getChildren().addAll(paddle.getNode(), ball.getNode(), indicator.getNode());
+        root.getChildren().addAll(paddle.getNode(), ball.getTrailGroup(), ball.getNode(), indicator.getNode());
     }
 
     public void startSinglePlayerGame() {
@@ -190,7 +190,7 @@ public class GameEngine {
         indicator.setTopPaddle(false);
         indicator.pointAtBall(ball);
 
-        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getNode(), indicator.getNode());
+        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getTrailGroup(), ball.getNode(), indicator.getNode());
 
         botScreen = new BotScreen(root);
         botScreen.updatePlayerLives(3);
@@ -231,7 +231,7 @@ public class GameEngine {
         indicator.setTopPaddle(false);
         indicator.pointAtBall(ball);
 
-        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getNode(), indicator.getNode());
+        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getTrailGroup(), ball.getNode(), indicator.getNode());
 
         oneVOneScreen = new OneVOneScreen(root);
         oneVOneScreen.updatePlayer1Lives(3);
@@ -437,6 +437,9 @@ public class GameEngine {
 
         // Remove dead balls
         for (Ball dead : toRemove) {
+            if (dead.getTrailGroup() != null && dead.getTrailGroup().getParent() != null) {
+                root.getChildren().remove(dead.getTrailGroup());
+            }
             if (dead.getNode() != null && dead.getNode().getParent() != null) {
                 root.getChildren().remove(dead.getNode());
             }
@@ -506,6 +509,9 @@ public class GameEngine {
 
     private void resetBallAndPaddle() {
         for (Ball b : balls) {
+            if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
+                root.getChildren().remove(b.getTrailGroup());
+            }
             root.getChildren().remove(b.getNode());
         }
         balls.clear();
@@ -528,7 +534,7 @@ public class GameEngine {
             }
         }
         balls.add(ball);
-        root.getChildren().add(ball.getNode());
+        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode());
 
         if (indicator != null && indicator.getNode().getParent() != null) {
             root.getChildren().remove(indicator.getNode());
@@ -546,6 +552,9 @@ public class GameEngine {
 
     private void resetBallAndPaddleOneVOne() {
         for (Ball b : balls) {
+            if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
+                root.getChildren().remove(b.getTrailGroup());
+            }
             root.getChildren().remove(b.getNode());
         }
         balls.clear();
@@ -568,7 +577,7 @@ public class GameEngine {
             }
         }
         balls.add(ball);
-        root.getChildren().add(ball.getNode());
+        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode());
 
         if (indicator != null && indicator.getNode().getParent() != null) {
             root.getChildren().remove(indicator.getNode());
@@ -583,6 +592,9 @@ public class GameEngine {
 
     private void resetBallAndPaddleBot() {
         for (Ball b : balls) {
+            if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
+                root.getChildren().remove(b.getTrailGroup());
+            }
             root.getChildren().remove(b.getNode());
         }
         balls.clear();
@@ -605,7 +617,7 @@ public class GameEngine {
             }
         }
         balls.add(ball);
-        root.getChildren().add(ball.getNode());
+        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode());
 
         if (indicator != null && indicator.getNode().getParent() != null) {
             root.getChildren().remove(indicator.getNode());
@@ -679,6 +691,9 @@ public class GameEngine {
         }
 
         for (Ball b : new ArrayList<>(balls)) {
+            if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
+                root.getChildren().remove(b.getTrailGroup());
+            }
             if (b.getNode().getParent() != null) {
                 root.getChildren().remove(b.getNode());
             }
@@ -765,7 +780,7 @@ public class GameEngine {
             }
 
             balls.add(newBall);
-            root.getChildren().add(newBall.getNode());
+            root.getChildren().addAll(newBall.getTrailGroup(), newBall.getNode());
         }
     }
 
@@ -810,7 +825,7 @@ public class GameEngine {
         }
         balls.add(ball);
         ball.launch();
-        root.getChildren().add(ball.getNode());
+        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode());
     }
 
     public void clearAllBricks() {

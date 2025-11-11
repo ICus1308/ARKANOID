@@ -34,7 +34,7 @@ public class ShopScreen extends UIManager {
     protected void initializeUI() {
         layout = new StackPane();
         layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
-        layout.setStyle("-fx-background-color: rgba(44,62,80,0.95);");
+        layout.setStyle("-fx-background-color: rgba(44,62,80,0.3);");
 
         Text title = createStyledText("SHOP", 0, 0, TITLE_FONT, TEXT_COLOR);
 

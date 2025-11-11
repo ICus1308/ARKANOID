@@ -36,7 +36,7 @@ public class SettingScreen extends UIManager {
     protected void initializeUI() {
         layout = new BorderPane();
         layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
-        layout.setStyle("-fx-background-color: rgba(44, 62, 80, 0.9);");
+        layout.setStyle("-fx-background-color: rgba(44, 62, 80, 0.1);");
 
         VBox sidebar = createSidebar();
         layout.setLeft(sidebar);
@@ -50,7 +50,7 @@ public class SettingScreen extends UIManager {
     private VBox createSidebar() {
         VBox sidebar = new VBox();
         sidebar.setPrefWidth(280 * UI_SCALE_X);
-        sidebar.setStyle("-fx-background-color: rgba(34, 52, 70, 0.9);");
+        sidebar.setStyle("-fx-background-color: rgba(34, 52, 70, 0.1);");
         sidebar.setPadding(new Insets(40, 20, 40, 20));
         sidebar.setSpacing(15);
 
@@ -165,6 +165,46 @@ public class SettingScreen extends UIManager {
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
         contentArea.getChildren().addAll(titleLabel, debugSettingsPanel, spacer, applyButtonBox);
+    }
+
+    private Label createSettingRow(String labelText, javafx.scene.control.ComboBox<String> comboBox) {
+        // UIManager.createLabel accepts only the text; TEXT_COLOR is applied by that method
+        Label label = createLabel(labelText);
+
+        comboBox.setPrefWidth(400 * UI_SCALE_X);
+        comboBox.setPrefHeight(35);
+
+        comboBox.setStyle("-fx-background-color: #2c3e50; " +
+                "-fx-font-size: " + (19 * UI_SCALE) + "px; " +
+                "-fx-font-family: 'Simple Sunrise';");
+
+        comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #2c3e50;");
+                }
+            }
+        });
+
+        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: white; -fx-background-color: #34495e;");
+                }
+            }
+        });
+
+        return label;
     }
 
     private void applyVideoSettings() {

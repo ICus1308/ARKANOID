@@ -3,15 +3,18 @@ package gameobject.ball;
 import gameconfig.GameConfig.WallSideType;
 import gamemanager.manager.GameObject;
 import gameobject.paddle.Paddle;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.Group;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Circle;
 
 import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.Random;
 
-import static gameconfig.GameConfig.*;
+import static gameconfig.GameConfig.BALL_DEFAULT_SKIN;
+import static gameconfig.GameConfig.BALL_ONESHOT_SKIN;
 
 public class Ball extends GameObject {
     private final Circle node;
@@ -23,6 +26,21 @@ public class Ball extends GameObject {
     // Skin/resource tracking
     private String currentSkinResource = BALL_DEFAULT_SKIN; // default skin
     private String previousSkinResource = null;
+
+    // Trail effect
+    private final LinkedList<TrailPosition> trailPositions = new LinkedList<>();
+    private final Group trailGroup = new Group();
+    private static final int MAX_TRAIL_LENGTH = 50; // Number of trail circles
+    private boolean trailEnabled = true;
+
+    // Trail position class
+    private static class TrailPosition {
+        double x, y;
+        TrailPosition(double x, double y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
 
     public Ball(double x, double y, double radius, double speed) {
         super(x - radius, y - radius, radius * 2, radius * 2);
@@ -36,6 +54,19 @@ public class Ball extends GameObject {
 
     public javafx.scene.Node getNode() {
         return node;
+    }
+
+    // Get trail group for rendering
+    public Group getTrailGroup() {
+        return trailGroup;
+    }
+
+    public void setTrailEnabled(boolean enabled) {
+        this.trailEnabled = enabled;
+        if (!enabled) {
+            trailGroup.getChildren().clear();
+            trailPositions.clear();
+        }
     }
 
     public void setX(double x) {
@@ -106,12 +137,57 @@ public class Ball extends GameObject {
         if (stuck) {
             setX(paddle.getX() + paddle.getWidth() / 2 - radius);
             setY(isTopPaddle ? paddle.getY() + paddle.getHeight() : paddle.getY() - height);
+            // Clear trail when stuck
+            trailGroup.getChildren().clear();
+            trailPositions.clear();
         } else {
             setX(x + vx * tpf * 60);
             setY(y + vy * tpf * 60);
+
+            // Update trail effect
+            if (trailEnabled) {
+                updateTrail();
+            }
         }
         node.setCenterX(x + radius);
         node.setCenterY(y + radius);
+    }
+
+    private void updateTrail() {
+        // Add current position to trail
+        trailPositions.addFirst(new TrailPosition(x + radius, y + radius));
+
+        // Remove old positions
+        if (trailPositions.size() > MAX_TRAIL_LENGTH) {
+            trailPositions.removeLast();
+        }
+
+        // Render trail
+        trailGroup.getChildren().clear();
+        for (int i = 1; i < trailPositions.size(); i++) {
+            trailGroup.getChildren().add(createTrailCircle(trailPositions.get(i), i));
+        }
+    }
+
+    private Circle createTrailCircle(TrailPosition pos, int index) {
+        double fadeFactor = 1.0 - ((double) index / MAX_TRAIL_LENGTH);
+        double trailRadius = radius * (0.5 + fadeFactor * 0.5);
+
+        Circle circle = new Circle(pos.x, pos.y, trailRadius);
+
+        if (node.getFill() instanceof ImagePattern) {
+            circle.setFill(node.getFill());
+            circle.setOpacity(fadeFactor * 0.6);
+        } else if (node.getFill() instanceof Color baseColor) {
+            circle.setFill(new Color(
+                baseColor.getRed(),
+                baseColor.getGreen(),
+                baseColor.getBlue(),
+                fadeFactor * 0.6
+            ));
+        }
+
+        return circle;
     }
 
     public void bounce(WallSideType wallSide) {
