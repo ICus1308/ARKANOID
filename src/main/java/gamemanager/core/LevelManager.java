@@ -148,13 +148,11 @@ public class LevelManager {
         // ========== OPTIMIZATION: Mark for removal instead of immediate removal
         bricksToRemove.add(brick);
         brick.destroy(); // Mark as destroyed
-
         // ========== OPTIMIZATION: Only remove node, don't modify list yet
         if (brick.getNode() != null && brick.getNode().getParent() != null) {
-            root.getChildren().remove(brick.getNode());
+            root.getChildren().remove(brick.getNode()); // <<< THÊM DÒNG NÀY
         }
 
-        // Spawn powerup (unchanged)
         if (random.nextDouble() < 0.3) {
             PowerUpType type = PowerUpType.values()[random.nextInt(PowerUpType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);

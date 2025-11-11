@@ -47,7 +47,6 @@ public class CollisionManager {
         double ballCenterY = ball.getY() + ball.getRadius();
         double r = ball.getRadius();
 
-        // Use circle-rect collision resolution similar to brick collision
         double paddleCenterX = paddleBounds.getMinX() + paddleBounds.getWidth() / 2.0;
         double paddleCenterY = paddleBounds.getMinY() + paddleBounds.getHeight() / 2.0;
 
@@ -119,7 +118,7 @@ public class CollisionManager {
             ball.bounce(GameConfig.WallSideType.NORTH);
         }
 
-        // ========== OPTIMIZATION: Calculate score without blocking
+        // Calculate score
         int score;
         if (scoreManager != null) {
             score = scoreManager.calculateBrickScore(brick, oneshotActive);
@@ -136,7 +135,7 @@ public class CollisionManager {
             }
         }
 
-        // ========== OPTIMIZATION: Update UI and audio async
+        // Update UI and audio async
         ui.increaseScore(score);
         brick.updateDraw();
 
@@ -152,14 +151,8 @@ public class CollisionManager {
                 ui.updateCoins();
             }
 
-            // ========== CRITICAL: Remove brick asynchronously for exploding bricks
-            if (brick instanceof gameobject.brick.ExplodingBrick) {
-                // Let exploding brick handle its own removal
-                // Don't call levelManager.removeBrick here
-            } else {
-                // Normal brick removal
-                levelManager.removeBrick(brick, root);
-            }
+            // ========== FIX: Remove brick for ALL types (including ExplodingBrick)
+            levelManager.removeBrick(brick, root);
         } else {
             // Play hit sound without blocking
             javafx.application.Platform.runLater(() -> {
@@ -196,7 +189,7 @@ public class CollisionManager {
         brick.updateDraw();
         SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
     }
-    // Check collision between ball and walls
+
     public GameConfig.WallSideType checkWallCollision(Ball ball, double gameWidth, double gameHeight) {
         if (ball.getY() <= 0) {
             ball.setY(0);
@@ -276,27 +269,23 @@ public class CollisionManager {
         double ballCenterY = ball.getY() + ball.getRadius();
         double r = ball.getRadius();
 
-        // ========== OPTIMIZATION: Early bounds check
         double ballMinX = ballCenterX - r;
         double ballMaxX = ballCenterX + r;
         double ballMinY = ballCenterY - r;
         double ballMaxY = ballCenterY + r;
 
         for (Brick brick : bricks) {
-            // ========== OPTIMIZATION: Skip destroyed bricks immediately
             if (brick.getHitCount() == 0) continue;
 
             javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
 
-            // ========== OPTIMIZATION: Quick AABB rejection test first
             if (ballMaxX < brickBounds.getMinX() ||
                     ballMinX > brickBounds.getMaxX() ||
                     ballMaxY < brickBounds.getMinY() ||
                     ballMinY > brickBounds.getMaxY()) {
-                continue; // No possible collision
+                continue;
             }
 
-            // Now do precise circle-rect test
             if (circleIntersectsRect(ballCenterX, ballCenterY, r, brickBounds)) {
                 return brick;
             }
@@ -304,17 +293,13 @@ public class CollisionManager {
         return null;
     }
 
-    // ========== THÊM: Optimized circle-rect test
     private boolean circleIntersectsRect(double cx, double cy, double radius, javafx.geometry.Bounds rect) {
-        // Find closest point on rectangle to circle center
         double closestX = Math.max(rect.getMinX(), Math.min(cx, rect.getMaxX()));
         double closestY = Math.max(rect.getMinY(), Math.min(cy, rect.getMaxY()));
 
-        // Calculate distance
         double dx = cx - closestX;
         double dy = cy - closestY;
 
-        // Check if distance is less than radius
         return (dx * dx + dy * dy) <= (radius * radius);
     }
 }
