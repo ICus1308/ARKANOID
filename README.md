@@ -2,15 +2,16 @@
 
 ## 👥 Tác giả
 
-**Group [Số nhóm] - Class [Mã lớp]**
+**Group 10 - Class INT2204 7**
 
-- [Họ tên 1] - [MSSV 1]
+- Lê Trọng Thức - 24021637  
 - [Họ tên 2] - [MSSV 2]
 - [Họ tên 3] - [MSSV 3]
 - [Họ tên 4] - [MSSV 4]
 
-**Giảng viên:** [Tên giảng viên]
-**Học kỳ:** [HK1/HK2 - Năm học 2024-2025]
+**Giảng viên lý thuyết:** Nguyễn Đức Anh  
+**Giảng viên thực hành:** Vũ Đức Hiếu, Nguyễn Vũ Bình Dương
+**Học kỳ:** [HK1/HK2 - Năm học 2025-2026]
 
 ---
 
@@ -58,11 +59,9 @@
 
 ### Biểu đồ lớp
 
-<img width="5554" height="11468" alt="UML" src="https://github.com/user-attachments/assets/fed5e8ff-ae55-43b5-96ee-d61862b3a37c" />
+<img width="1814" height="662" alt="UMLgame" src="https://github.com/user-attachments/assets/88690b9a-9450-4825-8dbc-b6ff3e6ec364" />
 
-> **Ghi chú:** Có thể sử dụng IntelliJ để tạo Sơ đồ lớp: [Hướng dẫn video](https://www.youtube.com/watch?v=yCkTqNxZkbY)
 
-Sơ đồ UML hoàn chỉnh có sẵn trong thư mục `docs/uml/`
 
 ---
 
@@ -290,9 +289,7 @@ java --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml,javafx.
 | `←` hoặc `A` | Di chuyển paddle sang trái |
 | `→` hoặc `D` | Di chuyển paddle sang phải |
 | `SPACE` | Phóng bóng (khi bóng dính vào paddle) |
-| `P` hoặc `ESC` | Tạm dừng game |
-| `R` | Khởi động lại level hiện tại |
-| `Q` | Thoát về menu |
+|  `ESC` | Tạm dừng game |
 
 #### Chế độ 1v1 (Hai người chơi):
 
@@ -381,10 +378,9 @@ Power-ups rơi ngẫu nhiên khi phá gạch (25% chance). Bắt bằng paddle �
 
 | Hành động | Điểm |
 |-----------|------|
-| Phá Standard Brick (1 hit) | 100 điểm |
-| Phá Multi-Hit Brick (3 hits) | 300 điểm |
-| Phá Exploding Brick | 500 điểm |
-| Phá gạch bằng Exploding Brick (chain) | 200 điểm/brick |
+| Phá Standard Brick (1 hit) | 10 điểm |
+| Phá Multi-Hit Brick (3 hits) | 20 điểm |
+| Phá Exploding Brick | 50 điểm |
 | Bắt Power-up | 50 điểm |
 | Hoàn thành level | 1000 điểm + Bonus |
 
@@ -413,7 +409,7 @@ Power-ups rơi ngẫu nhiên khi phá gạch (25% chance). Bắt bằng paddle �
 
 ### Level Design:
 
-Game có **9 levels** được thiết kế thủ công trong folder `src/main/resources/levels/`:
+Game có **9 levels**:
 
 ```
 levels/
@@ -446,13 +442,13 @@ BBBBB11BBBBBB1  (B = Exploding brick)
 1. **Paddle Skins** (3 skins):
    - Default (miễn phí)
    - Skin 1 (100 coins)
-   - Skin 2 (300 coins)
+   - Skin 2 (200 coins)
 
 2. **Ball Skins** (4 skins):
    - Default (miễn phí)
    - Oneshot (hiển thị khi có power-up)
    - Skin 1 (100 coins)
-   - Skin 2 (300 coins)
+   - Skin 2 (200 coins)
 
 ### Tính năng Shop:
 
@@ -467,7 +463,8 @@ BBBBB11BBBBBB1  (B = Exploding brick)
 ## 🖼️ Screenshots & Demo
 
 ### Menu chính
-*Video background với các nút menu*
+
+<img width="1927" height="1075" alt="image" src="https://github.com/user-attachments/assets/bc2bd72e-b98c-4d6c-8a37-d689e53f2095" />
 
 ### Preview Tuần 1 - Gameplay cơ bản
 
@@ -476,6 +473,10 @@ https://github.com/user-attachments/assets/7a21ead9-b33f-4a71-8542-327b96e43b82
 ### Preview Tuần 2 - Tính năng hoàn chỉnh
 
 https://github.com/user-attachments/assets/9f58c691-46c4-4651-9a3d-10abe993b4d0
+
+### Preview game hoàn chỉnh
+
+Em bình quay video reviewveef game rồi thêm vô đây
 
 ### Các chế độ chơi
 
@@ -545,166 +546,6 @@ https://github.com/user-attachments/assets/9f58c691-46c4-4651-9a3d-10abe993b4d0
         <scope>test</scope>
     </dependency>
 </dependencies>
-```
-
----
-
-## 📁 Cấu trúc dự án chi tiết
-
-```
-demo/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   ├── module-info.java                  # Java Module descriptor
-│   │   │   │
-│   │   │   ├── main/
-│   │   │   │   └── MainLauncher.java             # Entry point
-│   │   │   │
-│   │   │   ├── gameconfig/
-│   │   │   │   └── GameConfig.java               # Cấu hình toàn cục (constants, enums)
-│   │   │   │
-│   │   │   ├── gamemanager/
-│   │   │   │   ├── core/                         # Core game logic
-│   │   │   │   │   ├── GamePlay.java             # JavaFX Application wrapper
-│   │   │   │   │   ├── GameEngine.java           # Game loop chính (240Hz)
-│   │   │   │   │   ├── LevelManager.java         # Load level từ file
-│   │   │   │   │   ├── AIManager.java            # AI cho bot
-│   │   │   │   │   └── InputHandler.java         # Xử lý keyboard input
-│   │   │   │   │
-│   │   │   │   ├── manager/                      # Service managers
-│   │   │   │   │   ├── CollisionManager.java     # Xử lý va chạm (paddle, brick, wall)
-│   │   │   │   │   ├── SoundManager.java         # Singleton - quản lý âm thanh
-│   │   │   │   │   ├── ScoreManager.java         # Quản lý điểm & high scores
-│   │   │   │   │   ├── CoinManager.java          # Quản lý coins & shop
-│   │   │   │   │   ├── PowerUpManager.java       # Spawn power-ups
-│   │   │   │   │   ├── BackgroundTaskManager.java # Singleton - async tasks
-│   │   │   │   │   └── GameObject.java           # Abstract base class
-│   │   │   │   │
-│   │   │   │   └── ui/                           # UI utilities
-│   │   │   │       ├── ScreenManager.java        # Quản lý chuyển màn hình
-│   │   │   │       ├── UIManager.java            # Abstract base cho screens
-│   │   │   │       ├── GameButton.java           # Custom button component
-│   │   │   │       └── VideoBackgroundManager.java # Video nền menu
-│   │   │   │
-│   │   │   ├── gameobject/                       # Game entities
-│   │   │   │   ├── ball/
-│   │   │   │   │   └── Ball.java                 # Bóng với physics
-│   │   │   │   │
-│   │   │   │   ├── brick/
-│   │   │   │   │   ├── Brick.java                # Abstract brick
-│   │   │   │   │   ├── StandardBrick.java        # 1-hit brick
-│   │   │   │   │   ├── MultiHitBrick.java        # 3-hit brick
-│   │   │   │   │   ├── IndestructibleBrick.java  # Không thể phá
-│   │   │   │   │   └── ExplodingBrick.java       # Nổ khi bị phá
-│   │   │   │   │
-│   │   │   │   ├── paddle/
-│   │   │   │   │   ├── Paddle.java               # Thanh đỡ
-│   │   │   │   │   └── Indicator.java            # Mũi tên chỉ hướng
-│   │   │   │   │
-│   │   │   │   └── powerup/
-│   │   │   │       └── Powerup.java              # 3 loại power-up
-│   │   │   │
-│   │   │   └── userinterface/
-│   │   │       ├── screen/                       # Main screens
-│   │   │       │   ├── MenuScreen.java           # Menu chính
-│   │   │       │   ├── GameModeScreen.java       # Chọn chế độ chơi
-│   │   │       │   ├── SettingScreen.java        # Cài đặt
-│   │   │       │   ├── ShopScreen.java           # Shop chính
-│   │   │       │   ├── PaddleSkinScreen.java     # Mua paddle skins
-│   │   │       │   ├── BallSkinScreen.java       # Mua ball skins
-│   │   │       │   ├── HighScoreScreen.java      # Bảng xếp hạng
-│   │   │       │   ├── PauseScreen.java          # Màn hình pause
-│   │   │       │   └── GameOverScreen.java       # Màn hình game over
-│   │   │       │
-│   │   │       └── gamescreen/                   # Gameplay screens
-│   │   │           ├── GameScreen.java           # Abstract base
-│   │   │           ├── SingleplayerScreen.java   # 9 levels
-│   │   │           ├── BotScreen.java            # Đấu với AI
-│   │   │           ├── OneVOneScreen.java        # 2 người chơi
-│   │   │           └── EndlessScreen.java        # Vô hạn level
-│   │   │
-│   │   └── resources/
-│   │       ├── Styles.css                        # Stylesheet
-│   │       │
-│   │       ├── background/                       # Background assets
-│   │       │   ├── background.png
-│   │       │   ├── framegameover.png
-│   │       │   ├── setting.png
-│   │       │   └── videobackground.mp4
-│   │       │
-│   │       ├── fontword/
-│   │       │   └── Simple Sunrise.otf            # Custom font
-│   │       │
-│   │       ├── iamgepowerup/                     # Power-up icons
-│   │       │   ├── doubleup.png                  # MULTIPLY
-│   │       │   ├── onehit.png                    # ONESHOT
-│   │       │   └── shield.png                    # EXPAND
-│   │       │
-│   │       ├── imageball/                        # Ball skins
-│   │       │   ├── default.png
-│   │       │   ├── oneshot.png
-│   │       │   ├── skin1.png
-│   │       │   └── skin2.png
-│   │       │
-│   │       ├── imagebrick/                       # Brick textures
-│   │       │   ├── brick1hit.png                 # Standard
-│   │       │   ├── brick2-1.png                  # Multi-hit (3 HP)
-│   │       │   ├── brick2-2.png                  # Multi-hit (2 HP)
-│   │       │   ├── brick2-3.png                  # Multi-hit (1 HP)
-│   │       │   ├── brickboom1.png                # Exploding
-│   │       │   └── wall.png                      # Indestructible
-│   │       │
-│   │       ├── imagebutton/
-│   │       │   └── button.png
-│   │       │
-│   │       ├── imagecoin/
-│   │       │   └── coin.png
-│   │       │
-│   │       ├── imagelive/
-│   │       │   └── imagelive.png                 # Heart icon
-│   │       │
-│   │       ├── imagelogo/
-│   │       │   └── title.png
-│   │       │
-│   │       ├── imagepaddle/                      # Paddle skins
-│   │       │   ├── default.png
-│   │       │   ├── skin1.png
-│   │       │   └── skin2.png
-│   │       │
-│   │       ├── levels/                           # Level files
-│   │       │   ├── level1.txt
-│   │       │   ├── level2.txt
-│   │       │   ├── ...
-│   │       │   └── level9.txt
-│   │       │
-│   │       └── sounds/                           # Audio files
-│   │           ├── brick_break.wav               # Gạch vỡ
-│   │           ├── brick_hit.wav                 # Bóng trúng gạch
-│   │           ├── paddle_hit.wav                # Bóng chạm paddle
-│   │           ├── wall_hit.wav                  # Bóng chạm tường
-│   │           ├── powerup_spawn.wav             # Power-up xuất hiện
-│   │           ├── powerup_collect.wav           # Bắt power-up
-│   │           ├── explosion.wav                 # Exploding brick
-│   │           ├── button_click.wav              # Click button
-│   │           ├── level_complete.wav            # Hoàn thành level
-│   │           ├── game_over.wav                 # Game over
-│   │           ├── menu_music.mp3                # Nhạc nền menu
-│   │           └── game_music.mp3                # Nhạc nền gameplay
-│   │
-│   └── test/
-│       └── java/
-│           ├── gamemanager/
-│           │   └── manager/
-│           │       └── BackgroundTaskManagerTest.java
-│           └── userinterface/
-│
-├── pom.xml                                       # Maven configuration
-├── coins.properties                              # Persistent coins & skins
-├── highscores.dat                                # Persistent high scores
-├── mvnw / mvnw.cmd                               # Maven wrapper
-├── run-tests.bat                                 # Script chạy tests
-└── README.md                                     # File này
 ```
 
 ---
@@ -915,13 +756,13 @@ protected void initializeUI() {
 
 ## 🏅 Điểm mạnh của dự án
 
-✅ **Kiến trúc rõ ràng** - Phân lớp logic, UI, service tách biệt
-✅ **Code quality** - Comments chi tiết bằng tiếng Việt, dễ hiểu
-✅ **Performance** - Game loop 240Hz, batch processing, caching
-✅ **Extensibility** - Dễ thêm brick mới, power-up mới, game mode mới
-✅ **User experience** - Smooth animations, sound feedback, intuitive UI
-✅ **Testing** - Có unit tests, có thể mở rộng
-✅ **Documentation** - README chi tiết, code comments đầy đủ
+✅ **Kiến trúc rõ ràng** - Phân lớp logic, UI, service tách biệt  
+✅ **Code quality** - Comments chi tiết bằng tiếng Việt, dễ hiểu  
+✅ **Performance** - Game loop 240Hz, batch processing, caching  
+✅ **Extensibility** - Dễ thêm brick mới, power-up mới, game mode mới  
+✅ **User experience** - Smooth animations, sound feedback, intuitive UI  
+✅ **Testing** - Có unit tests, có thể mở rộng  
+✅ **Documentation** - README chi tiết, code comments đầy đủ  
 
 ---
 
