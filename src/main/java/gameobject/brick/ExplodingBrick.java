@@ -10,7 +10,7 @@ public class ExplodingBrick extends Brick {
 
     private LevelManager levelManager;
     private Pane root;
-    private boolean isExploding = false; // ========== THÊM: Prevent recursive explosion
+    private boolean isExploding = false;
 
     public ExplodingBrick(double x, double y, double width, double height) {
         super(x, y, width, height, EXPLODING_HIT_COUNT, EXPLODING_COLOR);
@@ -28,7 +28,7 @@ public class ExplodingBrick extends Brick {
     @Override
     public int hit() {
         hitCount--;
-        if (hitCount <= 0 && !isExploding) { // ========== THÊM: Check isExploding
+        if (hitCount <= 0 && !isExploding) {
             explode();
             return 50;
         }
@@ -36,13 +36,21 @@ public class ExplodingBrick extends Brick {
     }
 
     private void explode() {
-        // ========== THÊM: Prevent multiple explosions
+        // Prevent multiple explosions
         if (isExploding) return;
         isExploding = true;
 
+        // ========== FIX: Remove self first to prevent being hit again
+        if (levelManager != null && root != null) {
+            if (getNode() != null && getNode().getParent() != null) {
+                root.getChildren().remove(getNode());
+            }
+            levelManager.getBricks().remove(this);
+        }
+
         SoundManager.getInstance().playSound(SoundManager.SoundType.EXPLOSION);
 
-        // ========== OPTIMIZATION: Use HashSet for O(1) lookup
+        // Use HashSet for O(1) lookup
         java.util.Set<Brick> bricksToDestroy = new java.util.HashSet<>();
 
         double myX = getX();
@@ -50,13 +58,13 @@ public class ExplodingBrick extends Brick {
         double myWidth = getWidth();
         double myHeight = getHeight();
 
-        // ========== OPTIMIZATION: Calculate bounds once
+        // Calculate bounds once
         double minX = myX - (EXPLOSION_RANGE + 1) * (myWidth + 1);
         double maxX = myX + myWidth + (EXPLOSION_RANGE + 1) * (myWidth + 1);
         double minY = myY - (EXPLOSION_RANGE + 1) * (myHeight + 1);
         double maxY = myY + myHeight + (EXPLOSION_RANGE + 1) * (myHeight + 1);
 
-        // ========== OPTIMIZATION: Single pass, no redundant checks
+        // Single pass, no redundant checks
         for (Brick brick : levelManager.getBricks()) {
             if (brick == this || brick instanceof IndestructibleBrick) continue;
 
@@ -88,7 +96,7 @@ public class ExplodingBrick extends Brick {
             }
         }
 
-        // ========== OPTIMIZATION: Batch removal
+        // Batch removal
         java.util.List<javafx.scene.Node> nodesToRemove = new java.util.ArrayList<>();
         java.util.List<ExplodingBrick> explodingBricks = new java.util.ArrayList<>();
 
@@ -108,12 +116,12 @@ public class ExplodingBrick extends Brick {
             levelManager.getBricks().remove(brick);
         }
 
-        // ========== BATCH REMOVE: Much faster!
+        // Batch remove - much faster!
         if (!nodesToRemove.isEmpty()) {
             root.getChildren().removeAll(nodesToRemove);
         }
 
-        // ========== DELAYED CHAIN REACTION: Prevent stack overflow
+        // Delayed chain reaction - prevent stack overflow
         if (!explodingBricks.isEmpty()) {
             javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(
                     javafx.util.Duration.millis(50)

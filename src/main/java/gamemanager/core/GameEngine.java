@@ -15,6 +15,12 @@ import javafx.animation.PauseTransition;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import userinterface.gamescreen.*;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -406,36 +412,26 @@ public class GameEngine {
     private void handleCollisions() {
         if (gameState != GameConfig.GameState.PLAYING) return;
 
-        ballsToRemove.clear();
+        List<Ball> toRemove = new ArrayList<>();
 
-        // ========== OPTIMIZATION: Cache bricks ONCE per frame
-        cachedBricks.clear();
-        cachedBricks.addAll(levelManager.getBricks());
-
-        // ========== OPTIMIZATION: Filter out destroyed bricks upfront
-        cachedBricks.removeIf(brick -> brick.getHitCount() == 0);
-
-        int ballCount = balls.size();
-        for (int i = 0; i < ballCount; i++) {
-            Ball b = balls.get(i);
-
+        for (Ball b : new ArrayList<>(balls)) {
             GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
 
             if (isOneVOneMode || isBotMode) {
                 if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
-                    ballsToRemove.add(b);
+                    toRemove.add(b);
                     lastScoredPlayer = 1;
                     continue;
                 } else if (wallHit == GameConfig.WallSideType.NORTH) {
                     if (b.getY() < paddle2.getY() + paddle2.getHeight()) {
-                        ballsToRemove.add(b);
+                        toRemove.add(b);
                         lastScoredPlayer = 2;
                         continue;
                     }
                 }
             } else {
                 if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
-                    ballsToRemove.add(b);
+                    toRemove.add(b);
                     continue;
                 }
             }
@@ -450,12 +446,9 @@ public class GameEngine {
                 }
             }
 
-            // ========== OPTIMIZATION: Use cached, filtered bricks
-            Brick hitBrick = collisionManager.checkBrickBallCollision(b, cachedBricks);
+            List<Brick> bricks = levelManager.getBricks();
+            Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
             if (hitBrick != null) {
-                // ========== OPTIMIZATION: Remove from cache immediately to prevent double-hit
-                cachedBricks.remove(hitBrick);
-
                 if (isOneVOneMode && oneVOneScreen != null) {
                     int player = hitBrick.getY() < GAME_HEIGHT / 2 ? 1 : 2;
                     collisionManager.handleBrickBallCollision(b, hitBrick, oneVOneScreen, player);
@@ -467,10 +460,12 @@ public class GameEngine {
                     collisionManager.handleBrickBallCollision(b, hitBrick, singleplayerScreen);
                 }
 
-                // Level complete check (unchanged)
                 if (!isOneVOneMode && !isBotMode && levelManager.isLevelComplete()) {
                     if (endlessScreen != null) {
-                        // ... existing endless mode code
+                        levelManager.generateEndlessLevel(root);
+                        resetBallAndPaddle();
+                        int currentEndlessLevel = (endlessScreen.getScore() / 1000) + 1;
+                        endlessScreen.showLevel(currentEndlessLevel);
                     } else {
                         changeGameState(GameState.LEVEL_CLEARED);
                     }
@@ -479,36 +474,87 @@ public class GameEngine {
             }
         }
 
-        // ========== OPTIMIZATION: Batch ball removal
-        if (!ballsToRemove.isEmpty()) {
-            java.util.List<javafx.scene.Node> nodesToRemove = new java.util.ArrayList<>();
+        // Remove dead balls
+        for (Ball dead : toRemove) {
+            // Hiệu ứng mờ dần cho trail
+            if (dead.getTrailGroup() != null) {
+                FadeTransition trailFade = new FadeTransition(Duration.millis(400), dead.getTrailGroup());
+                trailFade.setFromValue(1.0);
+                trailFade.setToValue(0.0);
+                trailFade.setOnFinished(e -> {
+                    root.getChildren().remove(dead.getTrailGroup());
+                });
+                trailFade.play();
+            }
 
-            for (Ball dead : ballsToRemove) {
-                if (dead.getTrailGroup() != null && dead.getTrailGroup().getParent() != null) {
-                    nodesToRemove.add(dead.getTrailGroup());
-                }
-                if (dead.getNode() != null && dead.getNode().getParent() != null) {
-                    nodesToRemove.add(dead.getNode());
-                }
+            // Hiệu ứng mờ dần cho bóng
+            if (dead.getNode() != null) {
+                FadeTransition ballFade = new FadeTransition(Duration.millis(300), dead.getNode());
+                ballFade.setFromValue(1.0);
+                ballFade.setToValue(0.0);
+                ballFade.setOnFinished(e -> {
+                    root.getChildren().remove(dead.getNode());
+                    balls.remove(dead);
+                });
+                ballFade.play();
+            } else {
                 balls.remove(dead);
             }
 
-            // Batch remove
-            if (!nodesToRemove.isEmpty()) {
-                root.getChildren().removeAll(nodesToRemove);
+            if (dead.getNode() != null && dead.getNode().getParent() != null) {
+                root.getChildren().remove(dead.getNode());
             }
+            balls.remove(dead);
+        }
 
-            // Rest of ball death handling (unchanged)
-            if (balls.isEmpty()) {
-                // ... existing code for handling empty balls
+        if (!toRemove.isEmpty() && balls.isEmpty()) {
+            if (isOneVOneMode && oneVOneScreen != null) {
+                if (lastScoredPlayer == 1) {
+                    oneVOneScreen.decreasePlayer1Lives();
+                    if (oneVOneScreen.getPlayer1Lives() <= 0) {
+                        changeGameState(GameConfig.GameState.GAME_OVER);
+                        return;
+                    }
+                } else {
+                    oneVOneScreen.decreasePlayer2Lives();
+                    if (oneVOneScreen.getPlayer2Lives() <= 0) {
+                        changeGameState(GameConfig.GameState.GAME_OVER);
+                        return;
+                    }
+                }
+                resetBallAndPaddleOneVOne();
+            } else if (isBotMode && botScreen != null) {
+                if (lastScoredPlayer == 1) {
+                    botScreen.decreasePlayerLives();
+                    if (botScreen.getPlayerLives() <= 0) {
+                        changeGameState(GameConfig.GameState.GAME_OVER);
+                        return;
+                    }
+                } else {
+                    botScreen.decreaseBotLives();
+                    if (botScreen.getBotLives() <= 0) {
+                        changeGameState(GameConfig.GameState.GAME_OVER);
+                        return;
+                    }
+                }
+                resetBallAndPaddleBot();
+            } else if (endlessScreen != null) {
+                endlessScreen.decreaseLives();
+                resetBallAndPaddle();
+                if (endlessScreen.getLives() <= 0) {
+                    changeGameState(GameConfig.GameState.GAME_OVER);
+                }
+            } else if (singleplayerScreen != null) {
+                singleplayerScreen.decreaseLives();
+                resetBallAndPaddle();
+                if (singleplayerScreen.getLives() <= 0) {
+                    changeGameState(GameConfig.GameState.GAME_OVER);
+                }
             }
         }
 
-        // Powerup collision (unchanged)
         if (!isOneVOneMode && !isBotMode) {
-            cachedPowerups.clear();
-            cachedPowerups.addAll(levelManager.getPowerups());
-            for (Powerup p : cachedPowerups) {
+            for (Powerup p : new ArrayList<>(levelManager.getPowerups())) {
                 if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
                     p.activate(this, paddle);
                     if (p.getNode() != null && p.getNode().getParent() != null) {
@@ -519,6 +565,7 @@ public class GameEngine {
             }
         }
     }
+
 
     private void resetBallAndPaddle() {
         // ========== THÊM: Batch removal ==========
@@ -1156,4 +1203,28 @@ public class GameEngine {
         }
         initGameLoop();
     }
+
+    private void fadeOutTransition(Runnable afterFade) {
+        Rectangle fadeRect = new Rectangle(GAME_WIDTH, GAME_HEIGHT, Color.BLACK);
+        fadeRect.setOpacity(0);
+        root.getChildren().add(fadeRect);
+
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(700), fadeRect);
+        fadeOut.setFromValue(0.0);
+        fadeOut.setToValue(1.0);
+        fadeOut.setInterpolator(Interpolator.EASE_IN);
+
+        fadeOut.setOnFinished(e -> {
+            afterFade.run();
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(700), fadeRect);
+            fadeIn.setFromValue(1.0);
+            fadeIn.setToValue(0.0);
+            fadeIn.setInterpolator(Interpolator.EASE_OUT);
+            fadeIn.setOnFinished(ev -> root.getChildren().remove(fadeRect));
+            fadeIn.play();
+        });
+
+        fadeOut.play();
+    }
+
 }

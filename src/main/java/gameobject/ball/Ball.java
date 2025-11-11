@@ -37,6 +37,7 @@ public class Ball extends GameObject {
     private boolean trailEnabled = true;
     private int frameSkipCounter = 0;
     private static final int TRAIL_FRAME_SKIP = 2; // Chỉ thêm trail mỗi 2 frame
+    private javafx.animation.Timeline trailTimeline;
 
     // Trail position class
     private static class TrailPosition {
@@ -62,6 +63,10 @@ public class Ball extends GameObject {
 
     public Group getTrailGroup() {
         return trailGroup;
+    }
+
+    public void stopTrail() {
+        if (trailTimeline != null) trailTimeline.stop();
     }
 
     // ============ THÊM CÁC METHOD MỚI ============
