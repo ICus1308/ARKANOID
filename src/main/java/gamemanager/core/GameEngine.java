@@ -579,15 +579,12 @@ public class GameEngine {
 
         // Xóa các bóng đã chết
         for (Ball dead : toRemove) {
-            // Hiệu ứng mờ dần cho trail
-            if (dead.getTrailGroup() != null) {
-                FadeTransition trailFade = new FadeTransition(Duration.millis(400), dead.getTrailGroup());
-                trailFade.setFromValue(1.0);
-                trailFade.setToValue(0.0);
-                trailFade.setOnFinished(e -> {
-                    root.getChildren().remove(dead.getTrailGroup());
-                });
-                trailFade.play();
+            // XÓA ĐUÔI NGAY LẬP TỨC - CRITICAL!
+            dead.clearTrail();
+
+            // Xóa trail group khỏi root
+            if (dead.getTrailGroup() != null && dead.getTrailGroup().getParent() != null) {
+                root.getChildren().remove(dead.getTrailGroup());
             }
 
             // Hiệu ứng mờ dần cho bóng
@@ -596,17 +593,14 @@ public class GameEngine {
                 ballFade.setFromValue(1.0);
                 ballFade.setToValue(0.0);
                 ballFade.setOnFinished(e -> {
-                    root.getChildren().remove(dead.getNode());
-                    balls.remove(dead);
+                    if (dead.getNode().getParent() != null) {
+                        root.getChildren().remove(dead.getNode());
+                    }
                 });
                 ballFade.play();
-            } else {
-                balls.remove(dead);
             }
 
-            if (dead.getNode() != null && dead.getNode().getParent() != null) {
-                root.getChildren().remove(dead.getNode());
-            }
+            // Xóa ball khỏi danh sách
             balls.remove(dead);
         }
 

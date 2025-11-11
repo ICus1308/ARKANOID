@@ -33,10 +33,10 @@ public class Ball extends GameObject {
     // Trail effect - OPTIMIZED
     private final LinkedList<TrailPosition> trailPositions = new LinkedList<>();
     private final Group trailGroup = new Group();
-    private static final int MAX_TRAIL_LENGTH = 15; // Giảm từ 50 -> 15 để tăng hiệu suất
+    private static final int MAX_TRAIL_LENGTH = 20; // Giảm xuống 10 để hiệu suất tốt hơn
     private boolean trailEnabled = true;
     private int frameSkipCounter = 0;
-    private static final int TRAIL_FRAME_SKIP = 2; // Chỉ thêm trail mỗi 2 frame
+    private static final int TRAIL_FRAME_SKIP = 1; // Cập nhật mỗi frame
     private javafx.animation.Timeline trailTimeline;
 
     // Trail position class

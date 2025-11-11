@@ -164,12 +164,23 @@ public class PowerUpManager {
     }
 
     /**
+     * LẤY SỐ LƯỢNG POWER-UP ĐANG HOẠT ĐỘNG
+     * @return Số lượng timer đang active
+     */
+    public int getActiveCount() {
+        return activeTimers.size();
+    }
+
+    /**
      * LẤY THỜI GIAN CÒN LẠI CỦA POWER-UP
-     * @return Thời gian còn lại (giây), hoặc 0 nếu không active
+     * @param type Loại power-up
+     * @return Thời gian còn lại (giây), -1 nếu không active
      */
     public double getRemainingTime(GameConfig.PowerUpType type) {
         PauseTransition timer = activeTimers.get(type);
-        if (timer == null) return 0;
+        if (timer == null) {
+            return -1; // Power-up không active
+        }
 
         // Tính thời gian còn lại = tổng thời gian - thời gian đã trôi qua
         Duration total = timer.getDuration();
