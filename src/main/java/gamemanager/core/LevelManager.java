@@ -17,6 +17,7 @@ import static gameconfig.GameConfig.*;
 public class LevelManager {
     private final List<Brick> bricks = new ArrayList<>();
     private final List<Powerup> powerups = new ArrayList<>();
+    private final List<Brick> bricksToRemove = new ArrayList<>();
     public int currentLevel = 1;
     public final int maxLevel = 9;
 
@@ -47,10 +48,27 @@ public class LevelManager {
      * Clears all bricks and powerups from the game
      */
     private void clearLevel(Pane root) {
-        root.getChildren().removeAll(bricks.stream().map(Brick::getNode).toList());
-        root.getChildren().removeAll(powerups.stream().map(Powerup::getNode).toList());
+        // ========== THÊM: Batch collection ==========
+        List<javafx.scene.Node> nodesToRemove = new ArrayList<>();
+
+        // Collect brick nodes
+        for (Brick brick : bricks) {
+            if (brick.getNode() != null && brick.getNode().getParent() != null) {
+                nodesToRemove.add(brick.getNode());
+            }
+        }
         bricks.clear();
+
+        // Collect powerup nodes
+        for (Powerup powerup : powerups) {
+            if (powerup.getNode() != null && powerup.getNode().getParent() != null) {
+                nodesToRemove.add(powerup.getNode());
+            }
+        }
         powerups.clear();
+
+        // ========== THÊM: Batch remove all nodes at once (much faster!) ==========
+        root.getChildren().removeAll(nodesToRemove);
     }
 
     /**
@@ -101,7 +119,7 @@ public class LevelManager {
     }
 
     public void loadLevel(int level, Pane root) {
-        clearLevel(root);
+        clearLevel(root); // Clear old level first
         currentLevel = level;
         String fileName = "/levels/level" + level + ".txt";
 
@@ -113,7 +131,11 @@ public class LevelManager {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             List<String> lines = reader.lines().toList();
-            loadLevelFromPattern(lines, root, 50);
+
+            // ========== THÊM: Small delay to prevent UI blocking ==========
+            javafx.application.Platform.runLater(() -> {
+                loadLevelFromPattern(lines, root, 50);
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -121,10 +143,18 @@ public class LevelManager {
         }
     }
 
+    // ========== SỬA method removeBrick để đánh dấu gạch cho việc xóa sau ==========
     public void removeBrick(Brick brick, Pane root) {
-        root.getChildren().remove(brick.getNode());
-        bricks.remove(brick);
+        // ========== OPTIMIZATION: Mark for removal instead of immediate removal
+        bricksToRemove.add(brick);
+        brick.destroy(); // Mark as destroyed
 
+        // ========== OPTIMIZATION: Only remove node, don't modify list yet
+        if (brick.getNode() != null && brick.getNode().getParent() != null) {
+            root.getChildren().remove(brick.getNode());
+        }
+
+        // Spawn powerup (unchanged)
         if (random.nextDouble() < 0.3) {
             PowerUpType type = PowerUpType.values()[random.nextInt(PowerUpType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
@@ -134,7 +164,17 @@ public class LevelManager {
         }
     }
 
+    // ========== THÊM method mới: Process deferred removals
+    public void processDeferredRemovals() {
+        if (!bricksToRemove.isEmpty()) {
+            bricks.removeAll(bricksToRemove);
+            bricksToRemove.clear();
+        }
+    }
+
     public boolean isLevelComplete() {
+        // Process any pending removals first
+        processDeferredRemovals();
         return bricks.isEmpty() || bricks.stream().allMatch(brick -> brick.getHitCount() < 0);
     }
 
@@ -195,6 +235,9 @@ public class LevelManager {
     private void loadLevelFromPattern(List<String> lines, Pane root, int yOffset) {
         double brickWidth = calculateBrickWidth();
 
+        // ========== THÊM: Batch collection ==========
+        List<javafx.scene.Node> nodesToAdd = new ArrayList<>();
+
         for (int r = 0; r < BRICK_ROWS && r < lines.size(); r++) {
             String line = lines.get(r);
             for (int c = 0; c < BRICK_COLS && c < line.length(); c++) {
@@ -203,9 +246,15 @@ public class LevelManager {
                 double y = r * (BRICK_HEIGHT + BRICK_SPACING) + yOffset;
 
                 Brick newBrick = createBrick(typeChar, x, y, brickWidth, root);
-                addBrick(newBrick, root);
+                if (newBrick != null) {
+                    bricks.add(newBrick);
+                    nodesToAdd.add(newBrick.getNode()); // ========== THÊM: Add to batch
+                }
             }
         }
+
+        // ========== THÊM: Batch add all nodes at once (much faster!) ==========
+        root.getChildren().addAll(nodesToAdd);
     }
 
     public void generateEndlessLevel(Pane root) {
