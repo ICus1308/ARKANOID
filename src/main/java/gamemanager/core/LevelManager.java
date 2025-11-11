@@ -17,6 +17,7 @@ import static gameconfig.GameConfig.*;
 public class LevelManager {
     private final List<Brick> bricks = new ArrayList<>();
     private final List<Powerup> powerups = new ArrayList<>();
+    private final List<Brick> bricksToRemove = new ArrayList<>();
     public int currentLevel = 1;
     public final int maxLevel = 9;
 
@@ -142,10 +143,18 @@ public class LevelManager {
         }
     }
 
+    // ========== SỬA method removeBrick để đánh dấu gạch cho việc xóa sau ==========
     public void removeBrick(Brick brick, Pane root) {
-        root.getChildren().remove(brick.getNode());
-        bricks.remove(brick);
+        // ========== OPTIMIZATION: Mark for removal instead of immediate removal
+        bricksToRemove.add(brick);
+        brick.destroy(); // Mark as destroyed
 
+        // ========== OPTIMIZATION: Only remove node, don't modify list yet
+        if (brick.getNode() != null && brick.getNode().getParent() != null) {
+            root.getChildren().remove(brick.getNode());
+        }
+
+        // Spawn powerup (unchanged)
         if (random.nextDouble() < 0.3) {
             PowerUpType type = PowerUpType.values()[random.nextInt(PowerUpType.values().length)];
             Powerup p = new Powerup(brick.getX(), brick.getBottomY(), type);
@@ -155,7 +164,17 @@ public class LevelManager {
         }
     }
 
+    // ========== THÊM method mới: Process deferred removals
+    public void processDeferredRemovals() {
+        if (!bricksToRemove.isEmpty()) {
+            bricks.removeAll(bricksToRemove);
+            bricksToRemove.clear();
+        }
+    }
+
     public boolean isLevelComplete() {
+        // Process any pending removals first
+        processDeferredRemovals();
         return bricks.isEmpty() || bricks.stream().allMatch(brick -> brick.getHitCount() < 0);
     }
 

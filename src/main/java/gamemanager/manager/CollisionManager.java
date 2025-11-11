@@ -41,15 +41,6 @@ public class CollisionManager {
         return this.oneshotActive;
     }
 
-    // Helper: circle-rect intersection test using circle center and radius and rectangle bounds
-    private boolean circleIntersectsRect(double cx, double cy, double radius, javafx.geometry.Bounds rect) {
-        double closestX = Math.max(rect.getMinX(), Math.min(cx, rect.getMaxX()));
-        double closestY = Math.max(rect.getMinY(), Math.min(cy, rect.getMaxY()));
-        double dx = cx - closestX;
-        double dy = cy - closestY;
-        return dx * dx + dy * dy <= radius * radius;
-    }
-
     public void handlePaddleBallCollision(Paddle paddle, Ball ball) {
         javafx.geometry.Bounds paddleBounds = paddle.getNode().getBoundsInParent();
         double ballCenterX = ball.getX() + ball.getRadius();
@@ -128,6 +119,7 @@ public class CollisionManager {
             ball.bounce(GameConfig.WallSideType.NORTH);
         }
 
+        // ========== OPTIMIZATION: Calculate score without blocking
         int score;
         if (scoreManager != null) {
             score = scoreManager.calculateBrickScore(brick, oneshotActive);
@@ -143,48 +135,37 @@ public class CollisionManager {
                 score = brick.hit();
             }
         }
+
+        // ========== OPTIMIZATION: Update UI and audio async
         ui.increaseScore(score);
         brick.updateDraw();
+
         if (brick.getHitCount() == 0) {
-            SoundManager.getInstance().playSound(SoundManager.SoundType.BRICK_BREAK);
+            // Play sound without blocking
+            javafx.application.Platform.runLater(() -> {
+                SoundManager.getInstance().playSound(SoundManager.SoundType.BRICK_BREAK);
+            });
+
+            // Award coins
             if (coinManager != null) {
                 coinManager.addCoins(5);
                 ui.updateCoins();
             }
-            levelManager.removeBrick(brick, root);
-        }
-        else {
-            SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
-        }
-    }
 
-    public void handleBrickBallCollision(Ball ball, Brick brick, OneVOneScreen ui, int player) {
-        javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
-
-        double ballCenterX = ball.getX() + ball.getRadius();
-        double ballCenterY = ball.getY() + ball.getRadius();
-        double brickCenterX = brickBounds.getMinX() + brickBounds.getWidth() / 2.0;
-        double brickCenterY = brickBounds.getMinY() + brickBounds.getHeight() / 2.0;
-
-        double halfWidths = (ball.getRadius() * 2 + brickBounds.getWidth()) / 2.0;
-        double halfHeights = (ball.getRadius() * 2 + brickBounds.getHeight()) / 2.0;
-
-        double dx = ballCenterX - brickCenterX;
-        double dy = ballCenterY - brickCenterY;
-
-        double overlapX = halfWidths - Math.abs(dx);
-        double overlapY = halfHeights - Math.abs(dy);
-
-        if (overlapX < overlapY) {
-            ball.setX(dx > 0 ? ball.getX() + overlapX : ball.getX() - overlapX);
-            ball.bounce(GameConfig.WallSideType.EAST);
+            // ========== CRITICAL: Remove brick asynchronously for exploding bricks
+            if (brick instanceof gameobject.brick.ExplodingBrick) {
+                // Let exploding brick handle its own removal
+                // Don't call levelManager.removeBrick here
+            } else {
+                // Normal brick removal
+                levelManager.removeBrick(brick, root);
+            }
         } else {
-            ball.setY(dy > 0 ? ball.getY() + overlapY : ball.getY() - overlapY);
-            ball.bounce(GameConfig.WallSideType.NORTH);
+            // Play hit sound without blocking
+            javafx.application.Platform.runLater(() -> {
+                SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
+            });
         }
-
-        brick.updateDraw();
-        SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
     }
 
     public void handleBrickBallCollision(Ball ball, Brick brick, BotScreen ui, int player) {
@@ -247,6 +228,35 @@ public class CollisionManager {
         return null;
     }
 
+    public void handleBrickBallCollision(Ball ball, Brick brick, OneVOneScreen ui, int player) {
+        javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
+
+        double ballCenterX = ball.getX() + ball.getRadius();
+        double ballCenterY = ball.getY() + ball.getRadius();
+        double brickCenterX = brickBounds.getMinX() + brickBounds.getWidth() / 2.0;
+        double brickCenterY = brickBounds.getMinY() + brickBounds.getHeight() / 2.0;
+
+        double halfWidths = (ball.getRadius() * 2 + brickBounds.getWidth()) / 2.0;
+        double halfHeights = (ball.getRadius() * 2 + brickBounds.getHeight()) / 2.0;
+
+        double dx = ballCenterX - brickCenterX;
+        double dy = ballCenterY - brickCenterY;
+
+        double overlapX = halfWidths - Math.abs(dx);
+        double overlapY = halfHeights - Math.abs(dy);
+
+        if (overlapX < overlapY) {
+            ball.setX(dx > 0 ? ball.getX() + overlapX : ball.getX() - overlapX);
+            ball.bounce(GameConfig.WallSideType.EAST);
+        } else {
+            ball.setY(dy > 0 ? ball.getY() + overlapY : ball.getY() - overlapY);
+            ball.bounce(GameConfig.WallSideType.NORTH);
+        }
+
+        brick.updateDraw();
+        SoundManager.getInstance().playSound(SoundManager.SoundType.BALL_BRICK_HIT);
+    }
+
     public boolean checkPaddleBallCollision(Paddle paddle, Ball ball) {
         javafx.geometry.Bounds paddleBounds = paddle.getNode().getBoundsInParent();
         double ballCenterX = ball.getX() + ball.getRadius();
@@ -265,12 +275,46 @@ public class CollisionManager {
         double ballCenterX = ball.getX() + ball.getRadius();
         double ballCenterY = ball.getY() + ball.getRadius();
         double r = ball.getRadius();
+
+        // ========== OPTIMIZATION: Early bounds check
+        double ballMinX = ballCenterX - r;
+        double ballMaxX = ballCenterX + r;
+        double ballMinY = ballCenterY - r;
+        double ballMaxY = ballCenterY + r;
+
         for (Brick brick : bricks) {
+            // ========== OPTIMIZATION: Skip destroyed bricks immediately
+            if (brick.getHitCount() == 0) continue;
+
             javafx.geometry.Bounds brickBounds = brick.getNode().getBoundsInParent();
+
+            // ========== OPTIMIZATION: Quick AABB rejection test first
+            if (ballMaxX < brickBounds.getMinX() ||
+                    ballMinX > brickBounds.getMaxX() ||
+                    ballMaxY < brickBounds.getMinY() ||
+                    ballMinY > brickBounds.getMaxY()) {
+                continue; // No possible collision
+            }
+
+            // Now do precise circle-rect test
             if (circleIntersectsRect(ballCenterX, ballCenterY, r, brickBounds)) {
                 return brick;
             }
         }
         return null;
+    }
+
+    // ========== THÊM: Optimized circle-rect test
+    private boolean circleIntersectsRect(double cx, double cy, double radius, javafx.geometry.Bounds rect) {
+        // Find closest point on rectangle to circle center
+        double closestX = Math.max(rect.getMinX(), Math.min(cx, rect.getMaxX()));
+        double closestY = Math.max(rect.getMinY(), Math.min(cy, rect.getMaxY()));
+
+        // Calculate distance
+        double dx = cx - closestX;
+        double dy = cy - closestY;
+
+        // Check if distance is less than radius
+        return (dx * dx + dy * dy) <= (radius * radius);
     }
 }
