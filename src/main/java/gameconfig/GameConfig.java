@@ -9,11 +9,11 @@ public final class GameConfig {
     public static final int BRICK_COLS = 14;
 
     // Base values for 1280x720 resolution
-    private static final double BASE_PADDLE_SPEED = 12.0;
+    private static final double BASE_PADDLE_SPEED = 20.0;
     private static final double BASE_PADDLE_WIDTH = 140.0;
     private static final double BASE_PADDLE_HEIGHT = 25.0;
     private static final double BASE_BALL_RADIUS = 12.0;
-    private static final double BASE_BALL_SPEED = 10.0;
+    private static final double BASE_BALL_SPEED = 18.0;
 
     // Scaled values (will be updated when resolution changes)
     public static double PADDLE_SPEED = BASE_PADDLE_SPEED;

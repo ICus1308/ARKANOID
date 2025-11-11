@@ -16,6 +16,9 @@ import java.util.Random;
 import static gameconfig.GameConfig.BALL_DEFAULT_SKIN;
 import static gameconfig.GameConfig.BALL_ONESHOT_SKIN;
 
+/**
+ * OPTIMIZED Ball class with reduced trail effect for better performance
+ */
 public class Ball extends GameObject {
     private final Circle node;
     private double vx, vy;
@@ -24,14 +27,16 @@ public class Ball extends GameObject {
     private boolean stuck = true;
 
     // Skin/resource tracking
-    private String currentSkinResource = BALL_DEFAULT_SKIN; // default skin
+    private String currentSkinResource = BALL_DEFAULT_SKIN;
     private String previousSkinResource = null;
 
-    // Trail effect
+    // Trail effect - OPTIMIZED
     private final LinkedList<TrailPosition> trailPositions = new LinkedList<>();
     private final Group trailGroup = new Group();
-    private static final int MAX_TRAIL_LENGTH = 50; // Number of trail circles
+    private static final int MAX_TRAIL_LENGTH = 15; // Giảm từ 50 -> 15 để tăng hiệu suất
     private boolean trailEnabled = true;
+    private int frameSkipCounter = 0;
+    private static final int TRAIL_FRAME_SKIP = 2; // Chỉ thêm trail mỗi 2 frame
 
     // Trail position class
     private static class TrailPosition {
@@ -51,12 +56,10 @@ public class Ball extends GameObject {
         reset(x, y);
     }
 
-
     public javafx.scene.Node getNode() {
         return node;
     }
 
-    // Get trail group for rendering
     public Group getTrailGroup() {
         return trailGroup;
     }
@@ -140,13 +143,18 @@ public class Ball extends GameObject {
             // Clear trail when stuck
             trailGroup.getChildren().clear();
             trailPositions.clear();
+            frameSkipCounter = 0;
         } else {
             setX(x + vx * tpf * 60);
             setY(y + vy * tpf * 60);
 
-            // Update trail effect
+            // OPTIMIZATION: Update trail with frame skipping
             if (trailEnabled) {
-                updateTrail();
+                frameSkipCounter++;
+                if (frameSkipCounter >= TRAIL_FRAME_SKIP) {
+                    updateTrail();
+                    frameSkipCounter = 0;
+                }
             }
         }
         node.setCenterX(x + radius);
@@ -162,10 +170,17 @@ public class Ball extends GameObject {
             trailPositions.removeLast();
         }
 
-        // Render trail
+        // OPTIMIZATION: Render trail - skip every other trail circle for better performance
         trailGroup.getChildren().clear();
+        int skip = 0;
         for (int i = 1; i < trailPositions.size(); i++) {
-            trailGroup.getChildren().add(createTrailCircle(trailPositions.get(i), i));
+            skip++;
+            if (skip % 2 == 0) continue; // Chỉ render 1/2 số trail circles
+
+            Circle trailCircle = createTrailCircle(trailPositions.get(i), i);
+            if (trailCircle != null) {
+                trailGroup.getChildren().add(trailCircle);
+            }
         }
     }
 
@@ -177,13 +192,13 @@ public class Ball extends GameObject {
 
         if (node.getFill() instanceof ImagePattern) {
             circle.setFill(node.getFill());
-            circle.setOpacity(fadeFactor * 0.6);
+            circle.setOpacity(fadeFactor * 0.5); // Giảm opacity để nhẹ hơn
         } else if (node.getFill() instanceof Color baseColor) {
             circle.setFill(new Color(
-                baseColor.getRed(),
-                baseColor.getGreen(),
-                baseColor.getBlue(),
-                fadeFactor * 0.6
+                    baseColor.getRed(),
+                    baseColor.getGreen(),
+                    baseColor.getBlue(),
+                    fadeFactor * 0.5
             ));
         }
 
@@ -211,7 +226,6 @@ public class Ball extends GameObject {
         return currentSkinResource;
     }
 
-    // Apply a skin by resource path (e.g. "/imageball/oneshot.png"). If null or load fails, fall back to default skin.
     public void applySkin(String resourcePath) {
         if (resourcePath == null) {
             applyDefaultSkin();
@@ -226,12 +240,10 @@ public class Ball extends GameObject {
             node.setFill(new ImagePattern(img, 0, 0, 1, 1, true));
             this.currentSkinResource = resourcePath;
         } else {
-            // fallback to default skin
             applyDefaultSkin();
         }
     }
 
-    // Apply the project's default skin
     public void applyDefaultSkin() {
         Image img = null;
         try (InputStream is = getClass().getResourceAsStream(BALL_DEFAULT_SKIN)) {
@@ -247,17 +259,14 @@ public class Ball extends GameObject {
         }
     }
 
-    // Convenience: apply oneshot skin
     public void applyOneshotSkin() {
         applySkin(BALL_ONESHOT_SKIN);
     }
 
-    // Store the current skin so it can be restored later (used when applying temporary skins like oneshot)
     public void storeSkin() {
         this.previousSkinResource = this.currentSkinResource;
     }
 
-    // Restore previously stored skin (or apply default if none stored)
     public void restoreSkin() {
         if (this.previousSkinResource != null) {
             applySkin(this.previousSkinResource);

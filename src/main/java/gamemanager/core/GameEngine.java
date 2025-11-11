@@ -16,58 +16,52 @@ import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import userinterface.gamescreen.*;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
 import static gameconfig.GameConfig.*;
 
-/**
- * GameEngine - Pure game logic without JavaFX Application dependencies
- * Handles game loop, collision detection, and game state management
- */
 public class GameEngine {
     private final Pane root;
     private GameConfig.GameState gameState = GameConfig.GameState.MENU;
     private GameConfig.GameState previousGameState = GameConfig.GameState.MENU;
 
-    // Managers
     private final LevelManager levelManager;
     private final CollisionManager collisionManager;
     private final ScoreManager scoreManager;
     private final CoinManager coinManager;
     private final SoundManager soundManager;
 
-    // Game Objects
     private Paddle paddle;
     private Paddle paddle2;
     private final List<Ball> balls = new ArrayList<>();
     private Indicator indicator;
     private AIManager aiManager;
 
-    // Game Mode State
     private boolean isBotMode = false;
     private boolean isOneVOneMode = false;
     private int lastScoredPlayer = 1;
 
-    // Input State
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
     private boolean isMovingLeft2 = false;
     private boolean isMovingRight2 = false;
 
-    // Game Screens
     private SingleplayerScreen singleplayerScreen;
     private BotScreen botScreen;
     private OneVOneScreen oneVOneScreen;
     private EndlessScreen endlessScreen;
 
-    // Timers
     private PauseTransition oneshotTimer;
     private AnimationTimer gameLoop;
 
-    // Callbacks
     private Runnable onGameOver;
+
+    private final List<Ball> ballsToRemove = new ArrayList<>();
+    private final List<Brick> cachedBricks = new ArrayList<>();
+    private final List<Powerup> cachedPowerups = new ArrayList<>();
+    private static final double FIXED_TIME_STEP = 1.0 / 240.0;
+    private static final long FRAME_TIME_NANOS = 16_666_667L; // ~60 FPS
 
     public GameEngine(Pane root) {
         this.root = root;
@@ -81,25 +75,25 @@ public class GameEngine {
         collisionManager.setScoreManager(scoreManager);
     }
 
-    // ==================== Initialization ====================
-
     public void initGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastUpdate = 0;
 
             @Override
             public void handle(long now) {
-                if (now - lastUpdate < 1_000_000_000 / 60.0) {
+                if (now - lastUpdate < FRAME_TIME_NANOS) {
                     return;
                 }
+
+                long elapsed = now - lastUpdate;
                 lastUpdate = now;
 
-                if (gameState == GameConfig.GameState.PLAYING || gameState == GameConfig.GameState.START) {
-                    double timeStep = 1.0 / 240.0;
+                if (gameState == GameConfig.GameState.PLAYING ||
+                        gameState == GameConfig.GameState.START) {
 
-                    for (int i = 0; i < 4; i++) {
-                        processInput(timeStep);
-                        updateGame(timeStep);
+                    for (int i = 0; i < 2; i++) {
+                        processInput(FIXED_TIME_STEP);
+                        updateGame(FIXED_TIME_STEP);
                         if (gameState == GameConfig.GameState.PLAYING) {
                             handleCollisions();
                         }
@@ -109,8 +103,6 @@ public class GameEngine {
         };
         gameLoop.start();
     }
-
-    // ==================== Game Mode Initialization ====================
 
     public void initializeGameElements() {
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
@@ -138,7 +130,8 @@ public class GameEngine {
         indicator.pointAtBall(ball);
         indicator.setRotation(-90);
 
-        root.getChildren().addAll(paddle.getNode(), ball.getTrailGroup(), ball.getNode(), indicator.getNode());
+        root.getChildren().addAll(paddle.getNode(), ball.getTrailGroup(),
+                ball.getNode(), indicator.getNode());
     }
 
     public void startSinglePlayerGame() {
@@ -190,7 +183,8 @@ public class GameEngine {
         indicator.setTopPaddle(false);
         indicator.pointAtBall(ball);
 
-        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getTrailGroup(), ball.getNode(), indicator.getNode());
+        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(),
+                ball.getTrailGroup(), ball.getNode(), indicator.getNode());
 
         botScreen = new BotScreen(root);
         botScreen.updatePlayerLives(3);
@@ -231,7 +225,8 @@ public class GameEngine {
         indicator.setTopPaddle(false);
         indicator.pointAtBall(ball);
 
-        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(), ball.getTrailGroup(), ball.getNode(), indicator.getNode());
+        root.getChildren().addAll(paddle.getNode(), paddle2.getNode(),
+                ball.getTrailGroup(), ball.getNode(), indicator.getNode());
 
         oneVOneScreen = new OneVOneScreen(root);
         oneVOneScreen.updatePlayer1Lives(3);
@@ -257,8 +252,6 @@ public class GameEngine {
         levelManager.generateEndlessLevel(root);
         changeGameState(GameState.START);
     }
-
-    // ==================== Game Control ====================
 
     public void startGame() {
         double[] launchDirection = null;
@@ -325,8 +318,6 @@ public class GameEngine {
         changeGameState(GameState.START);
     }
 
-    // ==================== Game Loop Components ====================
-
     private void processInput(double tpf) {
         if (isBotMode && aiManager != null) {
             if (gameState == GameState.START) {
@@ -352,7 +343,9 @@ public class GameEngine {
     }
 
     private void updateGame(double tpf) {
-        for (Ball b : new ArrayList<>(balls)) {
+        int ballCount = balls.size();
+        for (int i = 0; i < ballCount; i++) {
+            Ball b = balls.get(i);
             if ((isOneVOneMode || isBotMode) && gameState == GameState.START) {
                 b.update(tpf, lastScoredPlayer == 2 ? paddle2 : paddle, lastScoredPlayer == 2);
             } else {
@@ -360,12 +353,14 @@ public class GameEngine {
             }
         }
 
-        if (indicator != null && !balls.isEmpty() && gameState == GameState.START) {
+        if (indicator != null && ballCount > 0 && gameState == GameState.START) {
             Ball firstBall = balls.get(0);
             indicator.updatePosition(firstBall.getX() + firstBall.getRadius(), firstBall.getY());
         }
 
-        for (Powerup p : new ArrayList<>(levelManager.getPowerups())) {
+        cachedPowerups.clear();
+        cachedPowerups.addAll(levelManager.getPowerups());
+        for (Powerup p : cachedPowerups) {
             p.update();
         }
     }
@@ -373,26 +368,31 @@ public class GameEngine {
     private void handleCollisions() {
         if (gameState != GameConfig.GameState.PLAYING) return;
 
-        List<Ball> toRemove = new ArrayList<>();
+        ballsToRemove.clear();
 
-        for (Ball b : new ArrayList<>(balls)) {
+        cachedBricks.clear();
+        cachedBricks.addAll(levelManager.getBricks());
+
+        int ballCount = balls.size();
+        for (int i = 0; i < ballCount; i++) {
+            Ball b = balls.get(i);
             GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
 
             if (isOneVOneMode || isBotMode) {
                 if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
-                    toRemove.add(b);
+                    ballsToRemove.add(b);
                     lastScoredPlayer = 1;
                     continue;
                 } else if (wallHit == GameConfig.WallSideType.NORTH) {
                     if (b.getY() < paddle2.getY() + paddle2.getHeight()) {
-                        toRemove.add(b);
+                        ballsToRemove.add(b);
                         lastScoredPlayer = 2;
                         continue;
                     }
                 }
             } else {
                 if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
-                    toRemove.add(b);
+                    ballsToRemove.add(b);
                     continue;
                 }
             }
@@ -407,8 +407,7 @@ public class GameEngine {
                 }
             }
 
-            List<Brick> bricks = levelManager.getBricks();
-            Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
+            Brick hitBrick = collisionManager.checkBrickBallCollision(b, cachedBricks);
             if (hitBrick != null) {
                 if (isOneVOneMode && oneVOneScreen != null) {
                     int player = hitBrick.getY() < GAME_HEIGHT / 2 ? 1 : 2;
@@ -436,7 +435,7 @@ public class GameEngine {
         }
 
         // Remove dead balls
-        for (Ball dead : toRemove) {
+        for (Ball dead : ballsToRemove) {
             if (dead.getTrailGroup() != null && dead.getTrailGroup().getParent() != null) {
                 root.getChildren().remove(dead.getTrailGroup());
             }
@@ -446,7 +445,7 @@ public class GameEngine {
             balls.remove(dead);
         }
 
-        if (!toRemove.isEmpty() && balls.isEmpty()) {
+        if (!ballsToRemove.isEmpty() && balls.isEmpty()) {
             if (isOneVOneMode && oneVOneScreen != null) {
                 if (lastScoredPlayer == 1) {
                     oneVOneScreen.decreasePlayer1Lives();
@@ -493,7 +492,9 @@ public class GameEngine {
         }
 
         if (!isOneVOneMode && !isBotMode) {
-            for (Powerup p : new ArrayList<>(levelManager.getPowerups())) {
+            cachedPowerups.clear();
+            cachedPowerups.addAll(levelManager.getPowerups());
+            for (Powerup p : cachedPowerups) {
                 if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
                     p.activate(this, paddle);
                     if (p.getNode() != null && p.getNode().getParent() != null) {
@@ -504,8 +505,6 @@ public class GameEngine {
             }
         }
     }
-
-    // ==================== Reset Methods ====================
 
     private void resetBallAndPaddle() {
         for (Ball b : balls) {
@@ -565,8 +564,8 @@ public class GameEngine {
         paddle2.applySkin("red");
 
         Ball ball = lastScoredPlayer == 1
-            ? new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED)
-            : new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
+                ? new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED)
+                : new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
 
         ball.setStuck(true);
 
@@ -605,8 +604,8 @@ public class GameEngine {
         paddle2.applySkin("red");
 
         Ball ball = lastScoredPlayer == 1
-            ? new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED)
-            : new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
+                ? new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED)
+                : new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
 
         ball.setStuck(true);
 
@@ -629,8 +628,6 @@ public class GameEngine {
 
         changeGameState(GameState.START);
     }
-
-    // ==================== State Management ====================
 
     public void changeGameState(GameConfig.GameState newState) {
         this.gameState = newState;
@@ -679,8 +676,6 @@ public class GameEngine {
         }
     }
 
-    // ==================== Cleanup ====================
-
     public void cleanupGameObjects() {
         if (paddle != null && paddle.getNode().getParent() != null) {
             root.getChildren().remove(paddle.getNode());
@@ -690,7 +685,9 @@ public class GameEngine {
             root.getChildren().remove(paddle2.getNode());
         }
 
-        for (Ball b : new ArrayList<>(balls)) {
+        ballsToRemove.clear();
+        ballsToRemove.addAll(balls);
+        for (Ball b : ballsToRemove) {
             if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
                 root.getChildren().remove(b.getTrailGroup());
             }
@@ -707,7 +704,9 @@ public class GameEngine {
             indicator = null;
         }
 
-        for (Brick brick : new ArrayList<>(levelManager.getBricks())) {
+        cachedBricks.clear();
+        cachedBricks.addAll(levelManager.getBricks());
+        for (Brick brick : cachedBricks) {
             levelManager.removeBrick(brick, root);
         }
 
@@ -738,7 +737,6 @@ public class GameEngine {
     }
 
     public void hideAllGameObjects() {
-        // Ẩn paddle
         if (paddle != null) {
             paddle.getNode().setVisible(false);
         }
@@ -746,18 +744,14 @@ public class GameEngine {
             paddle2.getNode().setVisible(false);
         }
 
-        // Ẩn tất cả balls
         for (Ball ball : balls) {
             ball.getNode().setVisible(false);
         }
 
-        // Ẩn tất cả bricks
         for (Brick brick : levelManager.getBricks()) {
             brick.getNode().setVisible(false);
         }
-
     }
-    // ==================== Powerup Methods (called by Powerup.activate) ====================
 
     public void spawnExtraBall() {
         if (balls.isEmpty() || balls.size() > 300) return;
@@ -808,8 +802,6 @@ public class GameEngine {
         oneshotTimer.playFromStart();
     }
 
-    // ==================== Debug Methods ====================
-
     public void spawnDebugBall() {
         Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, BALL_RADIUS, BALL_SPEED);
         if (!balls.isEmpty()) {
@@ -834,8 +826,6 @@ public class GameEngine {
             changeGameState(GameState.LEVEL_CLEARED);
         }
     }
-
-    // ==================== Skin Management ====================
 
     private String skinIdToBallResource(String skinId) {
         if (skinId == null) return "/imageball/default.png";
@@ -862,8 +852,6 @@ public class GameEngine {
         }
     }
 
-    // ==================== Input Handlers ====================
-
     public void handleIndicatorRotateLeft() {
         if (indicator != null) {
             indicator.rotateLeft(0.05);
@@ -875,8 +863,6 @@ public class GameEngine {
             indicator.rotateRight(0.05);
         }
     }
-
-    // ==================== Getters ====================
 
     public GameConfig.GameState getGameState() {
         return gameState;
@@ -915,8 +901,6 @@ public class GameEngine {
         return 0;
     }
 
-    // ==================== Input Setters ====================
-
     public void setOnGameOver(Runnable onGameOver) {
         this.onGameOver = onGameOver;
     }
@@ -937,4 +921,3 @@ public class GameEngine {
         this.isMovingRight2 = moving;
     }
 }
-
