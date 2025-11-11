@@ -28,48 +28,62 @@ import java.util.List;
 import static gameconfig.GameConfig.*;
 
 public class GameEngine {
+    // ========== HIỆU ỨNG CHUYỂN CẢNH ==========
+    // Overlay màu đen để fade in/out khi chuyển màn hình
     private javafx.scene.shape.Rectangle transitionOverlay;
 
-    private final Pane root;
+    // ========== THÀNH PHẦN CHÍNH ==========
+    private final Pane root; // Container chứa tất cả UI và game objects
     private GameConfig.GameState gameState = GameConfig.GameState.MENU;
     private GameConfig.GameState previousGameState = GameConfig.GameState.MENU;
 
-    private final LevelManager levelManager;
-    private final CollisionManager collisionManager;
-    private final ScoreManager scoreManager;
-    private final CoinManager coinManager;
-    private final SoundManager soundManager;
+    // ========== CÁC MANAGER (Quản lý từng phần riêng) ==========
+    private final LevelManager levelManager;           // Quản lý level (load gạch từ file)
+    private final CollisionManager collisionManager;   // Xử lý va chạm
+    private final ScoreManager scoreManager;           // Quản lý điểm số
+    private final CoinManager coinManager;             // Quản lý xu và shop
+    private final SoundManager soundManager;           // Quản lý âm thanh
 
-    private Paddle paddle;
-    private Paddle paddle2;
-    private final List<Ball> balls = new ArrayList<>();
-    private Indicator indicator;
-    private AIManager aiManager;
+    // ========== GAME OBJECTS (Đối tượng trong game) ==========
+    private Paddle paddle;                             // Thanh đỡ người chơi 1
+    private Paddle paddle2;                            // Thanh đỡ người chơi 2 (chế độ 1v1)
+    private final List<Ball> balls = new ArrayList<>(); // Danh sách bóng (có thể có nhiều bóng)
+    private Indicator indicator;                       // Mũi tên chỉ hướng bắn bóng
+    private AIManager aiManager;                       // AI điều khiển bot
 
-    private boolean isBotMode = false;
-    private boolean isOneVOneMode = false;
-    private int lastScoredPlayer = 1;
+    // ========== CÁC CỜ CHẾ ĐỘ CHƠI ==========
+    private boolean isBotMode = false;                 // Có đang chơi với bot không?
+    private boolean isOneVOneMode = false;             // Có đang chơi 1v1 không?
+    private int lastScoredPlayer = 1;                  // Người chơi nào ghi điểm cuối (1v1)
 
-    private boolean isMovingLeft = false;
-    private boolean isMovingRight = false;
-    private boolean isMovingLeft2 = false;
-    private boolean isMovingRight2 = false;
+    // ========== XỬ LÝ DI CHUYỂN ==========
+    // Các cờ để xử lý input (phím bấm)
+    private boolean isMovingLeft = false;              // Player 1 đang di chuyển trái
+    private boolean isMovingRight = false;             // Player 1 đang di chuyển phải
+    private boolean isMovingLeft2 = false;             // Player 2 đang di chuyển trái
+    private boolean isMovingRight2 = false;            // Player 2 đang di chuyển phải
 
+    // ========== CÁC MÀN HÌNH UI ==========
     private SingleplayerScreen singleplayerScreen;
     private BotScreen botScreen;
     private OneVOneScreen oneVOneScreen;
     private EndlessScreen endlessScreen;
 
-    private PauseTransition oneshotTimer;
-    private AnimationTimer gameLoop;
+    // ========== TIMER & ANIMATION ==========
+    private PauseTransition oneshotTimer;              // Đếm thời gian cho power-up "oneshot"
+    private AnimationTimer gameLoop;                   // Vòng lặp game chính
 
-    private Runnable onGameOver;
+    private Runnable onGameOver;                       // Callback khi game over
 
+    // ========== TỐI ƯU HÓA PERFORMANCE ==========
+    // Danh sách tạm để xóa objects (tránh ConcurrentModificationException)
     private final List<Ball> ballsToRemove = new ArrayList<>();
     private final List<Brick> cachedBricks = new ArrayList<>();
     private final List<Powerup> cachedPowerups = new ArrayList<>();
-    private static final double FIXED_TIME_STEP = 1.0 / 240.0;
-    private static final long FRAME_TIME_NANOS = 16_666_667L; // ~60 FPS
+
+    // ========== CẤU HÌNH GAME LOOP ==========
+    private static final double FIXED_TIME_STEP = 1.0 / 240.0;  // Cập nhật logic 240 lần/giây
+    private static final long FRAME_TIME_NANOS = 16_666_667L;   // Vẽ màn hình ~60 FPS
 
     public GameEngine(Pane root) {
         this.root = root;
@@ -83,6 +97,9 @@ public class GameEngine {
         collisionManager.setScoreManager(scoreManager);
     }
 
+    /**
+     * Tạo overlay màu đen để làm hiệu ứng fade khi chuyển màn hình
+     */
     private void createTransitionOverlay() {
         if (transitionOverlay == null) {
             transitionOverlay = new javafx.scene.shape.Rectangle(GAME_WIDTH, GAME_HEIGHT);
@@ -95,13 +112,13 @@ public class GameEngine {
     public void initGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastUpdate = 0;
-            // ========== THÊM: Frame skip for optimization ==========
+            // Frame counter để tối ưu (có thể skip collision check 1 số frame)
             private int frameCount = 0;
-            private static final int UPDATE_INTERVAL = 1; // Update every frame (can increase to 2 for more performance)
+            private static final int UPDATE_INTERVAL = 1; // Kiểm tra va chạm mỗi frame
 
             @Override
             public void handle(long now) {
-                // Frame rate limiting
+                // GIỚI HẠN FRAME RATE: Nếu chưa đủ 16.6ms thì bỏ qua
                 if (now - lastUpdate < FRAME_TIME_NANOS) {
                     return;
                 }
@@ -115,16 +132,16 @@ public class GameEngine {
 
                     frameCount++;
 
-                    // ========== OPTIMIZATION: Skip some collision checks on alternate frames ==========
+                    // Có thể skip collision check để tăng hiệu suất
                     boolean doFullUpdate = (frameCount % UPDATE_INTERVAL == 0);
 
                     // Always do input and game update
                     for (int i = 0; i < 2; i++) {
-                        processInput(FIXED_TIME_STEP);
-                        updateGame(FIXED_TIME_STEP);
+                        processInput(FIXED_TIME_STEP);  // Xử lý phím bấm
+                        updateGame(FIXED_TIME_STEP);    // Cập nhật vị trí objects
                     }
 
-                    // Collision detection - can be slightly delayed
+                    // KIỂM TRA VA CHẠM (có thể giảm tần suất để tối ưu)
                     if (gameState == GameConfig.GameState.PLAYING && doFullUpdate) {
                         handleCollisions();
                     }
@@ -148,21 +165,35 @@ public class GameEngine {
     }
 
 
+    /**
+     * KHỞI TẠO CÁC GAME OBJECTS KHI BẮT ĐẦU GAME MỚI
+     *
+     * TẠO:
+     * - Paddle (thanh đỡ) ở giữa dưới màn hình
+     * - Ball (bóng) trên paddle
+     * - Indicator (mũi tên chỉ hướng)
+     * - Áp dụng skin đã mua từ shop
+     */
     public void initializeGameElements() {
+        // Tạo PADDLE ở giữa dưới màn hình
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
         double paddleY = GAME_HEIGHT - 50;
         paddle = new Paddle(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle.updateDebugWidth(DEBUG_PADDLE_LENGTH_MULTIPLIER);
 
+        // Tạo BÓNG trên paddle
         double ballX = GAME_WIDTH / 2;
         double ballY = GAME_HEIGHT - 35;
         Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
 
+        // ÁP DỤNG SKIN từ shop (nếu đã mua)
         if (coinManager != null) {
             String pSkin = coinManager.getSelectedPaddleSkin();
             String bSkin = coinManager.getSelectedBallSkin();
             if (pSkin != null) paddle.applySkin(pSkin);
             if (bSkin != null) ball.applySkin(skinIdToBallResource(bSkin));
+
+            // Nếu có power-up oneshot, đổi skin bóng
             if (collisionManager != null && collisionManager.isOneshotActive()) {
                 ball.storeSkin();
                 ball.applyOneshotSkin();
@@ -170,10 +201,12 @@ public class GameEngine {
         }
         balls.add(ball);
 
+        // Tạo MŨI TÊN CHỈ HƯỚNG bắn
         indicator = new Indicator(ballX, ballY);
         indicator.pointAtBall(ball);
         indicator.setRotation(-90);
 
+        // Thêm tất cả vào màn hình
         root.getChildren().addAll(paddle.getNode(), ball.getTrailGroup(),
                 ball.getNode(), indicator.getNode());
     }
@@ -202,6 +235,7 @@ public class GameEngine {
         isOneVOneMode = false;
         lastScoredPlayer = 1;
 
+        // Tạo paddle cho người chơi và bot
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
         paddle = new Paddle(paddleX, GAME_HEIGHT - 50, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle2 = new Paddle(paddleX, 30, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
@@ -210,26 +244,32 @@ public class GameEngine {
         paddle.applySkin("blue");
         paddle2.applySkin("red");
 
+        // Khởi tạo AI cho bot
         aiManager = new AIManager(paddle2);
 
+        // Tạo bóng bắt đầu trên paddle
         double ballX = paddle.getX() + paddle.getWidth() / 2;
         double ballY = paddle.getY() - 8;
         Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
         ball.setStuck(true);
 
+        // Áp dụng skin bóng từ shop (nếu có)
         if (coinManager != null) {
             String bSkin = coinManager.getSelectedBallSkin();
             if (bSkin != null) ball.applySkin(skinIdToBallResource(bSkin));
         }
         balls.add(ball);
 
+        // Tạo mũi tên chỉ hướng cho bóng
         indicator = new Indicator(ballX, ballY);
         indicator.setTopPaddle(false);
         indicator.pointAtBall(ball);
 
+        // Thêm tất cả vào màn hình
         root.getChildren().addAll(paddle.getNode(), paddle2.getNode(),
                 ball.getTrailGroup(), ball.getNode(), indicator.getNode());
 
+        // Khởi tạo màn hình bot
         botScreen = new BotScreen(root);
         botScreen.updatePlayerLives(3);
         botScreen.updateBotLives(3);
@@ -238,6 +278,11 @@ public class GameEngine {
         changeGameState(GameState.START);
     }
 
+    /**
+     * BẮT ĐẦU CHẾ ĐỘ 1 VỚI 1
+     * - 2 người chơi cạnh tranh
+     * - Phá hết gạch của đối phương trước để thắng
+     */
     public void startOneVOneGame() {
         cleanupGameObjects();
         soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
@@ -246,6 +291,7 @@ public class GameEngine {
         isBotMode = false;
         lastScoredPlayer = 1;
 
+        // Tạo paddle cho 2 người chơi
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
         paddle = new Paddle(paddleX, GAME_HEIGHT - 50, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
         paddle2 = new Paddle(paddleX, 30, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_SPEED);
@@ -254,24 +300,29 @@ public class GameEngine {
         paddle.applySkin("blue");
         paddle2.applySkin("red");
 
+        // Tạo bóng bắt đầu trên paddle
         double ballX = paddle.getX() + paddle.getWidth() / 2;
         double ballY = paddle.getY() - 8;
         Ball ball = new Ball(ballX, ballY, BALL_RADIUS, BALL_SPEED);
         ball.setStuck(true);
 
+        // Áp dụng skin bóng từ shop (nếu có)
         if (coinManager != null) {
             String bSkin = coinManager.getSelectedBallSkin();
             if (bSkin != null) ball.applySkin(skinIdToBallResource(bSkin));
         }
         balls.add(ball);
 
+        // Tạo mũi tên chỉ hướng cho bóng
         indicator = new Indicator(ballX, ballY);
         indicator.setTopPaddle(false);
         indicator.pointAtBall(ball);
 
+        // Thêm tất cả vào màn hình
         root.getChildren().addAll(paddle.getNode(), paddle2.getNode(),
                 ball.getTrailGroup(), ball.getNode(), indicator.getNode());
 
+        // Khởi tạo màn hình 1v1
         oneVOneScreen = new OneVOneScreen(root);
         oneVOneScreen.updatePlayer1Lives(3);
         oneVOneScreen.updatePlayer2Lives(3);
@@ -280,6 +331,11 @@ public class GameEngine {
         changeGameState(GameState.START);
     }
 
+    /**
+     * BẮT ĐẦU CHẾ ĐỘ ENDLESS
+     * - Chơi không giới hạn level
+     * - Mỗi level có độ khó tăng dần
+     */
     public void startEndlessGame() {
         cleanupGameObjects();
         soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
@@ -297,6 +353,11 @@ public class GameEngine {
         changeGameState(GameState.START);
     }
 
+    /**
+     * BẮT ĐẦU GAME
+     * - Thả bóng ra khỏi paddle
+     * - Đổi trạng thái game thành PLAYING
+     */
     public void startGame() {
         double[] launchDirection = null;
         if (indicator != null) {
@@ -312,6 +373,7 @@ public class GameEngine {
             }
         }
 
+        // Xóa mũi tên chỉ hướng sau khi bắn
         if (indicator != null) {
             if (indicator.getNode().getParent() != null) {
                 root.getChildren().remove(indicator.getNode());
@@ -322,17 +384,30 @@ public class GameEngine {
         changeGameState(GameConfig.GameState.PLAYING);
     }
 
+    /**
+     * TẠM DỪNG GAME
+     * - Đổi trạng thái game thành PAUSED
+     * - Dừng game loop
+     */
     public void pauseGame() {
         previousGameState = gameState;
         gameState = GameState.PAUSED;
         gameLoop.stop();
     }
 
+    /**
+     * TIẾP TỤC GAME SAU KHI TẠM DỪNG
+     */
     public void resumeGame() {
         gameState = previousGameState;
         gameLoop.start();
     }
 
+    /**
+     * CHƠI LẠI LEVEL HIỆN TẠI
+     * - Xóa tất cả objects
+     * - Tạo lại từ đầu
+     */
     public void retryLevel() {
         changeGameState(GameState.MENU);
         cleanupGameObjects();
@@ -347,6 +422,11 @@ public class GameEngine {
         changeGameState(GameState.START);
     }
 
+    /**
+     * BẮT ĐẦU GAME MỚI
+     * - Xóa tất cả objects
+     * - Đặt lại level về 1
+     */
     public void startNewGame() {
         changeGameState(GameState.MENU);
         cleanupGameObjects();
@@ -362,6 +442,11 @@ public class GameEngine {
         changeGameState(GameState.START);
     }
 
+    /**
+     * XỬ LÝ INPUT TỪ BÀN PHÍM
+     * - Di chuyển paddle trái/phải
+     * - Chỉ định hướng bắn cho bóng
+     */
     private void processInput(double tpf) {
         if (isBotMode && aiManager != null) {
             if (gameState == GameState.START) {
@@ -386,6 +471,11 @@ public class GameEngine {
         }
     }
 
+    /**
+     * CẬP NHẬT TRẠNG THÁI CÁC GAME OBJECTS
+     * - Cập nhật vị trí bóng, paddle
+     * - Kiểm tra và xử lý va chạm với brick, paddle, tường
+     */
     private void updateGame(double tpf) {
         int ballCount = balls.size();
         for (int i = 0; i < ballCount; i++) {
@@ -397,11 +487,13 @@ public class GameEngine {
             }
         }
 
+        // Cập nhật vị trí mũi tên chỉ hướng theo bóng
         if (indicator != null && ballCount > 0 && gameState == GameState.START) {
             Ball firstBall = balls.get(0);
             indicator.updatePosition(firstBall.getX() + firstBall.getRadius(), firstBall.getY());
         }
 
+        // Cập nhật trạng thái powerups
         cachedPowerups.clear();
         cachedPowerups.addAll(levelManager.getPowerups());
         for (Powerup p : cachedPowerups) {
@@ -409,14 +501,21 @@ public class GameEngine {
         }
     }
 
+    /**
+     * KIỂM TRA VÀ XỬ LÝ CÁC VA CHẠM TRONG GAME
+     * - Bóng va chạm với tường, paddle, brick
+     * - Xử lý ghi điểm, mất mạng, kết thúc game
+     */
     private void handleCollisions() {
         if (gameState != GameConfig.GameState.PLAYING) return;
 
         List<Ball> toRemove = new ArrayList<>();
 
+        // Kiểm tra va chạm cho từng bóng
         for (Ball b : new ArrayList<>(balls)) {
             GameConfig.WallSideType wallHit = collisionManager.checkWallCollision(b, GAME_WIDTH, GAME_HEIGHT);
 
+            // Xử lý va chạm với tường
             if (isOneVOneMode || isBotMode) {
                 if (wallHit == GameConfig.WallSideType.BOTTOM_HIT) {
                     toRemove.add(b);
@@ -436,16 +535,19 @@ public class GameEngine {
                 }
             }
 
+            // Kiểm tra va chạm giữa paddle và bóng
             if (collisionManager.checkPaddleBallCollision(paddle, b)) {
                 collisionManager.handlePaddleBallCollision(paddle, b);
             }
 
+            // Kiểm tra va chạm giữa paddle2 (nếu có) và bóng
             if ((isOneVOneMode || isBotMode) && paddle2 != null) {
                 if (collisionManager.checkPaddleBallCollision(paddle2, b)) {
                     collisionManager.handlePaddleBallCollision(paddle2, b);
                 }
             }
 
+            // Kiểm tra va chạm giữa bóng và các brick
             List<Brick> bricks = levelManager.getBricks();
             Brick hitBrick = collisionManager.checkBrickBallCollision(b, bricks);
             if (hitBrick != null) {
@@ -460,6 +562,7 @@ public class GameEngine {
                     collisionManager.handleBrickBallCollision(b, hitBrick, singleplayerScreen);
                 }
 
+                // Kiểm tra hoàn thành level (chỉ với single player)
                 if (!isOneVOneMode && !isBotMode && levelManager.isLevelComplete()) {
                     if (endlessScreen != null) {
                         levelManager.generateEndlessLevel(root);
@@ -474,7 +577,7 @@ public class GameEngine {
             }
         }
 
-        // Remove dead balls
+        // Xóa các bóng đã chết
         for (Ball dead : toRemove) {
             // Hiệu ứng mờ dần cho trail
             if (dead.getTrailGroup() != null) {
@@ -507,6 +610,7 @@ public class GameEngine {
             balls.remove(dead);
         }
 
+        // Kiểm tra kết thúc game nếu không còn bóng nào
         if (!toRemove.isEmpty() && balls.isEmpty()) {
             if (isOneVOneMode && oneVOneScreen != null) {
                 if (lastScoredPlayer == 1) {
@@ -553,6 +657,7 @@ public class GameEngine {
             }
         }
 
+        // Kiểm tra va chạm giữa paddle và powerup
         if (!isOneVOneMode && !isBotMode) {
             for (Powerup p : new ArrayList<>(levelManager.getPowerups())) {
                 if (collisionManager.checkPaddlePowerupCollision(paddle, p)) {
@@ -567,6 +672,12 @@ public class GameEngine {
     }
 
 
+    /**
+     * ĐẶT LẠI TRẠNG THÁI BÓNG VÀ PADDLE VỀ BAN ĐẦU
+     * - Xóa tất cả bóng và trail
+     * - Tạo bóng mới dính paddle
+     * - Đặt lại paddle về giữa màn hình
+     */
     private void resetBallAndPaddle() {
         // ========== THÊM: Batch removal ==========
         List<javafx.scene.Node> nodesToRemove = new ArrayList<>();
@@ -634,6 +745,10 @@ public class GameEngine {
         }
     }
 
+    /**
+     * ĐẶT LẠI TRẠNG THÁI BÓNG VÀ PADDLE CHO CHẾ ĐỘ 1V1
+     * - Tương tự như resetBallAndPaddle(), nhưng dành riêng cho chế độ 1v1
+     */
     private void resetBallAndPaddleOneVOne() {
         List<javafx.scene.Node> nodesToRemove = new ArrayList<>();
 
@@ -700,6 +815,10 @@ public class GameEngine {
         }
     }
 
+    /**
+     * ĐẶT LẠI TRẠNG THÁI BÓNG VÀ PADDLE CHO CHẾ ĐỘ ĐÁ VỚI BOT
+     * - Tương tự như resetBallAndPaddle(), nhưng dành riêng cho chế độ đá với bot
+     */
     private void resetBallAndPaddleBot() {
         List<javafx.scene.Node> nodesToRemove = new ArrayList<>();
 
@@ -766,6 +885,11 @@ public class GameEngine {
         }
     }
 
+    /**
+     * ĐỔI TRẠNG THÁI GAME
+     * - Thay đổi giữa các trạng thái MENU, PLAYING, PAUSED, GAME_OVER
+     * - Dừng hoặc bắt đầu game loop tương ứng
+     */
     public void changeGameState(GameConfig.GameState newState) {
         this.gameState = newState;
 
@@ -800,6 +924,11 @@ public class GameEngine {
         }
     }
 
+    /**
+     * XỬ LÝ KHI HOÀN THÀNH LEVEL
+     * - Tăng level hiện tại
+     * - Tải level mới (hoặc chuyển sang chế độ endless nếu đã hết level)
+     */
     private void handleLevelCleared() {
         // Stop game loop
         if (gameLoop != null) {
@@ -906,6 +1035,12 @@ public class GameEngine {
         root.getChildren().removeAll(nodesToRemove);
     }
 
+    /**
+     * DỌN DẸP TẤT CẢ CÁC GAME OBJECTS
+     * - Dừng game loop
+     * - Xóa tất cả objects khỏi màn hình
+     * - Giải phóng bộ nhớ
+     */
     public void cleanupGameObjects() {
         // ========== THÊM: Stop game loop first ==========
         if (gameLoop != null) {
@@ -1009,6 +1144,10 @@ public class GameEngine {
         System.gc();
     }
 
+    /**
+     * ẨN TẤT CẢ CÁC GAME OBJECTS
+     * - Dùng khi chuyển sang màn hình khác (như menu)
+     */
     public void hideAllGameObjects() {
         if (paddle != null) {
             paddle.getNode().setVisible(false);
@@ -1026,6 +1165,11 @@ public class GameEngine {
         }
     }
 
+    /**
+     * TẠO BÓNG PHỤ
+     * - Tạo thêm bóng khi có power-up hoặc theo cơ chế nào đó
+     * - Tối đa 300 bóng cùng lúc
+     */
     public void spawnExtraBall() {
         if (balls.isEmpty() || balls.size() > 300) return;
 
@@ -1051,6 +1195,11 @@ public class GameEngine {
         }
     }
 
+    /**
+     * KÍCH HOẠT POWER-UP ONESHOT
+     * - Thay đổi skin bóng và paddle trong 7.5 giây
+     * - Tăng sức mạnh cho người chơi
+     */
     public void enableOneshot() {
         collisionManager.setOneshotActive(true);
         for (Ball b : balls) {
@@ -1075,6 +1224,11 @@ public class GameEngine {
         oneshotTimer.playFromStart();
     }
 
+    /**
+     * TẠO BÓNG DEBUG
+     * - Tạo bóng ở giữa màn hình để kiểm tra
+     * - Áp dụng skin giống bóng hiện tại (nếu có)
+     */
     public void spawnDebugBall() {
         Ball ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT - 35, BALL_RADIUS, BALL_SPEED);
         if (!balls.isEmpty()) {
@@ -1093,6 +1247,10 @@ public class GameEngine {
         root.getChildren().addAll(ball.getTrailGroup(), ball.getNode());
     }
 
+    /**
+     * XÓA TẤT CẢ CÁC GẠCH TRÊN MÀN HÌNH
+     * - Dùng trong chế độ endless để xóa gạch cũ và tạo gạch mới
+     */
     public void clearAllBricks() {
         levelManager.clearAllBricks(root);
         if (levelManager.isLevelComplete()) {
@@ -1100,6 +1258,10 @@ public class GameEngine {
         }
     }
 
+    /**
+     * CHUYỂN ĐỔI ID SKIN SANG ĐƯỜNG DẪN TỆP HÌNH ẢNH
+     * - Dùng để lấy đường dẫn tệp hình ảnh tương ứng với skin ID
+     */
     private String skinIdToBallResource(String skinId) {
         if (skinId == null) return "/imageball/default.png";
         return switch (skinId) {
@@ -1110,12 +1272,20 @@ public class GameEngine {
         };
     }
 
+    /**
+     * ÁP DỤNG SKIN CHO PADDLE
+     * - Đổi skin paddle cho người chơi
+     */
     public void applyPaddleSkin(String skinId) {
         if (skinId == null) return;
         if (coinManager != null) coinManager.setSelectedPaddleSkin(skinId);
         if (paddle != null) paddle.applySkin(skinId);
     }
 
+    /**
+     * ÁP DỤNG SKIN CHO BÓNG
+     * - Đổi skin cho tất cả các bóng hiện có
+     */
     public void applyBallSkin(String skinId) {
         if (skinId == null) return;
         if (coinManager != null) coinManager.setSelectedBallSkin(skinId);
@@ -1125,12 +1295,18 @@ public class GameEngine {
         }
     }
 
+    /**
+     * XỬ LÝ XOAY MŨI TÊN CHỈ HƯỚNG SANG TRÁI
+     */
     public void handleIndicatorRotateLeft() {
         if (indicator != null) {
             indicator.rotateLeft(0.05);
         }
     }
 
+    /**
+     * XỬ LÝ XOAY MŨI TÊN CHỈ HƯỚNG SANG PHẢI
+     */
     public void handleIndicatorRotateRight() {
         if (indicator != null) {
             indicator.rotateRight(0.05);

@@ -62,7 +62,8 @@ public class GamePlay extends Application {
             this::showGameModeScreen,
             this::showHighScoreScreen,
             this::showSettingScreen,
-            this::showShopScreen
+            this::showShopScreen,
+            this::showTutorialScreen
         );
 
         GameModeScreen gameModeScreen = new GameModeScreen(
@@ -152,6 +153,11 @@ public class GamePlay extends Application {
 
     private void showShopScreen() {
         screenManager.showScreen(GameState.SHOP);
+    }
+
+    private void showTutorialScreen() {
+        // TODO: Implement tutorial screen logic
+        System.out.println("Tutorial screen clicked - Implementation pending");
     }
 
 

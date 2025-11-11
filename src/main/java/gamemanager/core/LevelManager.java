@@ -45,6 +45,15 @@ public class LevelManager {
     public List<Powerup> getPowerups() { return powerups; }
 
     /**
+     * Adds a power-up to the level (used by PowerUpManager)
+     */
+    public void addPowerup(Powerup powerup) {
+        if (powerup != null) {
+            powerups.add(powerup);
+        }
+    }
+
+    /**
      * Clears all bricks and powerups from the game
      */
     private void clearLevel(Pane root) {
