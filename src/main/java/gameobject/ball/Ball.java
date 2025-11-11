@@ -64,11 +64,39 @@ public class Ball extends GameObject {
         return trailGroup;
     }
 
+    // ============ THÊM CÁC METHOD MỚI ============
+
+    /**
+     * Clear all trail positions and nodes
+     * CRITICAL for preventing memory leaks
+     */
+    public void clearTrail() {
+        if (trailGroup != null) {
+            trailGroup.getChildren().clear();
+        }
+        trailPositions.clear();
+        frameSkipCounter = 0;
+    }
+
+    /**
+     * Dispose ball properly - cleanup all resources
+     */
+    public void dispose() {
+        clearTrail();
+        if (trailGroup != null && trailGroup.getParent() != null) {
+            ((javafx.scene.layout.Pane) trailGroup.getParent()).getChildren().remove(trailGroup);
+        }
+        if (node.getParent() != null) {
+            ((javafx.scene.layout.Pane) node.getParent()).getChildren().remove(node);
+        }
+    }
+
+    // ============ SỬA METHOD EXISTING ============
+
     public void setTrailEnabled(boolean enabled) {
         this.trailEnabled = enabled;
         if (!enabled) {
-            trailGroup.getChildren().clear();
-            trailPositions.clear();
+            clearTrail(); // Sử dụng clearTrail() thay vì inline code
         }
     }
 
@@ -141,8 +169,7 @@ public class Ball extends GameObject {
             setX(paddle.getX() + paddle.getWidth() / 2 - radius);
             setY(isTopPaddle ? paddle.getY() + paddle.getHeight() : paddle.getY() - height);
             // Clear trail when stuck
-            trailGroup.getChildren().clear();
-            trailPositions.clear();
+            clearTrail(); // Sử dụng method mới
             frameSkipCounter = 0;
         } else {
             setX(x + vx * tpf * 60);

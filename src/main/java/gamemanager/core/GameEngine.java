@@ -22,6 +22,8 @@ import java.util.List;
 import static gameconfig.GameConfig.*;
 
 public class GameEngine {
+    private javafx.scene.shape.Rectangle transitionOverlay;
+
     private final Pane root;
     private GameConfig.GameState gameState = GameConfig.GameState.MENU;
     private GameConfig.GameState previousGameState = GameConfig.GameState.MENU;
@@ -75,12 +77,25 @@ public class GameEngine {
         collisionManager.setScoreManager(scoreManager);
     }
 
+    private void createTransitionOverlay() {
+        if (transitionOverlay == null) {
+            transitionOverlay = new javafx.scene.shape.Rectangle(GAME_WIDTH, GAME_HEIGHT);
+            transitionOverlay.setFill(javafx.scene.paint.Color.BLACK);
+            transitionOverlay.setOpacity(0);
+            transitionOverlay.setMouseTransparent(true);
+        }
+    }
+
     public void initGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastUpdate = 0;
+            // ========== THÊM: Frame skip for optimization ==========
+            private int frameCount = 0;
+            private static final int UPDATE_INTERVAL = 1; // Update every frame (can increase to 2 for more performance)
 
             @Override
             public void handle(long now) {
+                // Frame rate limiting
                 if (now - lastUpdate < FRAME_TIME_NANOS) {
                     return;
                 }
@@ -88,21 +103,44 @@ public class GameEngine {
                 long elapsed = now - lastUpdate;
                 lastUpdate = now;
 
+                // Only update when playing or starting
                 if (gameState == GameConfig.GameState.PLAYING ||
                         gameState == GameConfig.GameState.START) {
 
+                    frameCount++;
+
+                    // ========== OPTIMIZATION: Skip some collision checks on alternate frames ==========
+                    boolean doFullUpdate = (frameCount % UPDATE_INTERVAL == 0);
+
+                    // Always do input and game update
                     for (int i = 0; i < 2; i++) {
                         processInput(FIXED_TIME_STEP);
                         updateGame(FIXED_TIME_STEP);
-                        if (gameState == GameConfig.GameState.PLAYING) {
-                            handleCollisions();
-                        }
+                    }
+
+                    // Collision detection - can be slightly delayed
+                    if (gameState == GameConfig.GameState.PLAYING && doFullUpdate) {
+                        handleCollisions();
                     }
                 }
             }
         };
         gameLoop.start();
     }
+
+    // ========== THÊM METHOD: Pause game loop during heavy operations ==========
+    public void pauseGameLoopTemporarily() {
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+    }
+
+    public void resumeGameLoop() {
+        if (gameLoop != null) {
+            gameLoop.start();
+        }
+    }
+
 
     public void initializeGameElements() {
         double paddleX = (GAME_WIDTH - PADDLE_WIDTH) / 2;
@@ -422,10 +460,67 @@ public class GameEngine {
 
                 if (!isOneVOneMode && !isBotMode && levelManager.isLevelComplete()) {
                     if (endlessScreen != null) {
-                        levelManager.generateEndlessLevel(root);
-                        resetBallAndPaddle();
-                        int currentEndlessLevel = (endlessScreen.getScore() / 1000) + 1;
-                        endlessScreen.showLevel(currentEndlessLevel);
+                        // ========== THÊM: Smooth transition for endless mode ==========
+
+                        // Stop game loop temporarily
+                        if (gameLoop != null) {
+                            gameLoop.stop();
+                        }
+
+                        createTransitionOverlay();
+                        if (!root.getChildren().contains(transitionOverlay)) {
+                            root.getChildren().add(transitionOverlay);
+                            transitionOverlay.toFront();
+                        }
+
+                        // Quick fade
+                        javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                                javafx.util.Duration.millis(150), transitionOverlay
+                        );
+                        fadeOut.setFromValue(0);
+                        fadeOut.setToValue(0.6);
+
+                        fadeOut.setOnFinished(e -> {
+                            // Cleanup and generate new level
+                            quickCleanupForLevelTransition();
+
+                            // Small delay
+                            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
+                                    javafx.util.Duration.millis(30)
+                            );
+
+                            pause.setOnFinished(p -> {
+                                // Generate and load new level
+                                levelManager.generateEndlessLevel(root);
+                                resetBallAndPaddle();
+
+                                int currentEndlessLevel = (endlessScreen.getScore() / 1000) + 1;
+                                endlessScreen.showLevel(currentEndlessLevel);
+
+                                // Fade back in
+                                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                                        javafx.util.Duration.millis(150), transitionOverlay
+                                );
+                                fadeIn.setFromValue(0.6);
+                                fadeIn.setToValue(0);
+
+                                fadeIn.setOnFinished(f -> {
+                                    root.getChildren().remove(transitionOverlay);
+
+                                    // Resume game loop
+                                    if (gameLoop != null) {
+                                        gameLoop.start();
+                                    }
+                                });
+
+                                fadeIn.play();
+                            });
+
+                            pause.play();
+                        });
+
+                        fadeOut.play();
+
                     } else {
                         changeGameState(GameState.LEVEL_CLEARED);
                     }
@@ -507,19 +602,43 @@ public class GameEngine {
     }
 
     private void resetBallAndPaddle() {
+        // ========== THÊM: Batch removal ==========
+        List<javafx.scene.Node> nodesToRemove = new ArrayList<>();
+
+        // Collect all ball-related nodes
         for (Ball b : balls) {
             if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
-                root.getChildren().remove(b.getTrailGroup());
+                nodesToRemove.add(b.getTrailGroup());
             }
-            root.getChildren().remove(b.getNode());
+            if (b.getNode() != null && b.getNode().getParent() != null) {
+                nodesToRemove.add(b.getNode());
+            }
         }
         balls.clear();
 
-        levelManager.clearAllPowerups(root);
+        // Collect powerup nodes
+        for (Powerup p : levelManager.getPowerups()) {
+            if (p.getNode() != null && p.getNode().getParent() != null) {
+                nodesToRemove.add(p.getNode());
+            }
+        }
+        levelManager.getPowerups().clear();
 
+        // Collect indicator node
+        if (indicator != null && indicator.getNode().getParent() != null) {
+            nodesToRemove.add(indicator.getNode());
+        }
+
+        // ========== BATCH REMOVE: Much faster than individual removes ==========
+        root.getChildren().removeAll(nodesToRemove);
+
+        // Reset paddle
         paddle.reset();
 
+        // Create new ball
         Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, BALL_RADIUS, BALL_SPEED);
+
+        // Apply skins
         if (coinManager != null) {
             String pSkin = coinManager.getSelectedPaddleSkin();
             String bSkin = coinManager.getSelectedBallSkin();
@@ -533,16 +652,16 @@ public class GameEngine {
             }
         }
         balls.add(ball);
-        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode());
 
-        if (indicator != null && indicator.getNode().getParent() != null) {
-            root.getChildren().remove(indicator.getNode());
-        }
+        // Create new indicator
         indicator = new Indicator(ball.getX() + ball.getRadius(), ball.getY());
         indicator.pointAtBall(ball);
         indicator.setRotation(-90);
-        root.getChildren().add(indicator.getNode());
 
+        // ========== BATCH ADD: Add all new nodes at once ==========
+        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode(), indicator.getNode());
+
+        // Update game state
         gameState = GameState.START;
         for (Ball b : balls) {
             b.setStuck(true);
@@ -550,83 +669,135 @@ public class GameEngine {
     }
 
     private void resetBallAndPaddleOneVOne() {
+        List<javafx.scene.Node> nodesToRemove = new ArrayList<>();
+
+        // Collect all ball-related nodes
         for (Ball b : balls) {
             if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
-                root.getChildren().remove(b.getTrailGroup());
+                nodesToRemove.add(b.getTrailGroup());
             }
-            root.getChildren().remove(b.getNode());
+            if (b.getNode() != null && b.getNode().getParent() != null) {
+                nodesToRemove.add(b.getNode());
+            }
         }
         balls.clear();
 
+        // Collect powerup nodes
+        for (Powerup p : levelManager.getPowerups()) {
+            if (p.getNode() != null && p.getNode().getParent() != null) {
+                nodesToRemove.add(p.getNode());
+            }
+        }
+        levelManager.getPowerups().clear();
+
+        // Collect indicator node
+        if (indicator != null && indicator.getNode().getParent() != null) {
+            nodesToRemove.add(indicator.getNode());
+        }
+
+        // ========== BATCH REMOVE: Much faster than individual removes ==========
+        root.getChildren().removeAll(nodesToRemove);
+
+        // Reset paddle
         paddle.reset();
-        paddle2.reset();
-        paddle.applySkin("blue");
-        paddle2.applySkin("red");
 
-        Ball ball = lastScoredPlayer == 1
-                ? new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED)
-                : new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
+        // Create new ball
+        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, BALL_RADIUS, BALL_SPEED);
 
-        ball.setStuck(true);
-
+        // Apply skins
         if (coinManager != null) {
+            String pSkin = coinManager.getSelectedPaddleSkin();
             String bSkin = coinManager.getSelectedBallSkin();
+            if (pSkin != null) paddle.applySkin(pSkin);
             if (bSkin != null) {
                 ball.applySkin(skinIdToBallResource(bSkin));
+                if (collisionManager != null && collisionManager.isOneshotActive()) {
+                    ball.storeSkin();
+                    ball.applyOneshotSkin();
+                }
             }
         }
         balls.add(ball);
-        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode());
 
-        if (indicator != null && indicator.getNode().getParent() != null) {
-            root.getChildren().remove(indicator.getNode());
-        }
+        // Create new indicator
         indicator = new Indicator(ball.getX() + ball.getRadius(), ball.getY());
-        indicator.setTopPaddle(lastScoredPlayer == 2);
         indicator.pointAtBall(ball);
-        root.getChildren().add(indicator.getNode());
+        indicator.setRotation(-90);
 
-        changeGameState(GameState.START);
+        // ========== BATCH ADD: Add all new nodes at once ==========
+        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode(), indicator.getNode());
+
+        // Update game state
+        gameState = GameState.START;
+        for (Ball b : balls) {
+            b.setStuck(true);
+        }
     }
 
     private void resetBallAndPaddleBot() {
+        List<javafx.scene.Node> nodesToRemove = new ArrayList<>();
+
+        // Collect all ball-related nodes
         for (Ball b : balls) {
             if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
-                root.getChildren().remove(b.getTrailGroup());
+                nodesToRemove.add(b.getTrailGroup());
             }
-            root.getChildren().remove(b.getNode());
+            if (b.getNode() != null && b.getNode().getParent() != null) {
+                nodesToRemove.add(b.getNode());
+            }
         }
         balls.clear();
 
+        // Collect powerup nodes
+        for (Powerup p : levelManager.getPowerups()) {
+            if (p.getNode() != null && p.getNode().getParent() != null) {
+                nodesToRemove.add(p.getNode());
+            }
+        }
+        levelManager.getPowerups().clear();
+
+        // Collect indicator node
+        if (indicator != null && indicator.getNode().getParent() != null) {
+            nodesToRemove.add(indicator.getNode());
+        }
+
+        // ========== BATCH REMOVE: Much faster than individual removes ==========
+        root.getChildren().removeAll(nodesToRemove);
+
+        // Reset paddle
         paddle.reset();
-        paddle2.reset();
-        paddle.applySkin("blue");
-        paddle2.applySkin("red");
 
-        Ball ball = lastScoredPlayer == 1
-                ? new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - BALL_RADIUS * 2 - 2, BALL_RADIUS, BALL_SPEED)
-                : new Ball(paddle2.getX() + paddle2.getWidth() / 2, paddle2.getY() + paddle2.getHeight() + 2, BALL_RADIUS, BALL_SPEED);
+        // Create new ball
+        Ball ball = new Ball(paddle.getX() + paddle.getWidth() / 2, paddle.getY() - 8, BALL_RADIUS, BALL_SPEED);
 
-        ball.setStuck(true);
-
+        // Apply skins
         if (coinManager != null) {
+            String pSkin = coinManager.getSelectedPaddleSkin();
             String bSkin = coinManager.getSelectedBallSkin();
+            if (pSkin != null) paddle.applySkin(pSkin);
             if (bSkin != null) {
                 ball.applySkin(skinIdToBallResource(bSkin));
+                if (collisionManager != null && collisionManager.isOneshotActive()) {
+                    ball.storeSkin();
+                    ball.applyOneshotSkin();
+                }
             }
         }
         balls.add(ball);
-        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode());
 
-        if (indicator != null && indicator.getNode().getParent() != null) {
-            root.getChildren().remove(indicator.getNode());
-        }
+        // Create new indicator
         indicator = new Indicator(ball.getX() + ball.getRadius(), ball.getY());
-        indicator.setTopPaddle(lastScoredPlayer == 2);
         indicator.pointAtBall(ball);
-        root.getChildren().add(indicator.getNode());
+        indicator.setRotation(-90);
 
-        changeGameState(GameState.START);
+        // ========== BATCH ADD: Add all new nodes at once ==========
+        root.getChildren().addAll(ball.getTrailGroup(), ball.getNode(), indicator.getNode());
+
+        // Update game state
+        gameState = GameState.START;
+        for (Ball b : balls) {
+            b.setStuck(true);
+        }
     }
 
     public void changeGameState(GameConfig.GameState newState) {
@@ -664,39 +835,158 @@ public class GameEngine {
     }
 
     private void handleLevelCleared() {
+        // Stop game loop
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+
         levelManager.currentLevel++;
+
         if (levelManager.currentLevel <= levelManager.maxLevel) {
-            resetBallAndPaddle();
-            levelManager.loadLevel(levelManager.currentLevel, root);
-            if (singleplayerScreen != null) {
-                singleplayerScreen.showLevel(levelManager.currentLevel);
+            // Create smooth fade transition
+            createTransitionOverlay();
+
+            if (!root.getChildren().contains(transitionOverlay)) {
+                root.getChildren().add(transitionOverlay);
+                transitionOverlay.toFront();
             }
+
+            // Fade to black
+            javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                    javafx.util.Duration.millis(200), transitionOverlay
+            );
+            fadeOut.setFromValue(0);
+            fadeOut.setToValue(0.8);
+
+            fadeOut.setOnFinished(e -> {
+                // Quick cleanup during fade
+                quickCleanupForLevelTransition();
+
+                // Small pause for cleanup to complete
+                javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
+                        javafx.util.Duration.millis(50)
+                );
+
+                pause.setOnFinished(p -> {
+                    // Load new level
+                    levelManager.loadLevel(levelManager.currentLevel, root);
+                    resetBallAndPaddle();
+
+                    if (singleplayerScreen != null) {
+                        singleplayerScreen.showLevel(levelManager.currentLevel);
+                    }
+
+                    // Fade from black
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(200), transitionOverlay
+                    );
+                    fadeIn.setFromValue(0.8);
+                    fadeIn.setToValue(0);
+
+                    fadeIn.setOnFinished(f -> {
+                        root.getChildren().remove(transitionOverlay);
+
+                        // Resume game loop
+                        if (gameLoop != null) {
+                            gameLoop.start();
+                        }
+                    });
+
+                    fadeIn.play();
+                });
+
+                pause.play();
+            });
+
+            fadeOut.play();
+
         } else {
             changeGameState(GameConfig.GameState.GAME_OVER);
         }
     }
 
-    public void cleanupGameObjects() {
-        if (paddle != null && paddle.getNode().getParent() != null) {
-            root.getChildren().remove(paddle.getNode());
-        }
+    // THÊM METHOD MỚI: Quick cleanup for level transitions
+    private void quickCleanupForLevelTransition() {
+        // Batch collection for removal
+        List<javafx.scene.Node> nodesToRemove = new ArrayList<>();
 
-        if (paddle2 != null && paddle2.getNode().getParent() != null) {
-            root.getChildren().remove(paddle2.getNode());
-        }
-
-        ballsToRemove.clear();
-        ballsToRemove.addAll(balls);
-        for (Ball b : ballsToRemove) {
+        // Clear balls
+        for (Ball b : new java.util.ArrayList<>(balls)) {
+            b.clearTrail();
             if (b.getTrailGroup() != null && b.getTrailGroup().getParent() != null) {
-                root.getChildren().remove(b.getTrailGroup());
+                nodesToRemove.add(b.getTrailGroup());
             }
-            if (b.getNode().getParent() != null) {
-                root.getChildren().remove(b.getNode());
+            if (b.getNode() != null && b.getNode().getParent() != null) {
+                nodesToRemove.add(b.getNode());
             }
         }
         balls.clear();
 
+        // Clear indicator
+        if (indicator != null && indicator.getNode().getParent() != null) {
+            nodesToRemove.add(indicator.getNode());
+        }
+        indicator = null;
+
+        // Clear powerups
+        for (Powerup p : levelManager.getPowerups()) {
+            if (p.getNode() != null && p.getNode().getParent() != null) {
+                nodesToRemove.add(p.getNode());
+            }
+        }
+        levelManager.getPowerups().clear();
+
+        // Batch remove
+        root.getChildren().removeAll(nodesToRemove);
+    }
+
+    public void cleanupGameObjects() {
+        // ========== THÊM: Stop game loop first ==========
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+
+        // ========== THÊM: Stop oneshot timer if active ==========
+        if (oneshotTimer != null) {
+            oneshotTimer.stop();
+            oneshotTimer = null;
+        }
+
+        // Cleanup paddles
+        if (paddle != null && paddle.getNode().getParent() != null) {
+            root.getChildren().remove(paddle.getNode());
+        }
+        paddle = null; // ========== THÊM: Set null ==========
+
+        if (paddle2 != null && paddle2.getNode().getParent() != null) {
+            root.getChildren().remove(paddle2.getNode());
+        }
+        paddle2 = null; // ========== THÊM: Set null ==========
+
+        // ========== SỬA: Cleanup balls - CRITICAL FIX ==========
+        ballsToRemove.clear();
+        ballsToRemove.addAll(balls);
+        for (Ball b : ballsToRemove) {
+            // ========== THÊM: Disable trail to clear all trail nodes ==========
+            b.setTrailEnabled(false);
+
+            // ========== THÊM: Clear trail group properly ==========
+            if (b.getTrailGroup() != null) {
+                if (b.getTrailGroup().getParent() != null) {
+                    root.getChildren().remove(b.getTrailGroup());
+                }
+                b.getTrailGroup().getChildren().clear();
+            }
+
+            // Remove ball node
+            if (b.getNode() != null && b.getNode().getParent() != null) {
+                root.getChildren().remove(b.getNode());
+            }
+        }
+        balls.clear();
+        ballsToRemove.clear();
+
+        // Cleanup indicator
         if (indicator != null) {
             if (indicator.getNode().getParent() != null) {
                 root.getChildren().remove(indicator.getNode());
@@ -704,14 +994,23 @@ public class GameEngine {
             indicator = null;
         }
 
+        // Cleanup bricks
         cachedBricks.clear();
         cachedBricks.addAll(levelManager.getBricks());
         for (Brick brick : cachedBricks) {
-            levelManager.removeBrick(brick, root);
+            // ========== SỬA: Remove brick node properly ==========
+            if (brick.getNode() != null && brick.getNode().getParent() != null) {
+                root.getChildren().remove(brick.getNode());
+            }
         }
+        levelManager.getBricks().clear();
+        cachedBricks.clear();
 
+        // Cleanup powerups
         levelManager.clearAllPowerups(root);
+        cachedPowerups.clear();
 
+        // Cleanup UI screens
         if (singleplayerScreen != null) {
             singleplayerScreen.cleanup();
             singleplayerScreen = null;
@@ -732,8 +1031,16 @@ public class GameEngine {
             endlessScreen = null;
         }
 
+        // ========== THÊM: Reset flags ==========
         isOneVOneMode = false;
         isBotMode = false;
+        lastScoredPlayer = 1;
+
+        // ========== THÊM: Reset collision manager state ==========
+        collisionManager.setOneshotActive(false);
+
+        // ========== THÊM: Force garbage collection hint ==========
+        System.gc();
     }
 
     public void hideAllGameObjects() {
@@ -919,5 +1226,15 @@ public class GameEngine {
 
     public void setMovingRight2(boolean moving) {
         this.isMovingRight2 = moving;
+    }
+
+    /**
+     * Restart game loop - useful when resolution changes
+     */
+    public void restartGameLoop() {
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+        initGameLoop();
     }
 }

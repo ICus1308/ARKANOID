@@ -157,21 +157,25 @@ public class GamePlay extends Application {
 
     private void startSinglePlayerGame() {
         screenManager.hideAllScreens();
+        gameEngine.cleanupGameObjects(); // ========== THÊM ==========
         gameEngine.startSinglePlayerGame();
     }
 
     private void startBotGame() {
         screenManager.hideAllScreens();
+        gameEngine.cleanupGameObjects(); // ========== THÊM ==========
         gameEngine.startBotGame();
     }
 
     private void startOneVOneGame() {
         screenManager.hideAllScreens();
+        gameEngine.cleanupGameObjects(); // ========== THÊM ==========
         gameEngine.startOneVOneGame();
     }
 
     private void startEndlessGame() {
         screenManager.hideAllScreens();
+        gameEngine.cleanupGameObjects(); // ========== THÊM ==========
         gameEngine.startEndlessGame();
     }
 
@@ -187,6 +191,7 @@ public class GamePlay extends Application {
 
     private void returnToMenu() {
         gameEngine.changeGameState(GameState.MENU);
+        SoundManager.getInstance().stopMusic(); // ========== THÊM: Stop music first ==========
         gameEngine.cleanupGameObjects();
         showMenuScreen();
     }
@@ -258,7 +263,14 @@ public class GamePlay extends Application {
     }
 
     private void refreshAllScreens() {
+        // ========== THÊM: Cleanup thoroughly before refresh ==========
+        gameEngine.cleanupGameObjects();
+
+        // Hide and refresh all screens
+        screenManager.hideAllScreens();
         screenManager.refreshAllScreens();
+
+        // Update root size
         root.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
         // Update video size khi đổi resolution
@@ -266,7 +278,17 @@ public class GamePlay extends Application {
             videoBackgroundManager.updateSize();
         }
 
-        settingScreen.refresh();
+        // ========== THÊM: Recreate setting screen ==========
+        settingScreen = new SettingScreen(
+                root,
+                this::showMenuScreen,
+                this::refreshAllScreens
+        );
+        screenManager.registerScreen(GameState.SETTING, settingScreen);
+
         settingScreen.show();
+
+        // ========== THÊM: Force garbage collection ==========
+        System.gc();
     }
 }
