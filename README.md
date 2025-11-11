@@ -10,7 +10,7 @@
 - [Họ tên 4] - [MSSV 4]
 
 **Giảng viên lý thuyết:** Nguyễn Đức Anh  
-**Giảng viên thực hành:** Vũ Đức Hiếu, Nguyễn Vũ Bình Dương
+**Giảng viên thực hành:** Vũ Đức Hiếu, Nguyễn Vũ Bình Dương  
 **Học kỳ:** [HK1/HK2 - Năm học 2025-2026]
 
 ---
