@@ -167,51 +167,9 @@ public class SettingScreen extends UIManager {
         contentArea.getChildren().addAll(titleLabel, debugSettingsPanel, spacer, applyButtonBox);
     }
 
-    private Label createSettingRow(String labelText, javafx.scene.control.ComboBox<String> comboBox) {
-        // UIManager.createLabel accepts only the text; TEXT_COLOR is applied by that method
-        Label label = createLabel(labelText);
-
-        comboBox.setPrefWidth(400 * UI_SCALE_X);
-        comboBox.setPrefHeight(35);
-
-        comboBox.setStyle("-fx-background-color: #2c3e50; " +
-                "-fx-font-size: " + (19 * UI_SCALE) + "px; " +
-                "-fx-font-family: 'Simple Sunrise';");
-
-        comboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                    setStyle("-fx-text-fill: white; -fx-background-color: #2c3e50;");
-                }
-            }
-        });
-
-        comboBox.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                    setStyle("-fx-text-fill: white; -fx-background-color: #34495e;");
-                }
-            }
-        });
-
-        return label;
-    }
-
     private void applyVideoSettings() {
         if (videoSettingsPanel != null) {
             videoSettingsPanel.applySettings();
-            // Note: Don't call refresh() and show() here because onResolutionChange
-            // callback already handles recreating and showing the new SettingScreen
         }
     }
 

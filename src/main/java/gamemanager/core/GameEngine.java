@@ -113,9 +113,6 @@ public class GameEngine {
     public void initGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastUpdate = 0;
-            // Frame counter để tối ưu (có thể skip collision check 1 số frame)
-            private int frameCount = 0;
-            private static final int UPDATE_INTERVAL = 1; // Kiểm tra va chạm mỗi frame
 
             @Override
             public void handle(long now) {
@@ -123,20 +120,16 @@ public class GameEngine {
                 if (now - lastUpdate < FRAME_TIME_NANOS) {
                     return;
                 }
-
-                long elapsed = now - lastUpdate;
                 lastUpdate = now;
 
                 // Only update when playing or starting
                 if (gameState == GameConfig.GameState.PLAYING ||
                         gameState == GameConfig.GameState.START) {
 
-                    frameCount++;
-
                     // Always do input and game update
                     for (int i = 0; i < 2; i++) {
-                        processInput(FIXED_TIME_STEP);  // Xử lý phím bấm
-                        updateGame(FIXED_TIME_STEP);    // Cập nhật vị trí objects
+                        processInput();  // Xử lý phím bấm
+                        updateGame();    // Cập nhật vị trí objects
                     }
 
                     // KIỂM TRA VA CHẠM (có thể giảm tần suất để tối ưu)
@@ -149,23 +142,8 @@ public class GameEngine {
         gameLoop.start();
     }
 
-    // ========== THÊM METHOD: Pause game loop during heavy operations ==========
-    public void pauseGameLoopTemporarily() {
-        if (gameLoop != null) {
-            gameLoop.stop();
-        }
-    }
-
-    public void resumeGameLoop() {
-        if (gameLoop != null) {
-            gameLoop.start();
-        }
-    }
-
-
     /**
      * KHỞI TẠO CÁC GAME OBJECTS KHI BẮT ĐẦU GAME MỚI
-     *
      * TẠO:
      * - Paddle (thanh đỡ) ở giữa dưới màn hình
      * - Ball (bóng) trên paddle
@@ -213,6 +191,8 @@ public class GameEngine {
         cleanupGameObjects();
         soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
         initializeGameElements();
+        isBotMode = false;
+        isOneVOneMode = false;
 
         singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
@@ -472,14 +452,13 @@ public class GameEngine {
      * - Cập nhật vị trí bóng, paddle
      * - Kiểm tra và xử lý va chạm với brick, paddle, tường
      */
-    private void updateGame(double tpf) {
+    private void updateGame() {
         int ballCount = balls.size();
-        for (int i = 0; i < ballCount; i++) {
-            Ball b = balls.get(i);
+        for (Ball b : balls) {
             if ((isOneVOneMode || isBotMode) && gameState == GameState.START) {
-                b.update(tpf, lastScoredPlayer == 2 ? paddle2 : paddle, lastScoredPlayer == 2);
+                b.update(GameEngine.FIXED_TIME_STEP, lastScoredPlayer == 2 ? paddle2 : paddle, lastScoredPlayer == 2);
             } else {
-                b.update(tpf, paddle, false);
+                b.update(GameEngine.FIXED_TIME_STEP, paddle, false);
             }
         }
 
@@ -925,6 +904,8 @@ public class GameEngine {
             gameLoop.stop();
         }
 
+        levelManager.currentLevel++;
+
         if (levelManager.currentLevel <= levelManager.maxLevel) {
             // Create smooth fade transition
             createTransitionOverlay();
@@ -1357,16 +1338,4 @@ public class GameEngine {
     public void setMovingRight2(boolean moving) {
         this.isMovingRight2 = moving;
     }
-
-    /**
-     * Restart game loop - useful when resolution changes
-     */
-    public void restartGameLoop() {
-        if (gameLoop != null) {
-            gameLoop.stop();
-        }
-        initGameLoop();
-    }
-
-
 }

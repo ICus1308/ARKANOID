@@ -15,7 +15,6 @@ import java.util.List;
 
 /**
  * CollisionManager - Quản lý tất cả va chạm trong game
- *
  * CHỨC NĂNG CHÍNH:
  * - Va chạm bóng vs paddle (phản xạ góc dựa theo vị trí chạm)
  * - Va chạm bóng vs brick (tính điểm, spawn power-up)
@@ -42,10 +41,6 @@ public class CollisionManager {
 
     public void setScoreManager(ScoreManager scoreManager) {
         this.scoreManager = scoreManager;
-    }
-
-    public PowerUpManager getPowerUpManager() {
-        return powerUpManager;
     }
 
     public void setOneshotActive(boolean active) {
@@ -235,11 +230,9 @@ public class CollisionManager {
 
             // ========== SPAWN POWER-UP (20% XÁC SUẤT) ==========
             // Đây là TÍNH NĂNG MỚI được thêm vào!
-            if (powerUpManager != null) {
-                Powerup spawnedPowerup = powerUpManager.trySpawnPowerup(brick);
-                if (spawnedPowerup != null) {
-                    levelManager.addPowerup(spawnedPowerup); // Thêm vào list quản lý
-                }
+            Powerup spawnedPowerup = powerUpManager.trySpawnPowerup(brick);
+            if (spawnedPowerup != null) {
+                levelManager.addPowerup(spawnedPowerup); // Thêm vào list quản lý
             }
 
             // Xóa brick khỏi màn hình

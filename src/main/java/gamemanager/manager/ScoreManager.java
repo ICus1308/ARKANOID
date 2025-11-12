@@ -142,30 +142,4 @@ public class ScoreManager {
             }
         );
     }
-
-    /**
-     * Phương thức cũ (đồng bộ) - giữ lại cho backward compatibility
-     * Không nên dùng vì sẽ block UI thread
-     */
-    @Deprecated
-    private void saveScores() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(HIGH_SCORE_FILE))) {
-            oos.writeObject(new ArrayList<>(highScores));
-        } catch (IOException e) {
-            System.err.println("Error saving scores: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Kiểm tra xem điểm có đủ cao để vào top 10 không
-     * <p>
-     * LOGIC:
-     * - Nếu chưa đủ 10 điểm → tất cả đều được vào → return true
-     * - Nếu đã đủ 10 điểm → so sánh với điểm thứ 10 (cuối cùng)
-     *   → Nếu lớn hơn điểm thứ 10 → return true
-     */
-    public boolean isHighScore(int score) {
-        return highScores.size() < MAX_HIGH_SCORES ||
-               score > highScores.get(highScores.size() - 1).getScore();
-    }
 }
