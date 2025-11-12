@@ -11,6 +11,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.*;
 import javafx.scene.image.Image;
 
+import java.util.Objects;
+
 import static gameconfig.GameConfig.*;
 
 public class DebugSettingsPanel extends VBox {
@@ -31,7 +33,7 @@ public class DebugSettingsPanel extends VBox {
 
         // Load frame image
         try {
-            Image frameImage = new Image(getClass().getResourceAsStream("/background/setting.png"));
+            Image frameImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/background/setting.png")));
             BackgroundImage backgroundImage = new BackgroundImage(
                     frameImage,
                     BackgroundRepeat.NO_REPEAT,

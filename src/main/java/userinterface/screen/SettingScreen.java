@@ -210,8 +210,8 @@ public class SettingScreen extends UIManager {
     private void applyVideoSettings() {
         if (videoSettingsPanel != null) {
             videoSettingsPanel.applySettings();
-            refresh();
-            show();
+            // Note: Don't call refresh() and show() here because onResolutionChange
+            // callback already handles recreating and showing the new SettingScreen
         }
     }
 

@@ -28,7 +28,7 @@ public class CollisionManager {
     private boolean oneshotActive = false; // Chế độ oneshot: bóng phá gạch 1 phát
     private CoinManager coinManager;
     private ScoreManager scoreManager;
-    private PowerUpManager powerUpManager; // Quản lý spawn power-up
+    private final PowerUpManager powerUpManager; // Quản lý spawn power-up
 
     public CollisionManager(LevelManager levelManager, Pane root) {
         this.levelManager = levelManager;

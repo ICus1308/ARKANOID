@@ -12,8 +12,11 @@ import gameobject.paddle.Paddle;
 import gameobject.powerup.Powerup;
 import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
 import javafx.animation.PauseTransition;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import userinterface.gamescreen.BotScreen;
 import userinterface.gamescreen.EndlessScreen;
@@ -130,9 +133,6 @@ public class GameEngine {
 
                     frameCount++;
 
-                    // Có thể skip collision check để tăng hiệu suất
-                    boolean doFullUpdate = (frameCount % UPDATE_INTERVAL == 0);
-
                     // Always do input and game update
                     for (int i = 0; i < 2; i++) {
                         processInput(FIXED_TIME_STEP);  // Xử lý phím bấm
@@ -140,7 +140,7 @@ public class GameEngine {
                     }
 
                     // KIỂM TRA VA CHẠM (có thể giảm tần suất để tối ưu)
-                    if (gameState == GameConfig.GameState.PLAYING && doFullUpdate) {
+                    if (gameState == GameState.PLAYING) {
                         handleCollisions();
                     }
                 }
@@ -1026,7 +1026,7 @@ public class GameEngine {
     /**
      * DỌN DẸP TẤT CẢ CÁC GAME OBJECTS
      * - Dừng game loop
-     * - Xóa t��t cả objects khỏi màn hình
+     * - Xóa tất cả objects khỏi màn hình
      * - Giải phóng bộ nhớ
      */
     public void cleanupGameObjects() {

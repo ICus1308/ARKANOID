@@ -158,7 +158,7 @@ public class ScoreManager {
 
     /**
      * Kiểm tra xem điểm có đủ cao để vào top 10 không
-     *
+     * <p>
      * LOGIC:
      * - Nếu chưa đủ 10 điểm → tất cả đều được vào → return true
      * - Nếu đã đủ 10 điểm → so sánh với điểm thứ 10 (cuối cùng)

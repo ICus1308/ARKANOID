@@ -4,6 +4,7 @@ import gamemanager.manager.SoundManager;
 import gamemanager.ui.ScreenManager;
 import gamemanager.ui.VideoBackgroundManager;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Pane;
@@ -238,15 +239,17 @@ public class GamePlay extends Application {
     }
 
     private void promptAndSaveScore() {
-        TextInputDialog dialog = new TextInputDialog("Player");
-        dialog.setTitle("Game Over");
-        dialog.setHeaderText("You set a new score!");
-        dialog.setContentText("Please enter your name:");
+        Platform.runLater(() -> {
+            TextInputDialog dialog = new TextInputDialog("Player");
+            dialog.setTitle("Game Over");
+            dialog.setHeaderText("You set a new score!");
+            dialog.setContentText("Please enter your name:");
 
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            int finalScore = gameEngine.getFinalScore();
-            gameEngine.getScoreManager().addScore(name, finalScore);
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(name -> {
+                int finalScore = gameEngine.getFinalScore();
+                gameEngine.getScoreManager().addScore(name, finalScore);
+            });
         });
     }
 
@@ -286,6 +289,11 @@ public class GamePlay extends Application {
         }
 
         // ========== THÊM: Recreate setting screen ==========
+        // Ensure old setting screen is fully hidden before creating new one
+        if (settingScreen != null) {
+            settingScreen.hide();
+        }
+
         settingScreen = new SettingScreen(
                 root,
                 this::showMenuScreen,
@@ -293,7 +301,8 @@ public class GamePlay extends Application {
         );
         screenManager.registerScreen(GameState.SETTING, settingScreen);
 
-        settingScreen.show();
+        // Use screenManager to properly track the current state
+        screenManager.showScreen(GameState.SETTING);
 
         // ========== THÊM: Force garbage collection ==========
         System.gc();
