@@ -30,7 +30,7 @@ public class HighScoreScreen extends UIManager {
     protected void initializeUI() {
         layout = new VBox(20);
         layout.setAlignment(Pos.CENTER);
-        layout.setStyle("-fx-background-color: rgba(44, 62, 80, 0.9);");
+        layout.setStyle("-fx-background-color: rgba(44, 62, 80, 0.1);");
         layout.setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
         Text title = createStyledText("High Scores", 0, 0, TITLE_FONT, TEXT_COLOR);
@@ -43,9 +43,9 @@ public class HighScoreScreen extends UIManager {
     @SuppressWarnings("unchecked")
     private TableView<Score> createScoreTable() {
         TableView<Score> scoreTable = new TableView<>();
-        scoreTable.setPrefWidth(450 * UI_SCALE_X);
-        scoreTable.setPrefHeight(400);
-        scoreTable.setStyle("-fx-font-size: " + (22 * UI_SCALE) + "px; -fx-background-color: #34495e; -fx-alternative-row-fill-visible: true; -fx-font-family: 'Simple Sunrise';");
+        scoreTable.setPrefWidth(200 * UI_SCALE_X);
+        scoreTable.setPrefHeight(200);
+        scoreTable.setStyle("-fx-font-size: " + (20 * UI_SCALE) + "px; -fx-background-color: #34495e; -fx-alternative-row-fill-visible: true; -fx-font-family: 'Simple Sunrise';");
         scoreTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         TableColumn<Score, String> nameColumn = new TableColumn<>("Player");

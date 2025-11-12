@@ -20,15 +20,15 @@ public class MenuScreen extends UIManager {
     private Runnable onHighScore;
     private Runnable onSetting;
     private Runnable onShop;
-    private Runnable onTutorial;
+    private Runnable onExit;
 
-    public MenuScreen(Pane root, Runnable onStart, Runnable onHighScore, Runnable onSetting, Runnable onShop, Runnable onTutorial) {
+    public MenuScreen(Pane root, Runnable onStart, Runnable onHighScore, Runnable onSetting, Runnable onShop, Runnable onExit) {
         super(root);
         this.onStart = onStart;
         this.onHighScore = onHighScore;
         this.onSetting = onSetting;
         this.onShop = onShop;
-        this.onTutorial = onTutorial;
+        this.onExit = onExit;
         initializeUI();
     }
 
@@ -46,7 +46,7 @@ public class MenuScreen extends UIManager {
         GameButton highScoreButton = createButton("High Score", onHighScore);
         GameButton settingButton = createButton("Settings", onSetting);
         GameButton shopButton = createButton("Shop", onShop);
-        GameButton tutorialButton = createButton("Tutorial", onTutorial);
+        GameButton exitButton = createButton("Exit", onExit);
 
         // Increase button sizes for a fuller look
         double buttonWidth = 280 * UI_SCALE_X;
@@ -59,13 +59,13 @@ public class MenuScreen extends UIManager {
         settingButton.setPrefHeight(buttonHeight);
         shopButton.setPrefWidth(buttonWidth);
         shopButton.setPrefHeight(buttonHeight);
-        tutorialButton.setPrefWidth(buttonWidth);
-        tutorialButton.setPrefHeight(buttonHeight);
+        exitButton.setPrefWidth(buttonWidth);
+        exitButton.setPrefHeight(buttonHeight);
 
         // Reduce spacing between buttons for a denser layout
         VBox buttonBox = new VBox(15);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(startButton, highScoreButton, settingButton, shopButton, tutorialButton);
+        buttonBox.getChildren().addAll(startButton, highScoreButton, settingButton, shopButton, exitButton);
         // Move button box down more to avoid overlapping with title
         buttonBox.setTranslateY(100 * UI_SCALE);
 
@@ -159,12 +159,12 @@ public class MenuScreen extends UIManager {
         initializeUI();
     }
 
-    public void refresh(Runnable onStart, Runnable onHighScore, Runnable onSetting, Runnable onShop, Runnable onTutorial) {
+    public void refresh(Runnable onStart, Runnable onHighScore, Runnable onSetting, Runnable onShop, Runnable onExit) {
         this.onStart = onStart;
         this.onHighScore = onHighScore;
         this.onSetting = onSetting;
         this.onShop = onShop;
-        this.onTutorial = onTutorial;
+        this.onExit = onExit;
         initializeUI();
     }
 }
