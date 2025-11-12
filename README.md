@@ -4,12 +4,12 @@
 
 **Group 10 - Class INT2204 7**
 
-| Họ và tên | Mã Sinh viên | Phần trăm đóng góp |
-|------------|----------------|----------------|
-| **Lê Trọng Thức** | 24021637 | 30% |  
-| **Hoàng Văn Thái** | 24021621 | 20% |  
-| **An Đức Minh Trí** | 24021645 | 30% |  
-| **Vũ Ngọc Thiên Bình** | 24022618 | 20% |
+| Họ và tên | Mã Sinh viên | Role | Phần trăm đóng góp |
+|------------|----------------|----------------|--------------|
+| **Lê Trọng Thức** | 24021637 | BE | 30% |  
+| **Hoàng Văn Thái** | 24021621 | Full Stack | 20% |  
+| **An Đức Minh Trí** | 24021645 | Mentor | 30% |  
+| **Vũ Ngọc Thiên Bình** | 24022618 | Tester | 20% |
 
 **Giảng viên lý thuyết:** Nguyễn Đức Anh  
 **Giảng viên thực hành:** Vũ Đức Hiếu, Nguyễn Vũ Bình Dương  
