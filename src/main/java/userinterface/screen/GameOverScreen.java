@@ -17,7 +17,6 @@ import static gameconfig.GameConfig.*;
 
 public class GameOverScreen extends UIManager {
     private StackPane layout;
-    private final Runnable onRetry;
     private final Runnable onNewGame;
     private final Runnable onMainMenu;
 
@@ -26,7 +25,6 @@ public class GameOverScreen extends UIManager {
 
     public GameOverScreen(Pane root, Runnable onRetry, Runnable onNewGame, Runnable onMainMenu) {
         super(root);
-        this.onRetry = onRetry;
         this.onNewGame = onNewGame;
         this.onMainMenu = onMainMenu;
     }
@@ -70,11 +68,6 @@ public class GameOverScreen extends UIManager {
     private HBox createButtonBox() {
         HBox box = new HBox(30);
         box.setAlignment(Pos.CENTER);
-
-        if (onRetry != null) {
-            GameButton replayButton = createButton("REPLAY", onRetry);
-            box.getChildren().add(replayButton);
-        }
 
         if (onNewGame != null) {
             GameButton newGameButton = createButton("NEW GAME", onNewGame);

@@ -11,16 +11,14 @@ import gameobject.paddle.Indicator;
 import gameobject.paddle.Paddle;
 import gameobject.powerup.Powerup;
 import javafx.animation.AnimationTimer;
+import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
-import userinterface.gamescreen.*;
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
-
+import userinterface.gamescreen.BotScreen;
+import userinterface.gamescreen.EndlessScreen;
+import userinterface.gamescreen.OneVOneScreen;
+import userinterface.gamescreen.SingleplayerScreen;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -215,8 +213,6 @@ public class GameEngine {
         cleanupGameObjects();
         soundManager.playMusic(SoundManager.SoundType.GAME_MUSIC, true);
         initializeGameElements();
-        isBotMode = false;
-        isOneVOneMode = false;
 
         singleplayerScreen = new SingleplayerScreen(root, coinManager);
         singleplayerScreen.updateLives(3);
@@ -929,8 +925,6 @@ public class GameEngine {
             gameLoop.stop();
         }
 
-        levelManager.currentLevel++;
-
         if (levelManager.currentLevel <= levelManager.maxLevel) {
             // Create smooth fade transition
             createTransitionOverlay();
@@ -1032,7 +1026,7 @@ public class GameEngine {
     /**
      * DỌN DẸP TẤT CẢ CÁC GAME OBJECTS
      * - Dừng game loop
-     * - Xóa tất cả objects khỏi màn hình
+     * - Xóa t��t cả objects khỏi màn hình
      * - Giải phóng bộ nhớ
      */
     public void cleanupGameObjects() {
@@ -1374,27 +1368,5 @@ public class GameEngine {
         initGameLoop();
     }
 
-    private void fadeOutTransition(Runnable afterFade) {
-        Rectangle fadeRect = new Rectangle(GAME_WIDTH, GAME_HEIGHT, Color.BLACK);
-        fadeRect.setOpacity(0);
-        root.getChildren().add(fadeRect);
-
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(700), fadeRect);
-        fadeOut.setFromValue(0.0);
-        fadeOut.setToValue(1.0);
-        fadeOut.setInterpolator(Interpolator.EASE_IN);
-
-        fadeOut.setOnFinished(e -> {
-            afterFade.run();
-            FadeTransition fadeIn = new FadeTransition(Duration.millis(700), fadeRect);
-            fadeIn.setFromValue(1.0);
-            fadeIn.setToValue(0.0);
-            fadeIn.setInterpolator(Interpolator.EASE_OUT);
-            fadeIn.setOnFinished(ev -> root.getChildren().remove(fadeRect));
-            fadeIn.play();
-        });
-
-        fadeOut.play();
-    }
 
 }
