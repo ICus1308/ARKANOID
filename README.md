@@ -4,10 +4,12 @@
 
 **Group 10 - Class INT2204 7**
 
-- Lê Trọng Thức - 24021637  
-- [Họ tên 2] - [MSSV 2]
-- [Họ tên 3] - [MSSV 3]
-- [Họ tên 4] - [MSSV 4]
+| Họ và tên | Mã Sinh viên | Phần trăm đóng góp |
+|------------|----------------|----------------|
+| **Lê Trọng Thức** | 24021637 | 30% |  
+| **Hoàng Văn Thái** | 24021621 | 20% |  
+| **An Đức Minh Trí** | 24021645 | 30% |  
+| **Vũ Ngọc Thiên Bình** | 24022618 | 20% |
 
 **Giảng viên lý thuyết:** Nguyễn Đức Anh  
 **Giảng viên thực hành:** Vũ Đức Hiếu, Nguyễn Vũ Bình Dương  
@@ -474,9 +476,6 @@ https://github.com/user-attachments/assets/7a21ead9-b33f-4a71-8542-327b96e43b82
 
 https://github.com/user-attachments/assets/9f58c691-46c4-4651-9a3d-10abe993b4d0
 
-### Preview game hoàn chỉnh
-
-Em bình quay video reviewveef game rồi thêm vô đây
 
 ### Các chế độ chơi
 
