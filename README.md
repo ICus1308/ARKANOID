@@ -195,33 +195,6 @@ public enum GameState {
 
 ---
 
-## 🧵 Triển khai Đa luồng
-
-Game sử dụng kiến trúc đa luồng để đảm bảo hiệu suất tối ưu:
-
-| Luồng | Mục đích | Tần suất | Thư viện |
-|-------|----------|----------|----------|
-| **JavaFX Application Thread** | Render UI và xử lý events | 60 FPS | JavaFX |
-| **Game Loop Thread** | Cập nhật logic game (vật lý, va chạm) | 240 Hz | AnimationTimer |
-| **Audio Thread Pool** | Phát sound effects không đồng bộ | On-demand | AudioClip |
-| **Background Task Thread** | Lưu/load file (coins, scores) | On-demand | BackgroundTaskManager |
-
-### Tối ưu hóa Performance
-
-```java
-// Fixed timestep cho game logic ổn định
-private static final double FIXED_TIME_STEP = 1.0 / 240.0;
-
-// Frame time cho rendering
-private static final long FRAME_TIME_NANOS = 16_666_667L; // ~60 FPS
-
-// Batch processing để tránh ConcurrentModificationException
-private final List<Ball> ballsToRemove = new ArrayList<>();
-private final List<Brick> cachedBricks = new ArrayList<>();
-```
-
----
-
 ## 🚀 Cài đặt
 
 ### Yêu cầu hệ thống:
