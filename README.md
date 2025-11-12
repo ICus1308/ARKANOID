@@ -8,7 +8,7 @@
 |------------|----------------|----------------|--------------|
 | **Lê Trọng Thức** | 24021637 | BE | 30% |  
 | **Hoàng Văn Thái** | 24021621 | Full Stack | 20% |  
-| **An Đức Minh Trí** | 24021645 | Mentor | 30% |  
+| **An Đức Minh Trí** | 24021645 | BE | 30% |  
 | **Vũ Ngọc Thiên Bình** | 24022618 | Tester | 20% |
 
 **Giảng viên lý thuyết:** Nguyễn Đức Anh  
